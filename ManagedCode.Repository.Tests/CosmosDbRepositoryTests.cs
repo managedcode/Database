@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ManagedCode.Repository.AzureTable;
 using ManagedCode.Repository.Core;
+using ManagedCode.Repository.CosmosDB;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
 
 namespace ManagedCode.Repository.Tests
 {
-    public class AzureTableRepositoryTests
+    public class CosmosDbRepositoryTests
     {
         public const string ConnecntionString = "UseDevelopmentStorage=true";
 
-        private readonly IRepository<AzureTableId, AzureTableItem> _repository = new AzureTableRepository<AzureTableId, AzureTableItem>(ConnecntionString);
+        private readonly IRepository<string, CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
 
-        public AzureTableRepositoryTests()
+        public CosmosDbRepositoryTests()
         {
             _repository.InitializeAsync().Wait();
             //_repository.DeleteAllAsync().Wait();
@@ -34,16 +34,13 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new AzureTableRepository<AzureTableId, AzureTableItem>(ConnecntionString);
+            var localRepository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
 
             localRepository.IsInitialized.Should().BeFalse();
 
-            await localRepository.InsertAsync(new AzureTableItem
-            {
-                PartitionKey = "NotInitializedAsync",
-                RowKey = "rk",
-                Data = string.Empty
-            });
+            var item = await localRepository.InsertAsync(new CosmosDbItem());
+
+            item.Should().BeTrue();
         }
 
         #region Find
@@ -51,13 +48,13 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Find()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Find",
-                    RowKey = i.ToString(),
+                    PartKey = "Find",
+                    Id = "Find" + i,
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -65,20 +62,20 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "Find" && w.IntData >= 50).ToListAsync();
+            var items = await _repository.FindAsync(w => w.PartKey == "Find" && w.IntData >= 50).ToListAsync();
             items.Count.Should().Be(50);
         }
 
         [Fact]
         public async Task FindTakeSkip()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "FindTakeSkip",
-                    RowKey = i.ToString(),
+                    PartKey = "FindTakeSkip",
+                    Id = "FindTakeSkip" + i,
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -86,22 +83,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindTakeSkip" && w.IntData > 0, 15, 10).ToListAsync();
-            items.Count.Should().Be(15);
-            items.First().IntData.Should().Be(19);
-            items.Last().IntData.Should().Be(31);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindTakeSkip" && w.IntData > 0, 15).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindTakeSkip" && w.IntData > 0, 15, 10).ToListAsync();
+            items1.Count.Should().Be(15);
+            items2.Count.Should().Be(15);
+            items1[10].Data.Should().BeEquivalentTo(items2[0].Data);
         }
 
         [Fact]
         public async Task FindTake()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "FindTake",
-                    RowKey = i.ToString(),
+                    PartKey = "FindTake",
+                    Id = "FindTake" + i,
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -109,21 +107,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindTake" && w.IntData >= 50, 10).ToListAsync();
-            items.Count.Should().Be(10);
-            items.First().IntData.Should().Be(50);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindTake" && w.IntData >= 50, 10).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindTake" && w.IntData >= 50, 15).ToListAsync();
+            items1.Count.Should().Be(10);
+            items2.Count.Should().Be(15);
+            items1[0].Data.Should().Be(items2[0].Data);
         }
 
         [Fact]
         public async Task FindSkip()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "FindSkip",
-                    RowKey = i.ToString(),
+                    PartKey = "FindSkip",
+                    Id = "FindSkip" + i,
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -131,21 +131,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindSkip" && w.IntData >= 50, skip: 10).ToListAsync();
-            items.Count.Should().Be(40);
-            items.First().IntData.Should().Be(60);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindSkip" && w.IntData >= 50, skip: 10).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindSkip" && w.IntData >= 50, skip: 11).ToListAsync();
+            items1.Count.Should().Be(40);
+            items2.Count.Should().Be(39);
+            items1[1].IntData.Should().Be(items2[0].IntData);
         }
 
         [Fact]
         public async Task FindOrder()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "FindOrder",
-                    RowKey = i.ToString(),
+                    PartKey = "FindOrder",
+                    Id = "FindOrder" + i,
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -153,11 +155,11 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindOrder" && w.IntData > 9,
+            var items = await _repository.FindAsync(w => w.PartKey == "FindOrder" && w.IntData > 9,
                     o => o.Id, 10, 1)
                 .ToListAsync();
 
-            var itemsByDescending = await _repository.FindAsync(w => w.PartitionKey == "FindOrder" && w.IntData > 10,
+            var itemsByDescending = await _repository.FindAsync(w => w.PartKey == "FindOrder" && w.IntData > 10,
                     o => o.Id, Order.ByDescending, 10)
                 .ToListAsync();
 
@@ -166,20 +168,20 @@ namespace ManagedCode.Repository.Tests
             items[1].IntData.Should().Be(12);
 
             itemsByDescending.Count.Should().Be(10);
-            itemsByDescending[0].IntData.Should().Be(11);
-            itemsByDescending[1].IntData.Should().Be(12);
+            itemsByDescending[0].IntData.Should().Be(99);
+            itemsByDescending[1].IntData.Should().Be(98);
         }
 
-        [Fact]
+        [Fact(Skip = "The order by query does not have a corresponding composite index that it can be served from. CompositeIndexes required.")]
         public async Task FindOrderThen()
         {
-            var list = new List<AzureTableItem>();
+            var list = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "FindOrderThen",
-                    RowKey = i.ToString(),
+                    PartKey = "FindOrderThen",
+                    Id = "FindOrderThen" + i,
                     IntData = i,
                     Data = $"item{i % 2}"
                 });
@@ -187,15 +189,15 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 9,
+            var items = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 9,
                     o => o.Data, t => t.IntData, 10, 1)
                 .ToListAsync();
 
-            var itemsBy = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 10,
+            var itemsBy = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 10,
                     o => o.Data, Order.ByDescending, t => t.IntData, 10)
                 .ToListAsync();
 
-            var itemsThenByDescending = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 10,
+            var itemsThenByDescending = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 10,
                     o => o.Data, Order.ByDescending, t => t.IntData, Order.ByDescending, 10)
                 .ToListAsync();
 
@@ -219,16 +221,16 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOneItem()
         {
-            var insertFirstItem = await _repository.InsertAsync(new AzureTableItem
+            var insertFirstItem = await _repository.InsertAsync(new CosmosDbItem
             {
-                PartitionKey = "InsertOneItem",
+                Id = "InsertOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertSecondItem = await _repository.InsertAsync(new AzureTableItem
+            var insertSecondItem = await _repository.InsertAsync(new CosmosDbItem
             {
-                PartitionKey = "InsertOneItem",
+                Id = "InsertOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
@@ -240,14 +242,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertListOfItems()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = $"InsertListOfItems{i % 2}",
-                    RowKey = i.ToString(),
+                    PartKey = $"InsertListOfItems{i % 2}",
+                    Id = "InsertListOfItems" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -260,44 +262,44 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Insert100Items()
         {
-            await _repository.InsertAsync(new AzureTableItem
+            await _repository.InsertAsync(new CosmosDbItem
             {
-                PartitionKey = "Insert100Items",
-                RowKey = "140",
+                RowKey = "Insert100Items",
+                Id = "Insert100Items140",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Insert100Items",
-                    RowKey = i.ToString(),
+                    RowKey = "Insert100Items",
+                    Id = "Insert100Items" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertAsync(list);
 
-            items.Should().Be(100);
+            items.Should().Be(149);
         }
 
         [Fact]
         public async Task InsertOrUpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new AzureTableItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "InsertOrUpdateOneItem",
-                RowKey = "1",
+                PartKey = "InsertOrUpdateOneItem",
+                Id = "InsertOrUpdateOneItem",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertTwoItem = await _repository.InsertOrUpdateAsync(new AzureTableItem
+            var insertTwoItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "InsertOrUpdateOneItem",
-                RowKey = "1",
+                PartKey = "InsertOrUpdateOneItem",
+                Id = "InsertOrUpdateOneItem",
                 Data = Guid.NewGuid().ToString()
             });
 
@@ -308,14 +310,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOrUpdateListOfItems()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = $"InsertOrUpdateListOfItems{i % 2}",
-                    RowKey = i.ToString(),
+                    PartKey = $"InsertOrUpdateListOfItems{i % 2}",
+                    Id = "InsertOrUpdateListOfItems" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -330,21 +332,21 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOrUpdate100Items()
         {
-            await _repository.InsertOrUpdateAsync(new AzureTableItem
+            await _repository.InsertOrUpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "InsertOrUpdate100Items",
-                RowKey = "99",
+                PartKey = "InsertOrUpdate100Items",
+                Id = "InsertOrUpdate100Items1",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "InsertOrUpdate100Items",
-                    RowKey = i.ToString(),
+                    PartKey = "InsertOrUpdate100Items",
+                    Id = "InsertOrUpdate100Items1" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -363,24 +365,24 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task UpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertAsync(new AzureTableItem
+            var insertOneItem = await _repository.InsertAsync(new CosmosDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk",
+                PartKey = "UpdateOneItem",
+                Id = "rk",
                 Data = "test"
             });
 
-            var updateFirstItem = await _repository.UpdateAsync(new AzureTableItem
+            var updateFirstItem = await _repository.UpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk",
+                PartKey = "UpdateOneItem",
+                Id = "rk",
                 Data = "test-test"
             });
 
-            var updateSecondItem = await _repository.UpdateAsync(new AzureTableItem
+            var updateSecondItem = await _repository.UpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk-rk",
+                PartKey = "UpdateOneItem",
+                Id = "rk-rk",
                 Data = "test"
             });
 
@@ -392,14 +394,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task UpdateListOfItems()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "UpdateListOfItems",
-                    RowKey = i.ToString(),
+                    PartKey = "UpdateListOfItems",
+                    Id = "UpdateListOfItems" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -409,10 +411,10 @@ namespace ManagedCode.Repository.Tests
             list.Clear();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "UpdateListOfItems",
-                    RowKey = i.ToString(),
+                    PartKey = "UpdateListOfItems",
+                    Id = "UpdateListOfItems" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -426,14 +428,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Update5Items()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 5; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Update5Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update5Items",
+                    Id = "Update5Items" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -443,10 +445,10 @@ namespace ManagedCode.Repository.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Update5Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update5Items",
+                    Id = "Update5Items" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -460,26 +462,27 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Update10Items()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 10; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Update10Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update10Items",
+                    Id = "Update10Items" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertAsync(list);
+            list.Clear();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "Update10Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update10Items",
+                    Id = "Update10Items" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -487,7 +490,7 @@ namespace ManagedCode.Repository.Tests
             var insertedItems = await _repository.InsertAsync(list);
 
             items.Should().Be(10);
-            insertedItems.Should().Be(0);
+            insertedItems.Should().Be(90);
         }
 
         #endregion
@@ -497,24 +500,24 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteOneItemById()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new AzureTableItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "DeleteOneItemById",
+                Id = "DeleteOneItemById",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var deleteOneTimer = await _repository.DeleteAsync(new AzureTableId("DeleteOneItemById", "rk"));
+            var deleteOneItem = await _repository.DeleteAsync("DeleteOneItemById");
             insertOneItem.Should().BeTrue();
-            deleteOneTimer.Should().BeTrue();
+            deleteOneItem.Should().BeTrue();
         }
 
         [Fact]
         public async Task DeleteOneItem()
         {
-            var item = new AzureTableItem
+            var item = new CosmosDbItem
             {
-                PartitionKey = "DeleteOneItem",
+                PartKey = "DeleteOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             };
@@ -529,14 +532,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteListOfItems()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "DeleteListOfItems",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteListOfItems",
+                    Id = "DeleteListOfItems" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -551,57 +554,57 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteListOfItemsById()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "DeleteListOfItemsById",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteListOfItemsById",
+                    Id = "DeleteListOfItemsById" + i,
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertOrUpdateAsync(list);
-            var ids = Enumerable.Range(0, 150);
-            var deletedItems = await _repository.DeleteAsync(ids.Select(s => new AzureTableId("DeleteListOfItemsById", s.ToString())));
+            var deletedItems = await _repository.DeleteAsync(list.Select(s => s.Id));
 
-            deletedItems.Should().Be(150);
             items.Should().Be(150);
+            deletedItems.Should().Be(150);
         }
 
         [Fact]
         public async Task DeleteByQuery()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "DeleteByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteByQuery",
+                    Id = "DeleteByQuery" + i,
                     IntData = i,
                     Data = i >= 50 ? i.ToString() : string.Empty
                 });
             }
 
             await _repository.InsertOrUpdateAsync(list);
-            var items = await _repository.DeleteAsync(w => w.PartitionKey == "DeleteByQuery" && w.IntData >= 50);
+            var items = await _repository.DeleteAsync(w => w.PartKey == "DeleteByQuery" && w.IntData >= 50);
             items.Should().Be(50);
         }
 
         [Fact]
         public async Task DeleteAll()
         {
-            List<AzureTableItem> list = new();
+            List<CosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new AzureTableItem
+                list.Add(new CosmosDbItem
                 {
-                    PartitionKey = "DeleteAll",
+                    Id = "DeleteAll" + i,
+                    PartKey = "DeleteAll",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -623,14 +626,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetByWrongId()
         {
-            var insertOneItem = await _repository.InsertAsync(new AzureTableItem
+            var insertOneItem = await _repository.InsertAsync(new CosmosDbItem
             {
-                PartitionKey = "GetByWrongId",
+                PartKey = "GetByWrongId",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var item = await _repository.GetAsync(new AzureTableId("GetByWrongId", "wrong"));
+            var item = await _repository.GetAsync("GetByWrongId");
             insertOneItem.Should().BeTrue();
             item.Should().BeNull();
         }
@@ -638,12 +641,13 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetById()
         {
-            var items = new List<AzureTableItem>();
+            var items = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new AzureTableItem
+                items.Add(new CosmosDbItem
                 {
-                    PartitionKey = "GetById",
+                    Id = "GetById" + i,
+                    PartKey = "GetById",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -651,7 +655,7 @@ namespace ManagedCode.Repository.Tests
 
             var insertOneItem = await _repository.InsertOrUpdateAsync(items);
 
-            var item = await _repository.GetAsync(new AzureTableId("GetById", "10"));
+            var item = await _repository.GetAsync("GetById10");
             insertOneItem.Should().Be(100);
             item.Should().NotBeNull();
         }
@@ -659,20 +663,21 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetByQuery()
         {
-            var items = new List<AzureTableItem>();
+            var items = new List<CosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new AzureTableItem
+                items.Add(new CosmosDbItem
                 {
-                    PartitionKey = "GetByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "GetByQuery",
+                    Id = "GetByQuery" + i,
+                    RowKey = "4",
                     Data = $"item{i}"
                 });
             }
 
             var addedItems = await _repository.InsertOrUpdateAsync(items);
 
-            var item = await _repository.GetAsync(w => w.Data == "item4" && w.RowKey == "4" && w.PartitionKey == "GetByQuery");
+            var item = await _repository.GetAsync(w => w.Data == "item4" && w.RowKey == "4" && w.PartKey == "GetByQuery");
             addedItems.Should().Be(100);
             item.Should().NotBeNull();
         }
@@ -682,9 +687,9 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new AzureTableItem
+                await _repository.InsertAsync(new CosmosDbItem
                 {
-                    PartitionKey = "GetByWrongQuery",
+                    PartKey = "GetByWrongQuery",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -701,9 +706,9 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Count()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new AzureTableItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
             {
-                PartitionKey = "Count",
+                PartKey = "Count",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
@@ -718,15 +723,15 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new AzureTableItem
+                await _repository.InsertAsync(new CosmosDbItem
                 {
-                    PartitionKey = "CountByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "CountByQuery",
+                    Id = "CountByQuery" + i,
                     IntData = i
                 });
             }
 
-            var count = await _repository.CountAsync(w => w.PartitionKey == "CountByQuery" && w.IntData == 4);
+            var count = await _repository.CountAsync(w => w.PartKey == "CountByQuery" && w.IntData == 4);
             count.Should().Be(1);
         }
 
