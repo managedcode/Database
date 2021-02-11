@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using ManagedCode.Repository.Core;
@@ -35,6 +36,13 @@ namespace ManagedCode.Repository.AzureTable
             return typeof(T).Name.Pluralize();
         }
 
+        public Task<bool> DropTable(CancellationToken token)
+        {
+            var table = GetTable();
+            _tableClientInitialized = false;
+            return table.DeleteIfExistsAsync(token);
+        }
+
         public CloudTable GetTable()
         {
             lock (_sync)
@@ -65,26 +73,27 @@ namespace ManagedCode.Repository.AzureTable
             return _cloudTableClient.GetTableReference(GetTableName());
         }
 
-        public async Task<T> ExecuteAsync<T>(TableOperation operation) where T : class
+        public async Task<T> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
         {
             var table = GetTable();
-            var result = await table.ExecuteAsync(operation).ConfigureAwait(false);
+            var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
             return result.Result as T;
         }
 
-        public async Task<object> ExecuteAsync(TableOperation operation)
+        public async Task<object> ExecuteAsync(TableOperation operation, CancellationToken token = default)
         {
             var table = GetTable();
-            var result = await table.ExecuteAsync(operation).ConfigureAwait(false);
+            var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
             return result.Result;
         }
 
-        public async Task<int> ExecuteBatchAsync(IEnumerable<TableOperation> operations)
+        public async Task<int> ExecuteBatchAsync(IEnumerable<TableOperation> operations, CancellationToken token = default)
         {
             var table = GetTable();
             var totalCount = 0;
             foreach (var group in operations.GroupBy(o => o.Entity.PartitionKey))
             {
+                token.ThrowIfCancellationRequested();
                 var batchOperation = new TableBatchOperation();
                 foreach (var item in group)
                 {
@@ -93,7 +102,7 @@ namespace ManagedCode.Repository.AzureTable
                     {
                         try
                         {
-                            var result = await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
+                            var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
                             totalCount += result.Count;
                             batchOperation = new TableBatchOperation();
                         }
@@ -102,13 +111,15 @@ namespace ManagedCode.Repository.AzureTable
                             // skip
                         }
                     }
+
+                    token.ThrowIfCancellationRequested();
                 }
 
                 if (batchOperation.Count > 0)
                 {
                     try
                     {
-                        var result = await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
+                        var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
                         totalCount += result.Count;
                     }
                     catch (Exception e)
@@ -129,7 +140,8 @@ namespace ManagedCode.Repository.AzureTable
             Order thenType = Order.By,
             Expression<Func<T, object>> selectExpression = null,
             int? take = null,
-            int? skip = null)
+            int? skip = null,
+            CancellationToken cancellationToken = default)
             where T : ITableEntity, new()
         {
             string filterString = null;
@@ -215,13 +227,16 @@ namespace ManagedCode.Repository.AzureTable
 
             do
             {
-                var results = await table.ExecuteQuerySegmentedAsync(query, token)
+                var results = await table.ExecuteQuerySegmentedAsync(query, token, cancellationToken)
                     .ConfigureAwait(false);
 
                 token = results.ContinuationToken;
 
+                cancellationToken.ThrowIfCancellationRequested();
                 foreach (var item in results.Results)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (skip > 0 && skipCount < skip)
                     {
                         skipCount++;

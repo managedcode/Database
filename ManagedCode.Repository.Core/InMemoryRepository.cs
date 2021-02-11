@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManagedCode.Repository.Core
@@ -10,7 +11,7 @@ namespace ManagedCode.Repository.Core
     {
         private readonly Dictionary<TId, TItem> _storage = new();
 
-        protected override Task InitializeAsyncInternal()
+        protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             IsInitialized = true;
             return Task.CompletedTask;
@@ -18,7 +19,7 @@ namespace ManagedCode.Repository.Core
 
         #region Insert
 
-        protected override Task<bool> InsertAsyncInternal(TItem item)
+        protected override Task<bool> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -32,7 +33,7 @@ namespace ManagedCode.Repository.Core
             return Task.FromResult(false);
         }
 
-        protected override Task<int> InsertAsyncInternal(IEnumerable<TItem> items)
+        protected override Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             var count = 0;
 
@@ -55,7 +56,7 @@ namespace ManagedCode.Repository.Core
 
         #region InsertOrUpdate
 
-        protected override Task<bool> InsertOrUpdateAsyncInternal(TItem item)
+        protected override Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -64,7 +65,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items)
+        protected override Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             var count = 0;
 
@@ -84,7 +85,7 @@ namespace ManagedCode.Repository.Core
 
         #region Update
 
-        protected override Task<bool> UpdateAsyncInternal(TItem item)
+        protected override Task<bool> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -98,7 +99,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<int> UpdateAsyncInternal(IEnumerable<TItem> items)
+        protected override Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             var count = 0;
 
@@ -121,7 +122,7 @@ namespace ManagedCode.Repository.Core
 
         #region Delete
 
-        protected override Task<bool> DeleteAsyncInternal(TId id)
+        protected override Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -129,7 +130,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<bool> DeleteAsyncInternal(TItem item)
+        protected override Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -137,7 +138,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<int> DeleteAsyncInternal(IEnumerable<TId> ids)
+        protected override Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
         {
             var count = 0;
 
@@ -155,7 +156,7 @@ namespace ManagedCode.Repository.Core
             return Task.FromResult(count);
         }
 
-        protected override Task<int> DeleteAsyncInternal(IEnumerable<TItem> items)
+        protected override Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             var count = 0;
 
@@ -173,7 +174,7 @@ namespace ManagedCode.Repository.Core
             return Task.FromResult(count);
         }
 
-        protected override Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate)
+        protected override Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -191,7 +192,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<bool> DeleteAllAsyncInternal()
+        protected override Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -205,7 +206,7 @@ namespace ManagedCode.Repository.Core
 
         #region Get
 
-        protected override Task<TItem> GetAsyncInternal(TId id)
+        protected override Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -218,7 +219,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate)
+        protected override Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -231,7 +232,10 @@ namespace ManagedCode.Repository.Core
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate, int? take = null, int skip = 0)
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
@@ -263,7 +267,8 @@ namespace ManagedCode.Repository.Core
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
-            int skip = 0)
+            int skip = 0,
+            CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
@@ -300,7 +305,8 @@ namespace ManagedCode.Repository.Core
             Expression<Func<TItem, object>> thenBy,
             Order thenType,
             int? take = null,
-            int skip = 0)
+            int skip = 0,
+            CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
@@ -336,7 +342,7 @@ namespace ManagedCode.Repository.Core
 
         #region Count
 
-        protected override Task<uint> CountAsyncInternal()
+        protected override Task<uint> CountAsyncInternal(CancellationToken token = default)
         {
             lock (_storage)
             {
@@ -344,7 +350,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate)
+        protected override Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             lock (_storage)
             {
