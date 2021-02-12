@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.Azur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.Tests", "ManagedCode.Repository.Tests\ManagedCode.Repository.Tests.csproj", "{F9DA9E52-2DDF-40E3-B0A4-4EC7B118FE8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.LiteDB", "ManagedCode.Repository.LiteDB\ManagedCode.Repository.LiteDB.csproj", "{29EB5A50-99E8-4D00-BDDA-3850331E419F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{F9DA9E52-2DDF-40E3-B0A4-4EC7B118FE8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9DA9E52-2DDF-40E3-B0A4-4EC7B118FE8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9DA9E52-2DDF-40E3-B0A4-4EC7B118FE8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29EB5A50-99E8-4D00-BDDA-3850331E419F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29EB5A50-99E8-4D00-BDDA-3850331E419F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29EB5A50-99E8-4D00-BDDA-3850331E419F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29EB5A50-99E8-4D00-BDDA-3850331E419F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
