@@ -9,10 +9,9 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    
     - uses: actions/checkout@v2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
@@ -21,6 +20,16 @@ jobs:
     
     - name: Azure Cosmos DB Emulator
       uses: southpolesteve/cosmos-emulator-github-action@v1
+    
+    - name: PowerShell script
+      uses: Amadevus/pwsh-script@v2.0.1
+      with:
+        script: 'Start-CosmosDbEmulator /EnableTableEndpoint'
+
+    - name: PowerShell script
+      uses: Amadevus/pwsh-script@v2.0.1
+      with:
+        script: 'Start-CosmosDbEmulator /EnableTableEndpoint'
       
     
     - name: Restore dependencies
