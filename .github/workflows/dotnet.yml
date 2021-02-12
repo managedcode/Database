@@ -22,12 +22,6 @@ jobs:
     - name: Azure Cosmos DB Emulator
       uses: southpolesteve/cosmos-emulator-github-action@v1
       
-    - uses: Amadevus/pwsh-script@v2
-      id: script
-      with:
-        script: |
-          Start-Process -FilePath "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" -ArgumentList "init /server '(localdb)\MsSqlLocalDb'"
-          Start-Process -FilePath "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" -ArgumentList "start"
     
     - name: Restore dependencies
       run: dotnet restore
