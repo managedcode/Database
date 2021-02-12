@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.Core;
 using ManagedCode.Repository.CosmosDB;
+using ManagedCode.Repository.LiteDB;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
 
@@ -14,17 +15,18 @@ namespace ManagedCode.Repository.Tests
     public class LiteDbRepositoryTests
     {
         public const string ConnecntionString = "test.db";
-        private readonly IRepository<string, LiteDbItem> _repository = new LiteDbRepository<string, LiteDbItem>(System.IO.Path.Combine(Environment.CurrentDirectory,ConnecntionString));
+
+        private readonly IRepository<string, LiteDbItem> _repository =
+            new LiteDbRepository<string, LiteDbItem>(Path.Combine(Environment.CurrentDirectory, ConnecntionString));
 
         public LiteDbRepositoryTests()
         {
             _repository.InitializeAsync().Wait();
-            if (File.Exists(System.IO.Path.Combine(Environment.CurrentDirectory, ConnecntionString)))
+            if (File.Exists(Path.Combine(Environment.CurrentDirectory, ConnecntionString)))
             {
-                File.Delete(System.IO.Path.Combine(Environment.CurrentDirectory,"test.db"));
-                File.Delete(System.IO.Path.Combine(Environment.CurrentDirectory,"test-log.db"));
+                File.Delete(Path.Combine(Environment.CurrentDirectory, "test.db"));
+                File.Delete(Path.Combine(Environment.CurrentDirectory, "test-log.db"));
             }
-                
         }
 
         [Fact]
@@ -39,7 +41,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, LiteDbItem>(System.IO.Path.Combine(Environment.CurrentDirectory,ConnecntionString));
+            var localRepository = new LiteDbRepository<string, LiteDbItem>(Path.Combine(Environment.CurrentDirectory, ConnecntionString));
 
             localRepository.IsInitialized.Should().BeFalse();
 
@@ -177,7 +179,7 @@ namespace ManagedCode.Repository.Tests
             itemsByDescending[1].IntData.Should().Be(98);
         }
 
-        [Fact(Skip="OrderThen is not supported.")]
+        [Fact(Skip = "OrderThen is not supported.")]
         public async Task FindOrderThen()
         {
             var list = new List<LiteDbItem>();

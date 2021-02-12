@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Repository.Core;
 
-namespace ManagedCode.Repository.CosmosDB
+namespace ManagedCode.Repository.LiteDB
 {
     public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IRepositoryItem<TId>
     {
         private readonly string _connectionString;
 
-        private ILiteCollection<TItem> GetDatabase()
-        {
-             var db = new LiteDatabase(_connectionString);
-             return db.GetCollection<TItem>();
-        }
-        
         public LiteDbRepository(string connectionString)
         {
             _connectionString = connectionString;
         }
-        
+
+        private ILiteCollection<TItem> GetDatabase()
+        {
+            var db = new LiteDatabase(_connectionString);
+            return db.GetCollection<TItem>();
+        }
+
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             IsInitialized = true;
@@ -99,12 +99,14 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             var db = GetDatabase();
             foreach (var id in ids)
             {
                 if (db.Delete(new BsonValue(id)))
+                {
                     count++;
+                }
             }
 
             return count;
@@ -112,12 +114,14 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             var db = GetDatabase();
             foreach (var item in items)
             {
                 if (db.Delete(new BsonValue(item.Id)))
+                {
                     count++;
+                }
             }
 
             return count;
@@ -156,7 +160,7 @@ namespace ManagedCode.Repository.CosmosDB
             int skip = 0,
             CancellationToken token = default)
         {
-            var query =  GetDatabase().Find(predicate, skip, take ?? 2147483647);
+            var query = GetDatabase().Find(predicate, skip, take ?? 2147483647);
             foreach (var item in query)
             {
                 yield return item;
@@ -216,7 +220,7 @@ namespace ManagedCode.Repository.CosmosDB
             {
                 query.OrderByDescending(orderBy);
             }
-            
+
             if (thenType == Order.By)
             {
                 query = query.OrderBy(thenBy);
@@ -248,12 +252,12 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<uint> CountAsyncInternal(CancellationToken token = default)
         {
-            return (uint)GetDatabase().Count();
+            return (uint) GetDatabase().Count();
         }
 
         protected override async Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            return (uint)GetDatabase().Count(predicate);
+            return (uint) GetDatabase().Count(predicate);
         }
 
         #endregion
