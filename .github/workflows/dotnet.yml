@@ -17,14 +17,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    
-    - name: Azure Cosmos DB Emulator
-      uses: southpolesteve/cosmos-emulator-github-action@v1
-      
-    - name: Run Azure Cosmos DB Emulator2
-      uses: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
-      
-    
+          
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
