@@ -26,11 +26,8 @@ jobs:
       id: script
       with:
         script: |
-            "Start-Process %ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-            "Start-Process %ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-      
-
-        
+          Start-Process -FilePath "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" -ArgumentList "init /server '(localdb)\MsSqlLocalDb'"
+          Start-Process -FilePath "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" -ArgumentList "start"
     
     - name: Restore dependencies
       run: dotnet restore
