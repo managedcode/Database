@@ -29,7 +29,7 @@ jobs:
     - name: PowerShell script
       uses: Amadevus/pwsh-script@v2.0.1
       with:
-        script: 'Start-CosmosDbEmulator /EnableTableEndpoint'
+        script: 'Start-CosmosDbEmulator /EnableMongoDbEndpoint=3.6'
       
     
     - name: Restore dependencies
