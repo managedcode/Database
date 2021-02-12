@@ -25,8 +25,13 @@ jobs:
     - name: PowerShell script
       uses: Amadevus/pwsh-script@v2.0.1
       with:
-        script: "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-        "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
+        script: '%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
+
+    - name: PowerShell script
+      uses: Amadevus/pwsh-script@v2.0.1
+      with:
+        script: "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
+        
     
     - name: Restore dependencies
       run: dotnet restore
