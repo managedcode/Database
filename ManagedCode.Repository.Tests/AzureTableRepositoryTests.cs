@@ -12,7 +12,7 @@ namespace ManagedCode.Repository.Tests
 {
     public class AzureTableRepositoryTests
     {
-        public const string ConnecntionString = "UseDevelopmentStorage=true";
+        public const string ConnecntionString = "DefaultEndpointsProtocol=http;AccountName=localhost;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;TableEndpoint=http://localhost:8902/;";
 
         private readonly IRepository<AzureTableId, AzureTableItem> _repository = new AzureTableRepository<AzureTableId, AzureTableItem>(ConnecntionString);
 
