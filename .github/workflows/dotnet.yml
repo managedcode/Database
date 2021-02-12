@@ -20,6 +20,18 @@ jobs:
     
     - name: Azure Cosmos DB Emulator
       uses: southpolesteve/cosmos-emulator-github-action@v1
+    
+    - task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+      displayName: 'Run Azure Cosmos DB Emulator'
+
+    - script: yarn test
+      displayName: 'Run API tests (Cosmos DB)'
+      env:
+        HOST: $(CosmosDbEmulator.Endpoint)
+        # Hardcoded key for emulator, not a secret
+        AUTH_KEY: C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+        # The emulator uses a self-signed cert, disable TLS auth errors
+        NODE_TLS_REJECT_UNAUTHORIZED: '0'
 
       
     
