@@ -20,16 +20,7 @@ jobs:
     
     - name: Azure Cosmos DB Emulator
       uses: southpolesteve/cosmos-emulator-github-action@v1
-    
-    - name: PowerShell script
-      uses: Amadevus/pwsh-script@v2.0.1
-      with:
-        script: 'Start-CosmosDbEmulator /EnableTableEndpoint'
 
-    - name: PowerShell script
-      uses: Amadevus/pwsh-script@v2.0.1
-      with:
-        script: 'Start-CosmosDbEmulator /EnableMongoDbEndpoint=3.6'
       
     
     - name: Restore dependencies
