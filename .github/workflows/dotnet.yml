@@ -22,15 +22,41 @@ jobs:
     - name: Azure Cosmos DB Emulator
       uses: southpolesteve/cosmos-emulator-github-action@v1
       
-    - name: PowerShell script
-      uses: Amadevus/pwsh-script@v2.0.1
+    - uses: Amadevus/pwsh-script@v2
+      id: script
       with:
-        script: '%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
+        script: |
+            Write-ActionDebug "Visible only when ACTIONS_STEP_DEBUG secret is set"
 
-    - name: PowerShell script
-      uses: Amadevus/pwsh-script@v2.0.1
-      with:
-        script: "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
+            # access full context objects:
+            if ($github.event.repository.full_name -ne $github.repository) {
+              # throwing causes the step to fail
+              throw "something fishy's going on, repos don't match"
+            }
+
+            $someData = Get-MyCustomData
+            # data may contain workflow command strings (e.g. '::warning::...')
+            # prevent runner interpreting these
+            Invoke-ActionNoCommandsBlock -GenerateToken {
+              # this won't result in any workflow commands
+              Write-Host $someData
+              Write-ActionError "not interpreted as error"
+            }
+            # commands work again
+
+            # set env:BE_AWESOME=always here and for the following steps
+            Set-ActionVariable BE_AWESOME always
+
+            # add our custom tool to PATH for the following steps:
+            $toolPath = Resolve-Path ./tools/bin
+            Add-ActionPath $toolPath
+
+            # warn if it's too late for people to work in Greenwich ;)
+            if ([datetime]::UtcNow.Hour -ge 22) {
+              Write-ActionWarning "It's time to go to bed. Don't write code late at night! ⚠"
+            }
+      
+
         
     
     - name: Restore dependencies
