@@ -16,17 +16,17 @@ namespace ManagedCode.Repository.Tests
     {
         public const string ConnecntionString = "test.db";
 
+        private static string GetTempDbName()
+        {
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnecntionString);
+        }
+        
         private readonly IRepository<string, LiteDbItem> _repository =
-            new LiteDbRepository<string, LiteDbItem>(Path.Combine(Environment.CurrentDirectory, ConnecntionString));
+            new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
 
         public LiteDbRepositoryTests()
         {
             _repository.InitializeAsync().Wait();
-            if (File.Exists(Path.Combine(Environment.CurrentDirectory, ConnecntionString)))
-            {
-                File.Delete(Path.Combine(Environment.CurrentDirectory, "test.db"));
-                File.Delete(Path.Combine(Environment.CurrentDirectory, "test-log.db"));
-            }
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, LiteDbItem>(Path.Combine(Environment.CurrentDirectory, ConnecntionString));
+            var localRepository = new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
 
             localRepository.IsInitialized.Should().BeFalse();
 

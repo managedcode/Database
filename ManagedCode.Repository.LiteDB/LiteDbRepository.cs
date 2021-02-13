@@ -10,17 +10,21 @@ namespace ManagedCode.Repository.LiteDB
 {
     public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IRepositoryItem<TId>
     {
-        private readonly string _connectionString;
+        private readonly LiteDatabase _database;
 
         public LiteDbRepository(string connectionString)
         {
-            _connectionString = connectionString;
+            _database = new LiteDatabase(connectionString);
+        }
+        
+        public LiteDbRepository(LiteDatabase database)
+        {
+            _database = database;
         }
 
         private ILiteCollection<TItem> GetDatabase()
         {
-            var db = new LiteDatabase(_connectionString);
-            return db.GetCollection<TItem>();
+            return _database.GetCollection<TItem>();
         }
 
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
