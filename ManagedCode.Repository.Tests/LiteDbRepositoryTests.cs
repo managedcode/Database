@@ -14,8 +14,15 @@ namespace ManagedCode.Repository.Tests
 {
     public class LiteDbRepositoryTests
     {
+        public const string ConnecntionString = "test.db";
+
+        private static string GetTempDbName()
+        {
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnecntionString);
+        }
+        
         private readonly IRepository<string, LiteDbItem> _repository =
-            new LiteDbRepository<string, LiteDbItem>(Path.GetTempFileName());
+            new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
 
         public LiteDbRepositoryTests()
         {
@@ -34,7 +41,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, LiteDbItem>(Path.GetTempFileName());
+            var localRepository = new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
 
             localRepository.IsInitialized.Should().BeFalse();
 
