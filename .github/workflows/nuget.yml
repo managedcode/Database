@@ -1,4 +1,4 @@
-name: .NET
+name: NuGET
 
 on:
   push:
