@@ -25,7 +25,7 @@ namespace ManagedCode.Repository.Core
 
         #region Insert
 
-        public Task<bool> InsertAsync(TItem item, CancellationToken token = default)
+        public Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(item != null);
@@ -39,7 +39,7 @@ namespace ManagedCode.Repository.Core
             return InsertAsyncInternal(items, token);
         }
 
-        protected abstract Task<bool> InsertAsyncInternal(TItem item, CancellationToken token = default);
+        protected abstract Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default);
 
         protected abstract Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default);
 

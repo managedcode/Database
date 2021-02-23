@@ -196,8 +196,8 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertFirstItem.Should().BeTrue();
-            insertSecondItem.Should().BeFalse();
+            insertFirstItem.Should().NotBeNull();
+            insertSecondItem.Should().BeNull();
         }
 
         [Fact]
@@ -325,7 +325,7 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             updateFirstItem.Should().BeTrue();
             updateSecondItem.Should().BeFalse();
         }
@@ -439,7 +439,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var deleteOneTimer = await _repository.DeleteAsync(1);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneTimer.Should().BeTrue();
         }
 
@@ -455,7 +455,7 @@ namespace ManagedCode.Repository.Tests
             var insertOneItem = await _repository.InsertAsync(item);
 
             var deleteOneTimer = await _repository.DeleteAsync(item);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneTimer.Should().BeTrue();
         }
 
@@ -557,7 +557,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var item = await _repository.GetAsync(2);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             item.Should().BeNull();
         }
 
@@ -571,7 +571,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var item = await _repository.GetAsync(1);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             item.Should().NotBeNull();
         }
 
@@ -621,7 +621,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var count = await _repository.CountAsync();
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             count.Should().Be(1);
         }
 

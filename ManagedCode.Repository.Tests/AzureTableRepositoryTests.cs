@@ -234,8 +234,8 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertFirstItem.Should().BeTrue();
-            insertSecondItem.Should().BeFalse();
+            insertFirstItem.Should().NotBeNull();
+            insertSecondItem.Should().BeNull();
         }
 
         [Fact(Skip = "Emulator issue")]
@@ -385,7 +385,7 @@ namespace ManagedCode.Repository.Tests
                 Data = "test"
             });
 
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             updateFirstItem.Should().BeTrue();
             updateSecondItem.Should().BeFalse();
         }
@@ -632,7 +632,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var item = await _repository.GetAsync(new AzureTableId("GetByWrongId", "wrong"));
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             item.Should().BeNull();
         }
 
