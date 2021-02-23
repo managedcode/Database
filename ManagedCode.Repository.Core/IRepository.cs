@@ -12,7 +12,7 @@ namespace ManagedCode.Repository.Core
 
         Task InitializeAsync(CancellationToken token = default);
 
-        Task<bool> InsertAsync(TItem item, CancellationToken token = default);
+        Task<TItem> InsertAsync(TItem item, CancellationToken token = default);
         Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
         Task<bool> UpdateAsync(TItem item, CancellationToken token = default);

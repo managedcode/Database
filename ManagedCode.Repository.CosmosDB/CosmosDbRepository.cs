@@ -43,17 +43,17 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region Insert
 
-        protected override async Task<bool> InsertAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
                 var container = await _cosmosDbAdapter.GetContainer();
                 var result = await container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
-                return result != null;
+                return result.Resource;
             }
             catch (Exception e)
             {
-                return false;
+                return null;
             }
         }
 

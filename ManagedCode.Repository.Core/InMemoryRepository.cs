@@ -19,18 +19,18 @@ namespace ManagedCode.Repository.Core
 
         #region Insert
 
-        protected override Task<bool> InsertAsyncInternal(TItem item, CancellationToken token = default)
+        protected override Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
                 if (!_storage.TryGetValue(item.Id, out var _))
                 {
                     _storage.Add(item.Id, item);
-                    return Task.FromResult(true);
+                    return Task.FromResult(item);
                 }
             }
 
-            return Task.FromResult(false);
+            return Task.FromResult<TItem>(default);
         }
 
         protected override Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)

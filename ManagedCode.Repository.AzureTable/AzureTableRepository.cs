@@ -33,16 +33,16 @@ namespace ManagedCode.Repository.AzureTable
 
         #region Insert
 
-        protected override async Task<bool> InsertAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
                 var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
-                return result != null;
+                return result as TItem;
             }
             catch (Exception e)
             {
-                return false;
+                return null;
             }
         }
 
