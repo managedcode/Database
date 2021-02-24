@@ -23,15 +23,36 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       
-    - name: Publish NuGet
-      # You may pin to the exact commit or the version.
-      # uses: brandedoutcast/publish-nuget@c12b8546b67672ee38ac87bea491ac94a587f7cc
+    - name: Publish Repository.Core to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
-        # Filepath of the project to be packaged, relative to root of repository
         PROJECT_FILE_PATH: ManagedCode.Repository.Core/ManagedCode.Repository.Core.csproj
-        # NuGet package id, used for version detection & defaults to project name
-        # Regex pattern to extract version info in a capturing group
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        # API key to authenticate with NuGet server
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+        
+    - name: Publish Repository.Core to NuGet
+      uses: brandedoutcast/publish-nuget@v2.5.5
+      with:
+        PROJECT_FILE_PATH: ManagedCode.Repository.AzureTable/ManagedCode.Repository.AzureTable.csproj
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
+        
+    - name: Publish Repository.Core to NuGet
+      uses: brandedoutcast/publish-nuget@v2.5.5
+      with:
+        PROJECT_FILE_PATH: ManagedCode.Repository.CosmosDB/ManagedCode.Repository.CosmosDB.csproj
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}   
+        
+    - name: Publish Repository.Core to NuGet
+      uses: brandedoutcast/publish-nuget@v2.5.5
+      with:
+        PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}        
+        
+        
+        
+        
+        
+        
