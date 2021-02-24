@@ -4,7 +4,7 @@ using ManagedCode.Repository.LiteDB;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class LiteDbItem : BaseLiteDbItem<string>
+    public class LiteDbItem : LiteDbItem<string>
     {
         public LiteDbItem()
         {

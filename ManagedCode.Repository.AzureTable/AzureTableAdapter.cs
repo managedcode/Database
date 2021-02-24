@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
@@ -141,7 +142,7 @@ namespace ManagedCode.Repository.AzureTable
             Expression<Func<T, object>> selectExpression = null,
             int? take = null,
             int? skip = null,
-            CancellationToken cancellationToken = default)
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
             where T : ITableEntity, new()
         {
             string filterString = null;

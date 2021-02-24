@@ -5,16 +5,18 @@ using Newtonsoft.Json;
 
 namespace ManagedCode.Repository.CosmosDB
 {
-    public class CosmosDbRepositoryItem : IRepositoryItem<string>
+    public class CosmosDbItem : IItem<string>
     {
-        public CosmosDbRepositoryItem()
+        public CosmosDbItem()
         {
             Id = Guid.NewGuid().ToString();
+            Type = GetType().Name;
         }
 
-        public CosmosDbRepositoryItem(string id)
+        public CosmosDbItem(string id)
         {
             Id = id;
+            Type = GetType().Name;
         }
 
         [JsonProperty("type")] public string Type { get; set; }

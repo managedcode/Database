@@ -9,7 +9,7 @@ using ManagedCode.Repository.Core;
 
 namespace ManagedCode.Repository.LiteDB
 {
-    public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IRepositoryItem<TId>
+    public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>
     {
         private readonly LiteDatabase _database;
 

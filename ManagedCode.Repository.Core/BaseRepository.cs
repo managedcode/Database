@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Repository.Core
 {
-    public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where TItem : IRepositoryItem<TId>
+    public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where TItem : IItem<TId>
     {
         public bool IsInitialized { get; protected set; }
 

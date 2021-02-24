@@ -7,6 +7,7 @@ using ManagedCode.Repository.Core;
 using ManagedCode.Repository.CosmosDB;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
+using CosmosDbItem = ManagedCode.Repository.Tests.Common.CosmosDbItem;
 
 namespace ManagedCode.Repository.Tests
 {
@@ -15,7 +16,7 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
 
-        private readonly IRepository<string, CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
+        private readonly ICosmosDbRepository<CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
 
         public CosmosDbRepositoryTests()
         {
