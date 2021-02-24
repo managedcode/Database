@@ -31,5 +31,7 @@ jobs:
         # Filepath of the project to be packaged, relative to root of repository
         PROJECT_FILE_PATH: ManagedCode.Repository.Core/ManagedCode.Repository.Core.csproj
         # NuGet package id, used for version detection & defaults to project name
+        # Regex pattern to extract version info in a capturing group
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         # API key to authenticate with NuGet server
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
