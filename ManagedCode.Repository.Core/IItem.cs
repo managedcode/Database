@@ -1,6 +1,6 @@
 namespace ManagedCode.Repository.Core
 {
-    public interface IRepositoryItem<TId>
+    public interface IItem<TId>
     {
         TId Id { get; set; }
     }

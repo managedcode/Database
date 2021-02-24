@@ -7,6 +7,7 @@ using ManagedCode.Repository.AzureTable;
 using ManagedCode.Repository.Core;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
+using AzureTableItem = ManagedCode.Repository.Tests.Common.AzureTableItem;
 
 namespace ManagedCode.Repository.Tests
 {
@@ -15,7 +16,7 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "DefaultEndpointsProtocol=http;AccountName=localhost;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;TableEndpoint=http://localhost:8902/;";
 
-        private readonly IRepository<AzureTableId, AzureTableItem> _repository = new AzureTableRepository<AzureTableId, AzureTableItem>(ConnecntionString);
+        private readonly IAzureTableRepository<AzureTableItem> _repository = new AzureTableRepository<AzureTableItem>(ConnecntionString);
 
         public AzureTableRepositoryTests()
         {
@@ -35,7 +36,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new AzureTableRepository<AzureTableId, AzureTableItem>(ConnecntionString);
+            var localRepository = new AzureTableRepository<AzureTableItem>(ConnecntionString);
 
             localRepository.IsInitialized.Should().BeFalse();
 
@@ -505,7 +506,7 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            var deleteOneTimer = await _repository.DeleteAsync(new AzureTableId("DeleteOneItemById", "rk"));
+            var deleteOneTimer = await _repository.DeleteAsync(new TableId("DeleteOneItemById", "rk"));
             insertOneItem.Should().BeTrue();
             deleteOneTimer.Should().BeTrue();
         }
@@ -566,7 +567,7 @@ namespace ManagedCode.Repository.Tests
 
             var items = await _repository.InsertOrUpdateAsync(list);
             var ids = Enumerable.Range(0, 150);
-            var deletedItems = await _repository.DeleteAsync(ids.Select(s => new AzureTableId("DeleteListOfItemsById", s.ToString())));
+            var deletedItems = await _repository.DeleteAsync(ids.Select(s => new TableId("DeleteListOfItemsById", s.ToString())));
 
             deletedItems.Should().Be(150);
             items.Should().Be(150);
@@ -631,7 +632,7 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            var item = await _repository.GetAsync(new AzureTableId("GetByWrongId", "wrong"));
+            var item = await _repository.GetAsync(new TableId("GetByWrongId", "wrong"));
             insertOneItem.Should().NotBeNull();
             item.Should().BeNull();
         }
@@ -652,7 +653,7 @@ namespace ManagedCode.Repository.Tests
 
             var insertOneItem = await _repository.InsertOrUpdateAsync(items);
 
-            var item = await _repository.GetAsync(new AzureTableId("GetById", "10"));
+            var item = await _repository.GetAsync(new TableId("GetById", "10"));
             insertOneItem.Should().Be(100);
             item.Should().NotBeNull();
         }

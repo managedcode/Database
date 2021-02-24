@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManagedCode.Repository.Core
 {
-    public interface IRepository<in TId, TItem> where TItem : IRepositoryItem<TId>
+    public interface IRepository<in TId, TItem> where TItem : IItem<TId>
     {
         bool IsInitialized { get; }
 

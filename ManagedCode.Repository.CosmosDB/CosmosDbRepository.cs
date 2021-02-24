@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
@@ -10,10 +11,12 @@ using Microsoft.Azure.Cosmos.Linq;
 
 namespace ManagedCode.Repository.CosmosDB
 {
-    public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>
-        where TItem : CosmosDbRepositoryItem, IRepositoryItem<string>, new()
+    public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosDbRepository<TItem>
+        where TItem : CosmosDbItem, IItem<string>, new()
     {
         private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
+        private bool _splitByType = true;
+        
 
         public CosmosDbRepository(string connectionString)
         {
@@ -35,6 +38,14 @@ namespace ManagedCode.Repository.CosmosDB
             _cosmosDbAdapter = new CosmosDbAdapter<TItem>(connectionString, cosmosClientOptions, databaseName, collectionName);
         }
 
+        private Expression<Func<TItem, bool>> SplitByType()
+        {
+            if (_splitByType)
+                return w => w.Type == typeof(TItem).Name;
+
+            return w => true;
+        }
+        
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             IsInitialized = true;
@@ -349,6 +360,7 @@ namespace ManagedCode.Repository.CosmosDB
                 var count = 0;
                 var container = await _cosmosDbAdapter.GetContainer();
                 var feedIterator = container.GetItemLinqQueryable<TItem>()
+                    .Where(SplitByType())
                     .Where(predicate)
                     .ToFeedIterator();
 
@@ -431,6 +443,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var feedIterator = container.GetItemLinqQueryable<TItem>()
+                .Where(SplitByType())
                 .Where(predicate)
                 .ToFeedIterator();
             using (var iterator = feedIterator)
@@ -456,10 +469,10 @@ namespace ManagedCode.Repository.CosmosDB
         protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(predicate);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
 
             if (skip > 0)
             {
@@ -491,10 +504,10 @@ namespace ManagedCode.Repository.CosmosDB
             Order orderType,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(predicate);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
 
             if (orderType == Order.By)
             {
@@ -537,10 +550,10 @@ namespace ManagedCode.Repository.CosmosDB
             Order thenType,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(predicate);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
 
             IOrderedQueryable<TItem> ordered;
             if (orderType == Order.By)
@@ -593,13 +606,13 @@ namespace ManagedCode.Repository.CosmosDB
         protected override async Task<uint> CountAsyncInternal(CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().CountAsync(token));
+            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token));
         }
 
         protected override async Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().Where(predicate).CountAsync(token));
+            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate).CountAsync(token));
         }
 
         #endregion

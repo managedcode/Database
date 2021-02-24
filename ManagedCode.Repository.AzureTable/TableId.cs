@@ -2,16 +2,16 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Repository.AzureTable
 {
-    public class AzureTableId
+    public class TableId
     {
         private readonly ITableEntity _entity;
 
-        public AzureTableId(ITableEntity entity)
+        public TableId(ITableEntity entity)
         {
             _entity = entity;
         }
 
-        public AzureTableId(string partitionKey, string rowKey)
+        public TableId(string partitionKey, string rowKey)
         {
             _entity = new TableEntity(partitionKey, rowKey);
         }

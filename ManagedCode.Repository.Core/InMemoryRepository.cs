@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManagedCode.Repository.Core
 {
-    public class InMemoryRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : IRepositoryItem<TId>
+    public class InMemoryRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : IItem<TId>
     {
         private readonly Dictionary<TId, TItem> _storage = new();
 
@@ -235,7 +236,7 @@ namespace ManagedCode.Repository.Core
         protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
@@ -268,7 +269,7 @@ namespace ManagedCode.Repository.Core
             Order orderType,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
@@ -306,7 +307,7 @@ namespace ManagedCode.Repository.Core
             Order thenType,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             List<TItem> list;
