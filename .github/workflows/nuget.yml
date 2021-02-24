@@ -30,21 +30,21 @@ jobs:
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
         
-    - name: Publish Repository.Core to NuGet
+    - name: Publish Repository.AzureTable to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.AzureTable/ManagedCode.Repository.AzureTable.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
         
-    - name: Publish Repository.Core to NuGet
+    - name: Publish Repository.CosmosDB to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.CosmosDB/ManagedCode.Repository.CosmosDB.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}   
         
-    - name: Publish Repository.Core to NuGet
+    - name: Publish Repository.LiteDB to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
