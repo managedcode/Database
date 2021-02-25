@@ -1,26 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Repository.Core;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.LiteDB
 {
     public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>
     {
         private readonly LiteDatabase _database;
+        private readonly ILogger _logger;
 
-        public LiteDbRepository(string connectionString)
+        public LiteDbRepository(ILogger logger, [NotNull] LiteDbRepositoryOptions options)
         {
-            _database = new LiteDatabase(connectionString);
-        }
-        
-        public LiteDbRepository(LiteDatabase database)
-        {
-            _database = database;
+            _logger = logger;
+            if (options.Database != null)
+            {
+                _database = options.Database;
+            }
+            else
+            {
+                _database = new LiteDatabase(options.ConnectionString);
+            }
         }
 
         private ILiteCollection<TItem> GetDatabase()
@@ -41,7 +47,7 @@ namespace ManagedCode.Repository.LiteDB
             try
             {
                 await Task.Yield();
-                var v =  GetDatabase().Insert(item);
+                var v = GetDatabase().Insert(item);
                 return GetDatabase().FindById(v);
             }
             catch (Exception e)
@@ -184,9 +190,11 @@ namespace ManagedCode.Repository.LiteDB
             var query = GetDatabase().Find(predicate, skip, take ?? 2147483647);
             foreach (var item in query)
             {
-                if(token.IsCancellationRequested)
+                if (token.IsCancellationRequested)
+                {
                     break;
-                
+                }
+
                 yield return item;
             }
         }
@@ -214,9 +222,11 @@ namespace ManagedCode.Repository.LiteDB
             {
                 foreach (var item in query.Limit(take.Value).ToEnumerable())
                 {
-                    if(token.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
+                    {
                         break;
-                    
+                    }
+
                     yield return item;
                 }
             }
@@ -224,9 +234,11 @@ namespace ManagedCode.Repository.LiteDB
             {
                 foreach (var item in query.ToEnumerable())
                 {
-                    if(token.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
+                    {
                         break;
-                    
+                    }
+
                     yield return item;
                 }
             }

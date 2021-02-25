@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.Core;
-using ManagedCode.Repository.CosmosDB;
 using ManagedCode.Repository.LiteDB;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
@@ -16,17 +15,20 @@ namespace ManagedCode.Repository.Tests
     {
         public const string ConnecntionString = "test.db";
 
-        private static string GetTempDbName()
-        {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnecntionString);
-        }
-        
         private readonly IRepository<string, LiteDbItem> _repository =
-            new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
+            new LiteDbRepository<string, LiteDbItem>(null, new LiteDbRepositoryOptions
+            {
+                ConnectionString = GetTempDbName()
+            });
 
         public LiteDbRepositoryTests()
         {
             _repository.InitializeAsync().Wait();
+        }
+
+        private static string GetTempDbName()
+        {
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnecntionString);
         }
 
         [Fact]
@@ -41,7 +43,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, LiteDbItem>(GetTempDbName());
+            var localRepository = new LiteDbRepository<string, LiteDbItem>(null, new LiteDbRepositoryOptions
+            {
+                ConnectionString = GetTempDbName()
+            });
 
             localRepository.IsInitialized.Should().BeFalse();
 

@@ -1,5 +1,4 @@
 using System;
-using ManagedCode.Repository.CosmosDB;
 using ManagedCode.Repository.LiteDB;
 
 namespace ManagedCode.Repository.Tests.Common

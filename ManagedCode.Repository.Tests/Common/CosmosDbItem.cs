@@ -1,5 +1,3 @@
-using ManagedCode.Repository.CosmosDB;
-
 namespace ManagedCode.Repository.Tests.Common
 {
     public class CosmosDbItem : CosmosDB.CosmosDbItem

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.AzureTable;
 using ManagedCode.Repository.Core;
-using ManagedCode.Repository.Tests.Common;
 using Xunit;
 using AzureTableItem = ManagedCode.Repository.Tests.Common.AzureTableItem;
 
@@ -16,7 +15,9 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "DefaultEndpointsProtocol=http;AccountName=localhost;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;TableEndpoint=http://localhost:8902/;";
 
-        private readonly IAzureTableRepository<AzureTableItem> _repository = new AzureTableRepository<AzureTableItem>(ConnecntionString);
+        private readonly AzureTable.IAzureTableRepository<AzureTableItem> _repository = new AzureTableRepository<AzureTableItem>(null,
+            new AzureTableRepositoryOptions
+                {ConnectionString = ConnecntionString});
 
         public AzureTableRepositoryTests()
         {
@@ -36,7 +37,8 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new AzureTableRepository<AzureTableItem>(ConnecntionString);
+            var localRepository = new AzureTableRepository<AzureTableItem>(null, new AzureTableRepositoryOptions
+                {ConnectionString = ConnecntionString});
 
             localRepository.IsInitialized.Should().BeFalse();
 

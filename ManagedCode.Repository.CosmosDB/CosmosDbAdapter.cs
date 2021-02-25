@@ -13,17 +13,10 @@ namespace ManagedCode.Repository.CosmosDB
         private readonly object _sync = new();
         private bool _tableClientInitialized;
 
-        public CosmosDbAdapter(string connectionString, string databaseName = null, string collectionName = null)
+        public CosmosDbAdapter(string connectionString, CosmosClientOptions cosmosClientOptions, string databaseName, string collectionName)
         {
-            _databaseName = databaseName ?? "database";
-            _collectionName = collectionName ?? "containerTest";
-            _cosmosClient = new CosmosClient(connectionString);
-        }
-
-        public CosmosDbAdapter(string connectionString, CosmosClientOptions cosmosClientOptions, string databaseName = null, string collectionName = null)
-        {
-            _databaseName = databaseName ?? "database";
-            _collectionName = collectionName ?? "containerTest";
+            _databaseName = string.IsNullOrEmpty(databaseName) ? "database" : databaseName;
+            _collectionName = string.IsNullOrEmpty(collectionName) ? "container" : collectionName;
             _cosmosClient = new CosmosClient(connectionString, cosmosClientOptions);
         }
 

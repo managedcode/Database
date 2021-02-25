@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.CosmosDB
 {
@@ -15,37 +16,26 @@ namespace ManagedCode.Repository.CosmosDB
         where TItem : CosmosDbItem, IItem<string>, new()
     {
         private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
-        private bool _splitByType = true;
-        
+        private readonly ILogger _logger;
+        private readonly bool _splitByType;
 
-        public CosmosDbRepository(string connectionString)
+        public CosmosDbRepository(ILogger logger, [NotNull] CosmosDbRepositoryOptions options)
         {
-            _cosmosDbAdapter = new CosmosDbAdapter<TItem>(connectionString);
-        }
-
-        public CosmosDbRepository(string connectionString, string databaseName, string collectionName)
-        {
-            _cosmosDbAdapter = new CosmosDbAdapter<TItem>(connectionString, databaseName, collectionName);
-        }
-
-        public CosmosDbRepository(string connectionString, CosmosClientOptions cosmosClientOptions)
-        {
-            _cosmosDbAdapter = new CosmosDbAdapter<TItem>(connectionString, cosmosClientOptions);
-        }
-
-        public CosmosDbRepository(string connectionString, CosmosClientOptions cosmosClientOptions, string databaseName, string collectionName)
-        {
-            _cosmosDbAdapter = new CosmosDbAdapter<TItem>(connectionString, cosmosClientOptions, databaseName, collectionName);
+            _logger = logger;
+            _splitByType = options.SplitByType;
+            _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
         }
 
         private Expression<Func<TItem, bool>> SplitByType()
         {
             if (_splitByType)
+            {
                 return w => w.Type == typeof(TItem).Name;
+            }
 
             return w => true;
         }
-        
+
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             IsInitialized = true;

@@ -19,10 +19,12 @@ namespace ManagedCode.Repository.CosmosDB
             Type = GetType().Name;
         }
 
-        [JsonProperty("type")] public string Type { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
 
         public virtual PartitionKey PartitionKey => new(Id);
 
-        [JsonProperty("id")] public string Id { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
     }
 }

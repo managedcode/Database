@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.Core;
 using ManagedCode.Repository.CosmosDB;
-using ManagedCode.Repository.Tests.Common;
 using Xunit;
 using CosmosDbItem = ManagedCode.Repository.Tests.Common.CosmosDbItem;
 
@@ -16,7 +15,10 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
 
-        private readonly ICosmosDbRepository<CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
+        private readonly CosmosDB.ICosmosDbRepository<CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(null, new CosmosDbRepositoryOptions
+        {
+            ConnectionString = ConnecntionString
+        });
 
         public CosmosDbRepositoryTests()
         {
@@ -36,7 +38,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new CosmosDbRepository<CosmosDbItem>(ConnecntionString);
+            var localRepository = new CosmosDbRepository<CosmosDbItem>(null, new CosmosDbRepositoryOptions
+            {
+                ConnectionString = ConnecntionString
+            });
 
             localRepository.IsInitialized.Should().BeFalse();
 
