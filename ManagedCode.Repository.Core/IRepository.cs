@@ -30,6 +30,22 @@ namespace ManagedCode.Repository.Core
 
         Task<TItem> GetAsync(TId id, CancellationToken token = default);
         Task<TItem> GetAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+        
+        IAsyncEnumerable<TItem> GetAllAsync(
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default);
+        
+        IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default);
+        
+        IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default);
 
         IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate, int? take = null, int skip = 0, CancellationToken token = default);
 

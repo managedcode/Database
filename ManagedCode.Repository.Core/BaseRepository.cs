@@ -162,8 +162,34 @@ namespace ManagedCode.Repository.Core
             return GetAsyncInternal(predicate, token);
         }
 
+        public IAsyncEnumerable<TItem> GetAllAsync(int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            return GetAllAsyncInternal(take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy, int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            return GetAllAsyncInternal(orderBy, Order.By, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy, Order orderType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            return GetAllAsyncInternal(orderBy, orderType, take, skip, token);
+        }
+
         protected abstract Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default);
         protected abstract Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+
+        protected abstract IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default);
+        
+        protected abstract IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default);
 
         #endregion
 
