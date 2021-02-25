@@ -10,6 +10,7 @@ namespace ManagedCode.Repository.AzureTable
             Id = new TableId(this);
         }
 
-        [IgnoreProperty] public TableId Id { get; set; }
+        [IgnoreProperty]
+        public TableId Id { get; set; }
     }
 }

@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.16.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

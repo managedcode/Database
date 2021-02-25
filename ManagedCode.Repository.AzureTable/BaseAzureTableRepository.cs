@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.AzureTable
 {
@@ -13,16 +14,21 @@ namespace ManagedCode.Repository.AzureTable
         where TId : TableId
         where TItem : class, IItem<TId>, ITableEntity, new()
     {
+        private readonly ILogger _logger;
         private readonly AzureTableAdapter<TItem> _tableAdapter;
 
-        public BaseAzureTableRepository(string connectionString)
+        public BaseAzureTableRepository(ILogger logger, AzureTableRepositoryOptions options)
         {
-            _tableAdapter = new AzureTableAdapter<TItem>(connectionString);
-        }
+            _logger = logger;
 
-        public BaseAzureTableRepository(StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
-        {
-            _tableAdapter = new AzureTableAdapter<TItem>(tableStorageCredentials, tableStorageUri);
+            if (string.IsNullOrEmpty(options.ConnectionString))
+            {
+                _tableAdapter = new AzureTableAdapter<TItem>(options.TableStorageCredentials, options.TableStorageUri);
+            }
+            else
+            {
+                _tableAdapter = new AzureTableAdapter<TItem>(options.ConnectionString);
+            }
         }
 
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
