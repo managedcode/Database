@@ -229,6 +229,55 @@ namespace ManagedCode.Repository.Core
             }
         }
 
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            await Task.Yield();
+            lock (_storage)
+            {
+                var enumerable = _storage.Values.Skip(skip);
+
+                if (take.HasValue)
+                {
+                    enumerable = enumerable.Take(take.Value);
+                }
+                
+                foreach (var item in enumerable)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            await Task.Yield();
+            lock (_storage)
+            {
+
+                IEnumerable<TItem> enumerable;
+                if (orderType == Order.By)
+                {
+                    enumerable = _storage.Values.OrderBy(orderBy.Compile());
+                }
+                else
+                {
+                    enumerable = _storage.Values.OrderByDescending(orderBy.Compile());
+                }
+                    
+                enumerable = enumerable.Skip(0);
+
+                if (take.HasValue)
+                {
+                    enumerable = enumerable.Take(take.Value);
+                }
+                
+                foreach (var item in enumerable)
+                {
+                    yield return item;
+                }
+            }
+        }
+
         #endregion
 
         #region Find

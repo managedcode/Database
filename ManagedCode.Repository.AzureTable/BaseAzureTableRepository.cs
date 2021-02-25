@@ -245,6 +245,16 @@ namespace ManagedCode.Repository.AzureTable
             var item = await _tableAdapter.Query<TItem>(predicate, take: 1, cancellationToken: token).ToListAsync(token);
             return item.FirstOrDefault();
         }
+        
+        protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            return _tableAdapter.Query<TItem>(null, take: take, skip: skip, cancellationToken: token);
+        }
+
+        protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            return _tableAdapter.Query(null, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
+        }
 
         #endregion
 

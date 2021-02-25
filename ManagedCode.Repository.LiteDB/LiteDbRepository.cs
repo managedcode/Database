@@ -176,6 +176,61 @@ namespace ManagedCode.Repository.LiteDB
             await Task.Yield();
             return GetDatabase().FindOne(predicate);
         }
+        
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            await Task.Yield();
+            var query = GetDatabase().Query().Skip(skip).Limit(take ?? 2147483647);
+            foreach (var item in query.ToEnumerable())
+            {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                yield return item;
+            }
+        }
+
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            await Task.Yield();
+            var query = GetDatabase().Query();
+
+            if (orderType == Order.By)
+            {
+                query = query.OrderBy(orderBy);
+            }
+            else
+            {
+                query.OrderByDescending(orderBy);
+            }
+
+            if (take != null)
+            {
+                foreach (var item in query.Limit(take.Value).ToEnumerable())
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    yield return item;
+                }
+            }
+            else
+            {
+                foreach (var item in query.ToEnumerable())
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    yield return item;
+                }
+            }
+        }
 
         #endregion
 

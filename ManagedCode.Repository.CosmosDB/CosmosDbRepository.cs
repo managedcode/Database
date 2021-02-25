@@ -451,6 +451,75 @@ namespace ManagedCode.Repository.CosmosDB
 
             return null;
         }
+        
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, [EnumeratorCancellation] CancellationToken token = default)
+        {
+            var container = await _cosmosDbAdapter.GetContainer();
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            if (skip > 0)
+            {
+                query = query.Skip(skip);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            var feedIterator = query.ToFeedIterator();
+            using (var iterator = feedIterator)
+            {
+                while (iterator.HasMoreResults)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    foreach (var item in await iterator.ReadNextAsync(token))
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
+
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, [EnumeratorCancellation] CancellationToken token = default)
+        {
+            var container = await _cosmosDbAdapter.GetContainer();
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            if (orderType == Order.By)
+            {
+                query = query.OrderBy(orderBy);
+            }
+            else
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+
+            if (skip > 0)
+            {
+                query = query.Skip(skip);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            var feedIterator = query.ToFeedIterator();
+            using (var iterator = feedIterator)
+            {
+                while (iterator.HasMoreResults)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    foreach (var item in await iterator.ReadNextAsync(token))
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
 
         #endregion
 
