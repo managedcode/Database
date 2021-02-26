@@ -8,24 +8,28 @@ using System.Threading.Tasks;
 using Humanizer;
 using ManagedCode.Repository.Core;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.AzureTable
 {
     public class AzureTableAdapter<T> where T : class, ITableEntity, new()
     {
+        private readonly ILogger _logger;
         private readonly bool _allowTableCreation = true;
         private readonly CloudStorageAccount _cloudStorageAccount;
         private readonly object _sync = new();
         private CloudTableClient _cloudTableClient;
         private bool _tableClientInitialized;
 
-        public AzureTableAdapter(string connectionString)
+        public AzureTableAdapter(ILogger logger, string connectionString)
         {
+            _logger = logger;
             _cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
         }
 
-        public AzureTableAdapter(StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
+        public AzureTableAdapter(ILogger logger, StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
         {
+            _logger = logger;
             var cloudStorageAccount = new CloudStorageAccount(tableStorageCredentials, tableStorageUri);
             _cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
         }

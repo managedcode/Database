@@ -11,7 +11,7 @@ namespace ManagedCode.Repository.Tests
 {
     public class InMemoryRepositoryTests
     {
-        private readonly IRepository<int, InMemoryItem> _repository = new InMemoryRepository<int, InMemoryItem>();
+        private readonly IRepository<int, InMemoryItem> _repository = new InMemoryRepository<int, InMemoryItem>(null);
 
         public InMemoryRepositoryTests()
         {
@@ -30,7 +30,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            IRepository<int, InMemoryItem> localRepository = new InMemoryRepository<int, InMemoryItem>();
+            IRepository<int, InMemoryItem> localRepository = new InMemoryRepository<int, InMemoryItem>(null);
 
             localRepository.IsInitialized.Should().BeFalse();
 

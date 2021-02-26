@@ -4,11 +4,19 @@ using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.Core
 {
     public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where TItem : IItem<TId>
     {
+        protected readonly ILogger Logger;
+
+        protected BaseRepository(ILogger logger)
+        {
+            Logger = logger;
+        }
+        
         public bool IsInitialized { get; protected set; }
 
         public Task InitializeAsync(CancellationToken token = default)
@@ -385,12 +393,19 @@ namespace ManagedCode.Repository.Core
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(predicate != null);
-            return CountAsyncInternal(predicate, token);
+            return CountAsyncInternal(new []{predicate}, token);
+        }
+        
+        public Task<int> CountAsync(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            return CountAsyncInternal(predicates, token);
         }
 
         protected abstract Task<int> CountAsyncInternal(CancellationToken token = default);
 
-        protected abstract Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+        protected abstract Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default);
 
         #endregion
     }
