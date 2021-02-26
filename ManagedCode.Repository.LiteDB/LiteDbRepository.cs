@@ -73,10 +73,15 @@ namespace ManagedCode.Repository.LiteDB
 
         #region InsertOrUpdate
 
-        protected override async Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Upsert(item);
+            if (GetDatabase().Upsert(item))
+            {
+                return GetDatabase().FindById(new BsonValue(item.Id));
+            }
+
+            return default;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
@@ -89,10 +94,15 @@ namespace ManagedCode.Repository.LiteDB
 
         #region Update
 
-        protected override async Task<bool> UpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Update(item);
+            if (GetDatabase().Update(item))
+            {
+                return GetDatabase().FindById(new BsonValue(item.Id));
+            }
+
+            return default;
         }
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
@@ -349,16 +359,16 @@ namespace ManagedCode.Repository.LiteDB
 
         #region Count
 
-        protected override async Task<uint> CountAsyncInternal(CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
             await Task.Yield();
-            return (uint) GetDatabase().Count();
+            return GetDatabase().Count();
         }
 
-        protected override async Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             await Task.Yield();
-            return (uint) GetDatabase().Count(predicate);
+            return GetDatabase().Count(predicate);
         }
 
         #endregion

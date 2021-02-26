@@ -15,10 +15,10 @@ namespace ManagedCode.Repository.Core
         Task<TItem> InsertAsync(TItem item, CancellationToken token = default);
         Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
-        Task<bool> UpdateAsync(TItem item, CancellationToken token = default);
+        Task<TItem> UpdateAsync(TItem item, CancellationToken token = default);
         Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
-        Task<bool> InsertOrUpdateAsync(TItem item, CancellationToken token = default);
+        Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default);
         Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
         Task<bool> DeleteAsync(TId id, CancellationToken token = default);
@@ -86,7 +86,7 @@ namespace ManagedCode.Repository.Core
             int skip = 0,
             CancellationToken token = default);
 
-        Task<uint> CountAsync(CancellationToken token = default);
-        Task<uint> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+        Task<int> CountAsync(CancellationToken token = default);
+        Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
     }
 }

@@ -305,8 +305,8 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertOneItem.Should().BeTrue();
-            insertTwoItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
+            insertTwoItem.Should().NotBeNull();
         }
 
         [Fact(Skip = "Emulator issue")]
@@ -389,8 +389,8 @@ namespace ManagedCode.Repository.Tests
             });
 
             insertOneItem.Should().NotBeNull();
-            updateFirstItem.Should().BeTrue();
-            updateSecondItem.Should().BeFalse();
+            updateFirstItem.Should().NotBeNull();
+            updateSecondItem.Should().BeNull();
         }
 
         [Fact(Skip = "Emulator issue")]
@@ -509,7 +509,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var deleteOneTimer = await _repository.DeleteAsync(new TableId("DeleteOneItemById", "rk"));
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneTimer.Should().BeTrue();
         }
 
@@ -526,7 +526,7 @@ namespace ManagedCode.Repository.Tests
             var insertOneItem = await _repository.InsertOrUpdateAsync(item);
 
             var deleteOneTimer = await _repository.DeleteAsync(item);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneTimer.Should().BeTrue();
         }
 
@@ -713,7 +713,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var count = await _repository.CountAsync();
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             count.Should().BeGreaterOrEqualTo(1);
         }
 

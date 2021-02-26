@@ -68,16 +68,16 @@ namespace ManagedCode.Repository.AzureTable
 
         #region InsertOrUpdate
 
-        protected override async Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
-                var result = await _tableAdapter.ExecuteAsync(TableOperation.InsertOrReplace(item), token);
-                return result != null;
+                var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.InsertOrReplace(item), token);
+                return result;
             }
             catch (Exception e)
             {
-                return false;
+                return default;
             }
         }
 
@@ -97,7 +97,7 @@ namespace ManagedCode.Repository.AzureTable
 
         #region Update
 
-        protected override async Task<bool> UpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
@@ -106,12 +106,12 @@ namespace ManagedCode.Repository.AzureTable
                     item.ETag = "*";
                 }
 
-                var result = await _tableAdapter.ExecuteAsync(TableOperation.Replace(item), token);
-                return result != null;
+                var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.Replace(item), token);
+                return result;
             }
             catch (Exception e)
             {
-                return false;
+                return default;
             }
         }
 
@@ -294,9 +294,9 @@ namespace ManagedCode.Repository.AzureTable
 
         #region Count
 
-        protected override async Task<uint> CountAsyncInternal(CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
-            uint count = 0;
+            int count = 0;
 
             Expression<Func<TItem, bool>> predicate = item => true;
 
@@ -310,9 +310,9 @@ namespace ManagedCode.Repository.AzureTable
             return count;
         }
 
-        protected override async Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            uint count = 0;
+            int count = 0;
 
             await foreach (var item in _tableAdapter
                 .Query<DynamicTableEntity>(predicate, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),

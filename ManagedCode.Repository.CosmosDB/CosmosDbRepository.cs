@@ -105,17 +105,17 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region InsertOrUpdate
 
-        protected override async Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
                 var container = await _cosmosDbAdapter.GetContainer();
                 var result = await container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
-                return result != null;
+                return result.Resource;
             }
             catch (Exception e)
             {
-                return false;
+                return default;
             }
         }
 
@@ -165,17 +165,17 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region Update
 
-        protected override async Task<bool> UpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             try
             {
                 var container = await _cosmosDbAdapter.GetContainer();
                 var result = await container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
-                return result != null;
+                return result.Resource;
             }
             catch (Exception e)
             {
-                return false;
+                return default;
             }
         }
 
@@ -662,16 +662,16 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region Count
 
-        protected override async Task<uint> CountAsyncInternal(CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token));
+            return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
         }
 
-        protected override async Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            return Convert.ToUInt32(await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate).CountAsync(token));
+            return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate).CountAsync(token);
         }
 
         #endregion

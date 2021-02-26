@@ -253,7 +253,7 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
         }
 
         [Fact]
@@ -326,8 +326,8 @@ namespace ManagedCode.Repository.Tests
             });
 
             insertOneItem.Should().NotBeNull();
-            updateFirstItem.Should().BeTrue();
-            updateSecondItem.Should().BeFalse();
+            updateFirstItem.Should().NotBeNull();
+            updateSecondItem.Should().BeNull();
         }
 
         [Fact]
