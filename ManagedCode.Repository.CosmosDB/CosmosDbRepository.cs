@@ -451,8 +451,10 @@ namespace ManagedCode.Repository.CosmosDB
 
             return null;
         }
-        
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, [EnumeratorCancellation] CancellationToken token = default)
+
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
@@ -482,7 +484,11 @@ namespace ManagedCode.Repository.CosmosDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, [EnumeratorCancellation] CancellationToken token = default)
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
@@ -525,13 +531,18 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             int? take = null,
             int skip = 0,
             [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
 
             if (skip > 0)
             {
@@ -558,7 +569,7 @@ namespace ManagedCode.Repository.CosmosDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -566,7 +577,13 @@ namespace ManagedCode.Repository.CosmosDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
+
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
 
             if (orderType == Order.By)
             {
@@ -602,7 +619,7 @@ namespace ManagedCode.Repository.CosmosDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -612,7 +629,12 @@ namespace ManagedCode.Repository.CosmosDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
 
             IOrderedQueryable<TItem> ordered;
             if (orderType == Order.By)

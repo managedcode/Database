@@ -9,7 +9,7 @@
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-        <PackageVersion>1.0.5</PackageVersion>
+        <PackageVersion>1.0.6</PackageVersion>
         <Description>Base implementation for Repository</Description>
     </PropertyGroup>
 
