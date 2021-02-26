@@ -138,7 +138,7 @@ namespace ManagedCode.Repository.AzureTable
         }
 
         public async IAsyncEnumerable<T> Query<T>(
-            Expression[] whereExpressions,
+            IEnumerable<Expression> whereExpressions,
             Expression<Func<T, object>> orderByExpression = null,
             Order orderType = Order.By,
             Expression<Func<T, object>> thenByExpression = null,

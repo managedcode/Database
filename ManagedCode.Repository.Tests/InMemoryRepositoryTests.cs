@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.Core;
+using ManagedCode.Repository.Core.Extensions;
 using ManagedCode.Repository.Tests.Common;
 using Xunit;
 
@@ -43,6 +44,26 @@ namespace ManagedCode.Repository.Tests
 
         #region Find
 
+        [Fact]
+        public async Task FindByCondition()
+        {
+            for (var i = 1000; i < 1010; i++)
+            {
+                await _repository.InsertAsync(new InMemoryItem
+                {
+                    Id = i,
+                    Data = $"item{i}"
+                });
+            }
+
+            var items = await _repository
+                .FindAsync(_repository
+                    .CreateCondition(x => x.Id != 1001, x=>x.Id != 1002))
+                .ToListAsync();
+            
+            items.Count.Should().Be(8);
+        }
+        
         [Fact]
         public async Task Find()
         {

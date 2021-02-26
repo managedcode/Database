@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCode.Repository.Core.Common;
 using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.Core
@@ -19,14 +21,12 @@ namespace ManagedCode.Repository.Core
         
         public bool IsInitialized { get; protected set; }
 
-        public Task InitializeAsync(CancellationToken token = default)
+        public async Task InitializeAsync(CancellationToken token = default)
         {
             if (IsInitialized == false)
             {
-                return InitializeAsyncInternal(token);
+                await InitializeAsyncInternal(token);
             }
-
-            return Task.CompletedTask;
         }
 
         protected abstract Task InitializeAsyncInternal(CancellationToken token = default);
@@ -281,14 +281,14 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(new[] {predicate}, orderBy, orderType, thenBy, thenType, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates, int? take = null, int skip = 0, CancellationToken token = default)
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, int? take = null, int skip = 0, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(predicates != null);
             return FindAsyncInternal(predicates, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             int? take = null,
             int skip = 0,
@@ -300,7 +300,7 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(predicates, orderBy, Order.By, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -313,7 +313,7 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(predicates, orderBy, orderType, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Expression<Func<TItem, object>> thenBy,
             int? take = null,
@@ -327,7 +327,7 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(predicates, orderBy, Order.By, thenBy, Order.By, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -342,7 +342,7 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(predicates, orderBy, orderType, thenBy, Order.By, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+        public IAsyncEnumerable<TItem> FindAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -358,19 +358,19 @@ namespace ManagedCode.Repository.Core
             return FindAsyncInternal(predicates, orderBy, orderType, thenBy, thenType, take, skip, token);
         }
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             int? take = null,
             int skip = 0,
             CancellationToken token = default);
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
             int skip = 0,
             CancellationToken token = default);
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -396,7 +396,7 @@ namespace ManagedCode.Repository.Core
             return CountAsyncInternal(new []{predicate}, token);
         }
         
-        public Task<int> CountAsync(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
+        public Task<int> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(predicates != null);
@@ -405,7 +405,7 @@ namespace ManagedCode.Repository.Core
 
         protected abstract Task<int> CountAsyncInternal(CancellationToken token = default);
 
-        protected abstract Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default);
+        protected abstract Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
 
         #endregion
     }
