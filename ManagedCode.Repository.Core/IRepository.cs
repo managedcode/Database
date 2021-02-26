@@ -125,5 +125,6 @@ namespace ManagedCode.Repository.Core
 
         Task<int> CountAsync(CancellationToken token = default);
         Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+        Task<int> CountAsync(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default);
     }
 }

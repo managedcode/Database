@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.Core
 {
@@ -12,6 +13,10 @@ namespace ManagedCode.Repository.Core
     {
         private readonly Dictionary<TId, TItem> _storage = new();
 
+        public InMemoryRepository(ILogger logger) : base(logger)
+        {
+        }
+        
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             IsInitialized = true;
@@ -439,15 +444,31 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
         {
             lock (_storage)
             {
-                var count = _storage.Values.Count(predicate.Compile());
+                IEnumerable<TItem> items = null;
+
+                foreach (var predicate in predicates)
+                {
+                    if (items == null)
+                    {
+                        items = _storage.Values.Where(predicate.Compile());
+                    }
+                    else
+                    {
+                        items = items.Where(predicate.Compile());
+                    }
+                }
+
+                var count = items.Count();
                 return Task.FromResult(count);
             }
         }
 
         #endregion
+
+
     }
 }

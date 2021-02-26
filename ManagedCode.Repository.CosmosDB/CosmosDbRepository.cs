@@ -16,12 +16,10 @@ namespace ManagedCode.Repository.CosmosDB
         where TItem : CosmosDbItem, IItem<string>, new()
     {
         private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
-        private readonly ILogger _logger;
         private readonly bool _splitByType;
 
-        public CosmosDbRepository(ILogger logger, [NotNull] CosmosDbRepositoryOptions options)
+        public CosmosDbRepository(ILogger logger, [NotNull] CosmosDbRepositoryOptions options) : base(logger)
         {
-            _logger = logger;
             _splitByType = options.SplitByType;
             _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
         }
@@ -690,10 +688,18 @@ namespace ManagedCode.Repository.CosmosDB
             return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
         }
 
-        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
-            return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).Where(predicate).CountAsync(token);
+            var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+            
+            
+            return await query.CountAsync(token);
         }
 
         #endregion

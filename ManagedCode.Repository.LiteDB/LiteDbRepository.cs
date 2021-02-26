@@ -14,11 +14,9 @@ namespace ManagedCode.Repository.LiteDB
     public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>
     {
         private readonly LiteDatabase _database;
-        private readonly ILogger _logger;
 
-        public LiteDbRepository(ILogger logger, [NotNull] LiteDbRepositoryOptions options)
+        public LiteDbRepository(ILogger logger, [NotNull] LiteDbRepositoryOptions options) : base(logger)
         {
-            _logger = logger;
             if (options.Database != null)
             {
                 _database = options.Database;
@@ -388,10 +386,16 @@ namespace ManagedCode.Repository.LiteDB
             return GetDatabase().Count();
         }
 
-        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Count(predicate);
+            var query = GetDatabase().Query();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+            return query.Count();
         }
 
         #endregion

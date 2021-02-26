@@ -14,20 +14,17 @@ namespace ManagedCode.Repository.AzureTable
         where TId : TableId
         where TItem : class, IItem<TId>, ITableEntity, new()
     {
-        private readonly ILogger _logger;
         private readonly AzureTableAdapter<TItem> _tableAdapter;
 
-        public BaseAzureTableRepository(ILogger logger, AzureTableRepositoryOptions options)
+        public BaseAzureTableRepository(ILogger logger, AzureTableRepositoryOptions options) : base(logger)
         {
-            _logger = logger;
-
             if (string.IsNullOrEmpty(options.ConnectionString))
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(options.TableStorageCredentials, options.TableStorageUri);
+                _tableAdapter = new AzureTableAdapter<TItem>(logger, options.TableStorageCredentials, options.TableStorageUri);
             }
             else
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(options.ConnectionString);
+                _tableAdapter = new AzureTableAdapter<TItem>(logger, options.ConnectionString);
             }
         }
 
@@ -314,12 +311,12 @@ namespace ManagedCode.Repository.AzureTable
             return count;
         }
 
-        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
         {
             var count = 0;
 
             await foreach (var item in _tableAdapter
-                .Query<DynamicTableEntity>(new[] {predicate}, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                .Query<DynamicTableEntity>(predicates, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
                     cancellationToken: token))
             {
                 count++;
