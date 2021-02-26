@@ -229,7 +229,9 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             lock (_storage)
@@ -240,7 +242,7 @@ namespace ManagedCode.Repository.Core
                 {
                     enumerable = enumerable.Take(take.Value);
                 }
-                
+
                 foreach (var item in enumerable)
                 {
                     yield return item;
@@ -248,12 +250,15 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             lock (_storage)
             {
-
                 IEnumerable<TItem> enumerable;
                 if (orderType == Order.By)
                 {
@@ -263,14 +268,14 @@ namespace ManagedCode.Repository.Core
                 {
                     enumerable = _storage.Values.OrderByDescending(orderBy.Compile());
                 }
-                    
+
                 enumerable = enumerable.Skip(0);
 
                 if (take.HasValue)
                 {
                     enumerable = enumerable.Take(take.Value);
                 }
-                
+
                 foreach (var item in enumerable)
                 {
                     yield return item;
@@ -282,7 +287,7 @@ namespace ManagedCode.Repository.Core
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             int? take = null,
             int skip = 0,
             [EnumeratorCancellation] CancellationToken token = default)
@@ -291,7 +296,19 @@ namespace ManagedCode.Repository.Core
             List<TItem> list;
             lock (_storage)
             {
-                var items = _storage.Values.Where(predicate.Compile());
+                IEnumerable<TItem> items = null;
+
+                foreach (var predicate in predicates)
+                {
+                    if (items == null)
+                    {
+                        items = _storage.Values.Where(predicate.Compile());
+                    }
+                    else
+                    {
+                        items = items.Where(predicate.Compile());
+                    }
+                }
 
                 if (skip != 0)
                 {
@@ -313,7 +330,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -324,8 +341,19 @@ namespace ManagedCode.Repository.Core
             List<TItem> list;
             lock (_storage)
             {
-                var items = _storage.Values
-                    .Where(predicate.Compile());
+                IEnumerable<TItem> items = null;
+
+                foreach (var predicate in predicates)
+                {
+                    if (items == null)
+                    {
+                        items = _storage.Values.Where(predicate.Compile());
+                    }
+                    else
+                    {
+                        items = items.Where(predicate.Compile());
+                    }
+                }
 
                 items = orderType == Order.By ? items.OrderBy(orderBy.Compile()) : items.OrderByDescending(orderBy.Compile());
 
@@ -349,7 +377,7 @@ namespace ManagedCode.Repository.Core
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -362,8 +390,19 @@ namespace ManagedCode.Repository.Core
             List<TItem> list;
             lock (_storage)
             {
-                var items = _storage.Values
-                    .Where(predicate.Compile());
+                IEnumerable<TItem> items = null;
+
+                foreach (var predicate in predicates)
+                {
+                    if (items == null)
+                    {
+                        items = _storage.Values.Where(predicate.Compile());
+                    }
+                    else
+                    {
+                        items = items.Where(predicate.Compile());
+                    }
+                }
 
                 var orderedItems = orderType == Order.By ? items.OrderBy(orderBy.Compile()) : items.OrderByDescending(orderBy.Compile());
                 items = thenType == Order.By ? orderedItems.ThenBy(thenBy.Compile()) : orderedItems.ThenByDescending(thenBy.Compile());

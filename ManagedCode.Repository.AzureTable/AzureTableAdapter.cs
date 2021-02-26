@@ -134,7 +134,7 @@ namespace ManagedCode.Repository.AzureTable
         }
 
         public async IAsyncEnumerable<T> Query<T>(
-            Expression whereExpression,
+            Expression[] whereExpressions,
             Expression<Func<T, object>> orderByExpression = null,
             Order orderType = Order.By,
             Expression<Func<T, object>> thenByExpression = null,
@@ -147,10 +147,13 @@ namespace ManagedCode.Repository.AzureTable
         {
             string filterString = null;
 
-            if (whereExpression != null)
+            var whereString = new List<string>();
+            foreach (var expression in whereExpressions)
             {
-                filterString = AzureTableQueryTranslator.TranslateExpression(whereExpression);
+                whereString.Add(AzureTableQueryTranslator.TranslateExpression(expression));
             }
+
+            filterString = string.Join(" and ", whereString);
 
             List<string> selectedProperties = null;
             if (selectExpression != null)

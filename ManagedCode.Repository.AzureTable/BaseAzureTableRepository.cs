@@ -210,7 +210,7 @@ namespace ManagedCode.Repository.AzureTable
             {
                 token.ThrowIfCancellationRequested();
                 var ids = await _tableAdapter
-                    .Query<DynamicTableEntity>(predicate, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                    .Query<DynamicTableEntity>(new[] {predicate}, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
                         take: _tableAdapter.BatchSize)
                     .ToListAsync();
 
@@ -242,16 +242,20 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            var item = await _tableAdapter.Query<TItem>(predicate, take: 1, cancellationToken: token).ToListAsync(token);
+            var item = await _tableAdapter.Query<TItem>(new[] {predicate}, take: 1, cancellationToken: token).ToListAsync(token);
             return item.FirstOrDefault();
         }
-        
+
         protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
         {
             return _tableAdapter.Query<TItem>(null, take: take, skip: skip, cancellationToken: token);
         }
 
-        protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
         {
             return _tableAdapter.Query(null, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
         }
@@ -260,25 +264,25 @@ namespace ManagedCode.Repository.AzureTable
 
         #region Find
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             int? take = null,
             int skip = 0,
             CancellationToken token = default)
         {
-            return _tableAdapter.Query<TItem>(predicate, take: take, skip: skip, cancellationToken: token);
+            return _tableAdapter.Query<TItem>(predicates, take: take, skip: skip, cancellationToken: token);
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
             int skip = 0,
             CancellationToken token = default)
         {
-            return _tableAdapter.Query(predicate, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
+            return _tableAdapter.Query(predicates, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -287,7 +291,7 @@ namespace ManagedCode.Repository.AzureTable
             int skip = 0,
             CancellationToken token = default)
         {
-            return _tableAdapter.Query(predicate, orderBy, orderType, thenBy, thenType, take: take, skip: skip);
+            return _tableAdapter.Query(predicates, orderBy, orderType, thenBy, thenType, take: take, skip: skip);
         }
 
         #endregion
@@ -296,12 +300,12 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
 
             Expression<Func<TItem, bool>> predicate = item => true;
 
             await foreach (var item in _tableAdapter
-                .Query<DynamicTableEntity>(predicate, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                .Query<DynamicTableEntity>(new[] {predicate}, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
                     cancellationToken: token))
             {
                 count++;
@@ -312,10 +316,10 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
 
             await foreach (var item in _tableAdapter
-                .Query<DynamicTableEntity>(predicate, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                .Query<DynamicTableEntity>(new[] {predicate}, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
                     cancellationToken: token))
             {
                 count++;

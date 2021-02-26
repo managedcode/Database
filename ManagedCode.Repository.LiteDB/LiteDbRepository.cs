@@ -186,8 +186,10 @@ namespace ManagedCode.Repository.LiteDB
             await Task.Yield();
             return GetDatabase().FindOne(predicate);
         }
-        
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
+
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             var query = GetDatabase().Query().Skip(skip).Limit(take ?? 2147483647);
@@ -202,7 +204,11 @@ namespace ManagedCode.Repository.LiteDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+        protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
             var query = GetDatabase().Query();
@@ -246,14 +252,21 @@ namespace ManagedCode.Repository.LiteDB
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             int? take = null,
             int skip = 0,
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Find(predicate, skip, take ?? 2147483647);
-            foreach (var item in query)
+            var query = GetDatabase().Query();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+
+            ;
+            foreach (var item in query.Skip(skip).Limit(take ?? 2147483647).ToEnumerable())
             {
                 if (token.IsCancellationRequested)
                 {
@@ -264,7 +277,7 @@ namespace ManagedCode.Repository.LiteDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -272,7 +285,12 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query().Where(predicate);
+            var query = GetDatabase().Query();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
 
             if (orderType == Order.By)
             {
@@ -309,7 +327,7 @@ namespace ManagedCode.Repository.LiteDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -319,7 +337,12 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query().Where(predicate);
+            var query = GetDatabase().Query();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
 
             if (orderType == Order.By)
             {

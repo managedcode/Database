@@ -172,7 +172,8 @@ namespace ManagedCode.Repository.Core
             return GetAllAsyncInternal(orderBy, Order.By, take, skip, token);
         }
 
-        public IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy, Order orderType,
+        public IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy,
+            Order orderType,
             int? take = null,
             int skip = 0,
             CancellationToken token = default)
@@ -184,7 +185,7 @@ namespace ManagedCode.Repository.Core
         protected abstract Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
 
         protected abstract IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default);
-        
+
         protected abstract IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -199,7 +200,7 @@ namespace ManagedCode.Repository.Core
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(predicate != null);
-            return FindAsyncInternal(predicate, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, take, skip, token);
         }
 
         public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
@@ -211,7 +212,7 @@ namespace ManagedCode.Repository.Core
             Contract.Requires(IsInitialized);
             Contract.Requires(predicate != null);
             Contract.Requires(orderBy != null);
-            return FindAsyncInternal(predicate, orderBy, Order.By, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, orderBy, Order.By, take, skip, token);
         }
 
         public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
@@ -224,7 +225,7 @@ namespace ManagedCode.Repository.Core
             Contract.Requires(IsInitialized);
             Contract.Requires(predicate != null);
             Contract.Requires(orderBy != null);
-            return FindAsyncInternal(predicate, orderBy, orderType, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, orderBy, orderType, take, skip, token);
         }
 
         public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
@@ -238,7 +239,7 @@ namespace ManagedCode.Repository.Core
             Contract.Requires(predicate != null);
             Contract.Requires(orderBy != null);
             Contract.Requires(thenBy != null);
-            return FindAsyncInternal(predicate, orderBy, Order.By, thenBy, Order.By, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, orderBy, Order.By, thenBy, Order.By, take, skip, token);
         }
 
         public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
@@ -253,7 +254,7 @@ namespace ManagedCode.Repository.Core
             Contract.Requires(predicate != null);
             Contract.Requires(orderBy != null);
             Contract.Requires(thenBy != null);
-            return FindAsyncInternal(predicate, orderBy, orderType, thenBy, Order.By, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, orderBy, orderType, thenBy, Order.By, take, skip, token);
         }
 
         public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
@@ -269,22 +270,99 @@ namespace ManagedCode.Repository.Core
             Contract.Requires(predicate != null);
             Contract.Requires(orderBy != null);
             Contract.Requires(thenBy != null);
-            return FindAsyncInternal(predicate, orderBy, orderType, thenBy, thenType, take, skip, token);
+            return FindAsyncInternal(new[] {predicate}, orderBy, orderType, thenBy, thenType, take, skip, token);
         }
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates, int? take = null, int skip = 0, CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            return FindAsyncInternal(predicates, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+            Expression<Func<TItem, object>> orderBy,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            Contract.Requires(orderBy != null);
+            return FindAsyncInternal(predicates, orderBy, Order.By, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+            Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            Contract.Requires(orderBy != null);
+            return FindAsyncInternal(predicates, orderBy, orderType, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+            Expression<Func<TItem, object>> orderBy,
+            Expression<Func<TItem, object>> thenBy,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            Contract.Requires(orderBy != null);
+            Contract.Requires(thenBy != null);
+            return FindAsyncInternal(predicates, orderBy, Order.By, thenBy, Order.By, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+            Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            Expression<Func<TItem, object>> thenBy,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            Contract.Requires(orderBy != null);
+            Contract.Requires(thenBy != null);
+            return FindAsyncInternal(predicates, orderBy, orderType, thenBy, Order.By, take, skip, token);
+        }
+
+        public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>>[] predicates,
+            Expression<Func<TItem, object>> orderBy,
+            Order orderType,
+            Expression<Func<TItem, object>> thenBy,
+            Order thenType,
+            int? take = null,
+            int skip = 0,
+            CancellationToken token = default)
+        {
+            Contract.Requires(IsInitialized);
+            Contract.Requires(predicates != null);
+            Contract.Requires(orderBy != null);
+            Contract.Requires(thenBy != null);
+            return FindAsyncInternal(predicates, orderBy, orderType, thenBy, thenType, take, skip, token);
+        }
+
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             int? take = null,
             int skip = 0,
             CancellationToken token = default);
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
             int skip = 0,
             CancellationToken token = default);
 
-        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>> predicate,
+        protected abstract IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
