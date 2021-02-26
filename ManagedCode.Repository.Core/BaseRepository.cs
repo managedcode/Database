@@ -47,7 +47,7 @@ namespace ManagedCode.Repository.Core
 
         #region Update
 
-        public Task<bool> UpdateAsync(TItem item, CancellationToken token = default)
+        public Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(item != null);
@@ -61,7 +61,7 @@ namespace ManagedCode.Repository.Core
             return UpdateAsyncInternal(items, token);
         }
 
-        protected abstract Task<bool> UpdateAsyncInternal(TItem items, CancellationToken token = default);
+        protected abstract Task<TItem> UpdateAsyncInternal(TItem items, CancellationToken token = default);
 
         protected abstract Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default);
 
@@ -126,7 +126,7 @@ namespace ManagedCode.Repository.Core
 
         #region InsertOrUpdate
 
-        public Task<bool> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+        public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(item != null);
@@ -140,7 +140,7 @@ namespace ManagedCode.Repository.Core
             return InsertOrUpdateAsyncInternal(items, token);
         }
 
-        protected abstract Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default);
+        protected abstract Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default);
 
         protected abstract Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default);
 
@@ -297,22 +297,22 @@ namespace ManagedCode.Repository.Core
 
         #region Count
 
-        public Task<uint> CountAsync(CancellationToken token = default)
+        public Task<int> CountAsync(CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             return CountAsyncInternal(token);
         }
 
-        public Task<uint> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        public Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             Contract.Requires(IsInitialized);
             Contract.Requires(predicate != null);
             return CountAsyncInternal(predicate, token);
         }
 
-        protected abstract Task<uint> CountAsyncInternal(CancellationToken token = default);
+        protected abstract Task<int> CountAsyncInternal(CancellationToken token = default);
 
-        protected abstract Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+        protected abstract Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
 
         #endregion
     }

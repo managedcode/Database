@@ -315,8 +315,8 @@ namespace ManagedCode.Repository.Tests
                 Data = Guid.NewGuid().ToString()
             });
 
-            insertOneItem.Should().BeTrue();
-            insertTwoItem.Should().BeFalse();
+            insertOneItem.Should().NotBeNull();
+            insertTwoItem.Should().BeNull();
         }
 
         [Fact]
@@ -399,8 +399,8 @@ namespace ManagedCode.Repository.Tests
             });
 
             insertOneItem.Should().NotBeNull();
-            updateFirstItem.Should().BeTrue();
-            updateSecondItem.Should().BeFalse();
+            updateFirstItem.Should().NotBeNull();
+            updateSecondItem.Should().BeNull();
         }
 
         [Fact]
@@ -520,7 +520,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var deleteOneItem = await _repository.DeleteAsync("DeleteOneItemById");
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneItem.Should().BeTrue();
         }
 
@@ -537,7 +537,7 @@ namespace ManagedCode.Repository.Tests
             var insertOneItem = await _repository.InsertOrUpdateAsync(item);
 
             var deleteOneTimer = await _repository.DeleteAsync(item);
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             deleteOneTimer.Should().BeTrue();
         }
 
@@ -726,7 +726,7 @@ namespace ManagedCode.Repository.Tests
             });
 
             var count = await _repository.CountAsync();
-            insertOneItem.Should().BeTrue();
+            insertOneItem.Should().NotBeNull();
             count.Should().BeGreaterOrEqualTo(1);
         }
 

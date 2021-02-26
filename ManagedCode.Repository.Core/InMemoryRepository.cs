@@ -57,12 +57,12 @@ namespace ManagedCode.Repository.Core
 
         #region InsertOrUpdate
 
-        protected override Task<bool> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
                 _storage[item.Id] = item;
-                return Task.FromResult(true);
+                return Task.FromResult(item);
             }
         }
 
@@ -86,17 +86,17 @@ namespace ManagedCode.Repository.Core
 
         #region Update
 
-        protected override Task<bool> UpdateAsyncInternal(TItem item, CancellationToken token = default)
+        protected override Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             lock (_storage)
             {
                 if (_storage.TryGetValue(item.Id, out var _))
                 {
                     _storage[item.Id] = item;
-                    return Task.FromResult(true);
+                    return Task.FromResult(item);
                 }
 
-                return Task.FromResult(false);
+                return Task.FromResult<TItem>(default);
             }
         }
 
@@ -392,20 +392,20 @@ namespace ManagedCode.Repository.Core
 
         #region Count
 
-        protected override Task<uint> CountAsyncInternal(CancellationToken token = default)
+        protected override Task<int> CountAsyncInternal(CancellationToken token = default)
         {
             lock (_storage)
             {
-                return Task.FromResult(Convert.ToUInt32(_storage.Count));
+                return Task.FromResult(_storage.Count);
             }
         }
 
-        protected override Task<uint> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+        protected override Task<int> CountAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             lock (_storage)
             {
                 var count = _storage.Values.Count(predicate.Compile());
-                return Task.FromResult(Convert.ToUInt32(count));
+                return Task.FromResult(count);
             }
         }
 
