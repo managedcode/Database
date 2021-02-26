@@ -261,7 +261,7 @@ namespace ManagedCode.Repository.AzureTable
 
         #region Find
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             int? take = null,
             int skip = 0,
             CancellationToken token = default)
@@ -269,7 +269,7 @@ namespace ManagedCode.Repository.AzureTable
             return _tableAdapter.Query<TItem>(predicates, take: take, skip: skip, cancellationToken: token);
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -279,7 +279,7 @@ namespace ManagedCode.Repository.AzureTable
             return _tableAdapter.Query(predicates, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -311,7 +311,7 @@ namespace ManagedCode.Repository.AzureTable
             return count;
         }
 
-        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
             var count = 0;
 

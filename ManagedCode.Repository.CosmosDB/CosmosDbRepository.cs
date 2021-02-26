@@ -529,7 +529,7 @@ namespace ManagedCode.Repository.CosmosDB
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             int? take = null,
             int skip = 0,
             [EnumeratorCancellation] CancellationToken token = default)
@@ -567,7 +567,7 @@ namespace ManagedCode.Repository.CosmosDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -617,7 +617,7 @@ namespace ManagedCode.Repository.CosmosDB
             }
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(Expression<Func<TItem, bool>>[] predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -688,7 +688,7 @@ namespace ManagedCode.Repository.CosmosDB
             return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
         }
 
-        protected override async Task<int> CountAsyncInternal(Expression<Func<TItem, bool>>[] predicates, CancellationToken token = default)
+        protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
