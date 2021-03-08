@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using LiteDB;
 using ManagedCode.Repository.Core;
 using Microsoft.Extensions.Logging;
+using SQLite;
 
-namespace ManagedCode.Repository.LiteDB
+namespace ManagedCode.Repository.SQLite
 {
-    public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>
+    public class SQLiteRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>, new()
     {
-        private readonly LiteDatabase _database;
+        private readonly SQLiteConnection _database;
 
-        public LiteDbRepository(ILogger logger, [NotNull] LiteDbRepositoryOptions options) : base(logger)
+        public SQLiteRepository(ILogger logger,
+            [System.Diagnostics.CodeAnalysis.NotNull]
+            SQLiteRepositoryOptions options) : base(logger)
         {
-            _database = options.Database ?? new LiteDatabase(options.ConnectionString);
+            _database = options.Connection ?? new SQLiteConnection(options.ConnectionString);
+            _database.CreateTable<TItem>();
             IsInitialized = true;
-        }
-
-        private ILiteCollection<TItem> GetDatabase()
-        {
-            return _database.GetCollection<TItem>();
         }
 
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
@@ -36,14 +34,14 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            var v = GetDatabase().Insert(item);
-            return GetDatabase().FindById(v);
+            var v = _database.Insert(item);
+            return item;
         }
 
         protected override async Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().InsertBulk(items);
+            return _database.InsertAll(items);
         }
 
         #endregion
@@ -53,18 +51,20 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            if (GetDatabase().Upsert(item))
-            {
-                return GetDatabase().FindById(new BsonValue(item.Id));
-            }
-
-            return default;
+            _database.InsertOrReplace(item);
+            return item;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Upsert(items);
+            var count = 0;
+            foreach (var item in items)
+            {
+                count += _database.InsertOrReplace(item);
+            }
+
+            return count;
         }
 
         #endregion
@@ -74,18 +74,20 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            if (GetDatabase().Update(item))
-            {
-                return GetDatabase().FindById(new BsonValue(item.Id));
-            }
-
-            return default;
+            _database.Update(item);
+            return item;
         }
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Update(items);
+            var count = 0;
+            foreach (var item in items)
+            {
+                count += _database.Update(item);
+            }
+
+            return count;
         }
 
         #endregion
@@ -95,26 +97,22 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Delete(new BsonValue(id));
+            return _database.Delete<TItem>(id) != 0;
         }
 
         protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Delete(new BsonValue(item.Id));
+            return _database.Delete(item) != 0;
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
         {
             await Task.Yield();
             var count = 0;
-            var db = GetDatabase();
             foreach (var id in ids)
             {
-                if (db.Delete(new BsonValue(id)))
-                {
-                    count++;
-                }
+                count += _database.Delete<TItem>(id);
             }
 
             return count;
@@ -124,13 +122,9 @@ namespace ManagedCode.Repository.LiteDB
         {
             await Task.Yield();
             var count = 0;
-            var db = GetDatabase();
             foreach (var item in items)
             {
-                if (db.Delete(new BsonValue(item.Id)))
-                {
-                    count++;
-                }
+                count += _database.Delete<TItem>(item.Id);
             }
 
             return count;
@@ -139,13 +133,14 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().DeleteMany(predicate);
+            var ids = _database.Table<TItem>().Where(predicate).Select(s => s.Id);
+            return await DeleteAsyncInternal(ids, token);
         }
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().DeleteAll() > 0;
+            return _database.DeleteAll<TItem>() != 0;
         }
 
         #endregion
@@ -155,13 +150,13 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().FindById(new BsonValue(id));
+            return _database.Find<TItem>(id);
         }
 
         protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().FindOne(predicate);
+            return _database.Table<TItem>().Where(predicate).FirstOrDefault();
         }
 
         protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
@@ -169,8 +164,13 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query().Skip(skip).Limit(take ?? 2147483647);
-            foreach (var item in query.ToEnumerable())
+            var query = _database.Table<TItem>().Skip(skip);
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            foreach (var item in query)
             {
                 if (token.IsCancellationRequested)
                 {
@@ -188,7 +188,7 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query();
+            var query = _database.Table<TItem>();
 
             if (orderType == Order.By)
             {
@@ -201,7 +201,7 @@ namespace ManagedCode.Repository.LiteDB
 
             if (take != null)
             {
-                foreach (var item in query.Limit(take.Value).ToEnumerable())
+                foreach (var item in query.Take(take.Value))
                 {
                     if (token.IsCancellationRequested)
                     {
@@ -213,7 +213,7 @@ namespace ManagedCode.Repository.LiteDB
             }
             else
             {
-                foreach (var item in query.ToEnumerable())
+                foreach (var item in query)
                 {
                     if (token.IsCancellationRequested)
                     {
@@ -235,15 +235,21 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query();
+            var query = _database.Table<TItem>();
 
             foreach (var predicate in predicates)
             {
                 query = query.Where(predicate);
             }
 
-            ;
-            foreach (var item in query.Skip(skip).Limit(take ?? 2147483647).ToEnumerable())
+            query = query.Skip(skip);
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            foreach (var item in query)
             {
                 if (token.IsCancellationRequested)
                 {
@@ -262,7 +268,7 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query();
+            var query = _database.Table<TItem>();
 
             foreach (var predicate in predicates)
             {
@@ -278,9 +284,11 @@ namespace ManagedCode.Repository.LiteDB
                 query.OrderByDescending(orderBy);
             }
 
+            query = query.Skip(skip);
+
             if (take != null)
             {
-                foreach (var item in query.Skip(skip).Limit(take.Value).ToEnumerable())
+                foreach (var item in query.Take(take.Value))
                 {
                     if (token.IsCancellationRequested)
                     {
@@ -292,7 +300,7 @@ namespace ManagedCode.Repository.LiteDB
             }
             else
             {
-                foreach (var item in query.Skip(skip).ToEnumerable())
+                foreach (var item in query)
                 {
                     if (token.IsCancellationRequested)
                     {
@@ -314,7 +322,7 @@ namespace ManagedCode.Repository.LiteDB
             [EnumeratorCancellation] CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query();
+            var query = _database.Table<TItem>();
 
             foreach (var predicate in predicates)
             {
@@ -341,14 +349,14 @@ namespace ManagedCode.Repository.LiteDB
 
             if (take != null)
             {
-                foreach (var item in query.Skip(skip).Limit(take.Value).ToEnumerable())
+                foreach (var item in query.Skip(skip).Take(take.Value))
                 {
                     yield return item;
                 }
             }
             else
             {
-                foreach (var item in query.Skip(skip).ToEnumerable())
+                foreach (var item in query.Skip(skip))
                 {
                     yield return item;
                 }
@@ -362,13 +370,13 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
             await Task.Yield();
-            return GetDatabase().Count();
+            return _database.Table<TItem>().Count();
         }
 
         protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
             await Task.Yield();
-            var query = GetDatabase().Query();
+            var query = _database.Table<TItem>();
 
             foreach (var predicate in predicates)
             {

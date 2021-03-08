@@ -18,13 +18,16 @@ namespace ManagedCode.Repository.Core.Common
             _sw = new Stopwatch();
             _sw.Start();
         }
+
         public void Dispose()
         {
             _sw.Stop();
             _logger.LogInformation($"{_method} was performed in {_sw.Elapsed}");
         }
 
-        public static IDisposable GetTimer(ILogger logger, string className, [CallerMemberName] string method = null) 
-            => new TimeMetrics(logger, string.Join('.',className, method));
+        public static IDisposable GetTimer(ILogger logger, string className, [CallerMemberName] string method = null)
+        {
+            return new TimeMetrics(logger, string.Join('.', className, method));
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             _splitByType = options.SplitByType;
             _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
+            IsInitialized = true;
         }
 
         private Expression<Func<TItem, bool>> SplitByType()
@@ -36,67 +37,54 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
-            IsInitialized = true;
-            return _cosmosDbAdapter.GetContainer();
+            return Task.CompletedTask;
         }
 
         #region Insert
 
         protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var result = await container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
-                return result.Resource;
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            var container = await _cosmosDbAdapter.GetContainer();
+
+            var result = await container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
+            return result.Resource;
         }
 
         protected override async Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
             var count = 0;
-            try
+
+            var container = await _cosmosDbAdapter.GetContainer();
+
+            var batch = new List<Task>(10);
+            foreach (var item in items)
             {
-                var container = await _cosmosDbAdapter.GetContainer();
-
-                var batch = new List<Task>(10);
-                foreach (var item in items)
-                {
-                    token.ThrowIfCancellationRequested();
-                    batch.Add(container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.Result != null)
-                            {
-                                Interlocked.Increment(ref count);
-                            }
-                        }, token));
-
-                    if (count == batch.Capacity)
-                    {
-                        await Task.WhenAll(batch);
-                        batch.Clear();
-                    }
-                }
-
                 token.ThrowIfCancellationRequested();
+                batch.Add(container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token)
+                    .ContinueWith(task =>
+                    {
+                        if (task.Result != null)
+                        {
+                            Interlocked.Increment(ref count);
+                        }
+                    }, token));
 
-                if (batch.Count > 0)
+                if (count == batch.Capacity)
                 {
                     await Task.WhenAll(batch);
                     batch.Clear();
                 }
+            }
 
-                return count;
-            }
-            catch (Exception e)
+            token.ThrowIfCancellationRequested();
+
+            if (batch.Count > 0)
             {
-                return count;
+                await Task.WhenAll(batch);
+                batch.Clear();
             }
+
+            return count;
         }
 
         #endregion
@@ -105,58 +93,44 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var result = await container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
-                return result.Resource;
-            }
-            catch (Exception e)
-            {
-                return default;
-            }
+            var container = await _cosmosDbAdapter.GetContainer();
+            var result = await container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
+            return result.Resource;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
+            var container = await _cosmosDbAdapter.GetContainer();
+            var count = 0;
+            var batch = new List<Task>(10);
+            foreach (var item in items)
             {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var count = 0;
-                var batch = new List<Task>(10);
-                foreach (var item in items)
-                {
-                    token.ThrowIfCancellationRequested();
-                    batch.Add(container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.Result != null)
-                            {
-                                Interlocked.Increment(ref count);
-                            }
-                        }, token));
-
-                    if (count == batch.Capacity)
-                    {
-                        await Task.WhenAll(batch);
-                        batch.Clear();
-                    }
-                }
-
                 token.ThrowIfCancellationRequested();
+                batch.Add(container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token)
+                    .ContinueWith(task =>
+                    {
+                        if (task.Result != null)
+                        {
+                            Interlocked.Increment(ref count);
+                        }
+                    }, token));
 
-                if (batch.Count > 0)
+                if (count == batch.Capacity)
                 {
                     await Task.WhenAll(batch);
                     batch.Clear();
                 }
+            }
 
-                return count;
-            }
-            catch (Exception e)
+            token.ThrowIfCancellationRequested();
+
+            if (batch.Count > 0)
             {
-                return 0;
+                await Task.WhenAll(batch);
+                batch.Clear();
             }
+
+            return count;
         }
 
         #endregion
@@ -165,58 +139,44 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var result = await container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
-                return result.Resource;
-            }
-            catch (Exception e)
-            {
-                return default;
-            }
+            var container = await _cosmosDbAdapter.GetContainer();
+            var result = await container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
+            return result.Resource;
         }
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
+            var container = await _cosmosDbAdapter.GetContainer();
+            var count = 0;
+            var batch = new List<Task>(10);
+            foreach (var item in items)
             {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var count = 0;
-                var batch = new List<Task>(10);
-                foreach (var item in items)
-                {
-                    token.ThrowIfCancellationRequested();
-                    batch.Add(container.ReplaceItemAsync(item, item.Id, cancellationToken: token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.Result != null)
-                            {
-                                Interlocked.Increment(ref count);
-                            }
-                        }, token));
-
-                    if (count == batch.Capacity)
-                    {
-                        await Task.WhenAll(batch);
-                        batch.Clear();
-                    }
-                }
-
                 token.ThrowIfCancellationRequested();
+                batch.Add(container.ReplaceItemAsync(item, item.Id, cancellationToken: token)
+                    .ContinueWith(task =>
+                    {
+                        if (task.Result != null)
+                        {
+                            Interlocked.Increment(ref count);
+                        }
+                    }, token));
 
-                if (batch.Count > 0)
+                if (count == batch.Capacity)
                 {
                     await Task.WhenAll(batch);
                     batch.Clear();
                 }
+            }
 
-                return count;
-            }
-            catch (Exception e)
+            token.ThrowIfCancellationRequested();
+
+            if (batch.Count > 0)
             {
-                return 0;
+                await Task.WhenAll(batch);
+                batch.Clear();
             }
+
+            return count;
         }
 
         #endregion
@@ -225,173 +185,138 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<bool> DeleteAsyncInternal(string id, CancellationToken token = default)
         {
-            try
-            {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var item = await GetAsync(g => g.Id == id, token);
-                if (item == null)
-                {
-                    return false;
-                }
-
-                var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
-                return result != null;
-            }
-            catch (Exception e)
+            var container = await _cosmosDbAdapter.GetContainer();
+            var item = await GetAsync(g => g.Id == id, token);
+            if (item == null)
             {
                 return false;
             }
+
+            var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+            return result != null;
         }
 
         protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
-                return result != null;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
+            var container = await _cosmosDbAdapter.GetContainer();
+            var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+            return result != null;
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<string> ids, CancellationToken token = default)
         {
-            try
+            var container = await _cosmosDbAdapter.GetContainer();
+            var count = 0;
+            var batch = new List<Task>(10);
+            foreach (var item in ids)
             {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var count = 0;
-                var batch = new List<Task>(10);
-                foreach (var item in ids)
-                {
-                    token.ThrowIfCancellationRequested();
-                    batch.Add(DeleteAsync(item, token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.Result != null)
-                            {
-                                Interlocked.Increment(ref count);
-                            }
-                        }, token));
-
-                    if (count == batch.Capacity)
-                    {
-                        await Task.WhenAll(batch);
-                        batch.Clear();
-                    }
-                }
-
                 token.ThrowIfCancellationRequested();
+                batch.Add(DeleteAsync(item, token)
+                    .ContinueWith(task =>
+                    {
+                        if (task.Result)
+                        {
+                            Interlocked.Increment(ref count);
+                        }
+                    }, token));
 
-                if (batch.Count > 0)
+                if (count == batch.Capacity)
                 {
                     await Task.WhenAll(batch);
                     batch.Clear();
                 }
+            }
 
-                return count;
-            }
-            catch (Exception e)
+            token.ThrowIfCancellationRequested();
+
+            if (batch.Count > 0)
             {
-                return 0;
+                await Task.WhenAll(batch);
+                batch.Clear();
             }
+
+            return count;
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
+            var container = await _cosmosDbAdapter.GetContainer();
+            var count = 0;
+            var batch = new List<Task>(10);
+            foreach (var item in items)
             {
-                var container = await _cosmosDbAdapter.GetContainer();
-                var count = 0;
-                var batch = new List<Task>(10);
-                foreach (var item in items)
-                {
-                    token.ThrowIfCancellationRequested();
-                    batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
-                        .ContinueWith(task =>
-                        {
-                            if (task.Result != null)
-                            {
-                                Interlocked.Increment(ref count);
-                            }
-                        }, token));
-
-                    if (count == batch.Capacity)
-                    {
-                        await Task.WhenAll(batch);
-                        batch.Clear();
-                    }
-                }
-
                 token.ThrowIfCancellationRequested();
+                batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
+                    .ContinueWith(task =>
+                    {
+                        if (task.Result != null)
+                        {
+                            Interlocked.Increment(ref count);
+                        }
+                    }, token));
 
-                if (batch.Count > 0)
+                if (count == batch.Capacity)
                 {
                     await Task.WhenAll(batch);
                     batch.Clear();
                 }
+            }
 
-                return count;
-            }
-            catch (Exception e)
+            token.ThrowIfCancellationRequested();
+
+            if (batch.Count > 0)
             {
-                return 0;
+                await Task.WhenAll(batch);
+                batch.Clear();
             }
+
+            return count;
         }
 
         protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            try
-            {
-                var count = 0;
-                var container = await _cosmosDbAdapter.GetContainer();
-                var feedIterator = container.GetItemLinqQueryable<TItem>()
-                    .Where(SplitByType())
-                    .Where(predicate)
-                    .ToFeedIterator();
+            var count = 0;
+            var container = await _cosmosDbAdapter.GetContainer();
+            var feedIterator = container.GetItemLinqQueryable<TItem>()
+                .Where(SplitByType())
+                .Where(predicate)
+                .ToFeedIterator();
 
-                var batch = new List<Task>(10);
-                using (var iterator = feedIterator)
+            var batch = new List<Task>(10);
+            using (var iterator = feedIterator)
+            {
+                while (iterator.HasMoreResults)
                 {
-                    while (iterator.HasMoreResults)
+                    token.ThrowIfCancellationRequested();
+
+                    foreach (var item in await iterator.ReadNextAsync(token))
                     {
                         token.ThrowIfCancellationRequested();
-
-                        foreach (var item in await iterator.ReadNextAsync(token))
-                        {
-                            token.ThrowIfCancellationRequested();
-                            batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
-                                .ContinueWith(task =>
-                                {
-                                    if (task.Result != null)
-                                    {
-                                        Interlocked.Increment(ref count);
-                                    }
-                                }, token));
-
-                            if (count == batch.Capacity)
+                        batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
+                            .ContinueWith(task =>
                             {
-                                await Task.WhenAll(batch);
-                                batch.Clear();
-                            }
-                        }
+                                if (task.Result != null)
+                                {
+                                    Interlocked.Increment(ref count);
+                                }
+                            }, token));
 
-                        if (batch.Count > 0)
+                        if (count == batch.Capacity)
                         {
                             await Task.WhenAll(batch);
                             batch.Clear();
                         }
                     }
-                }
 
-                return count;
+                    if (batch.Count > 0)
+                    {
+                        await Task.WhenAll(batch);
+                        batch.Clear();
+                    }
+                }
             }
-            catch (Exception e)
-            {
-                return 0;
-            }
+
+            return count;
         }
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
@@ -697,8 +622,7 @@ namespace ManagedCode.Repository.CosmosDB
             {
                 query = query.Where(predicate);
             }
-            
-            
+
             return await query.CountAsync(token);
         }
 
