@@ -5,6 +5,7 @@
 [![.NET](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml/badge.svg)](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml) [![nuget](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml/badge.svg?branch=main)](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml)
 
 </div>
+
 | Version | Package | Description |
 | ------- | ------- | ----------- |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.Core.svg)](https://www.nuget.org/packages/ManagedCode.Repository.Core) | [ManagedCode.Repository.Core](https://www.nuget.org/packages/ManagedCode.Repository.Core) | Core |
