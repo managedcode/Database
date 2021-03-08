@@ -2,7 +2,9 @@
 <img alt="managed code repository" src="https://github.com/managed-code-hub/Repository/raw/main/logo.png" width="300px" />
 
 # Repository
-[![.NET](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml/badge.svg)](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml) [![nuget](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml/badge.svg?branch=main)](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml)
+[![.NET](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml/badge.svg)](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml) 
+[![nuget](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml/badge.svg?branch=main)](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml)
+[![CodeQL](https://github.com/managed-code-hub/Repository/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/managed-code-hub/Repository/actions/workflows/codeql-analysis.yml)
 
 
 | Version | Package | Description |
