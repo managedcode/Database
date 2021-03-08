@@ -4,21 +4,14 @@
 # Repository
 [![.NET](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml/badge.svg)](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml) [![nuget](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml/badge.svg?branch=main)](https://github.com/managed-code-hub/Repository/actions/workflows/nuget.yml)
 
-
-
+</div>
 | Version | Package | Description |
 | ------- | ------- | ----------- |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.Core.svg)](https://www.nuget.org/packages/ManagedCode.Repository.Core) | [ManagedCode.Repository.Core](https://www.nuget.org/packages/ManagedCode.Repository.Core) | Core |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.AzureTable.svg)](https://www.nuget.org/packages/ManagedCode.Repository.AzureTable) | [ManagedCode.Repository.AzureTable](https://www.nuget.org/packages/ManagedCode.Repository.AzureTable) | AzureTable |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.CosmosDB.svg)](https://www.nuget.org/packages/ManagedCode.Repository.CosmosDB) | [ManagedCode.Repository.CosmosDB](https://www.nuget.org/packages/ManagedCode.Repository.CosmosDB) | CosmosDB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.LiteDB.svg)](https://www.nuget.org/packages/ManagedCode.Repository.LiteDB) | [ManagedCode.Repository.LiteDB](https://www.nuget.org/packages/ManagedCode.Repository.LiteDB) | LiteDB |
-
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.SQLite.svg)](https://www.nuget.org/packages/ManagedCode.Repository.SQLite) | [ManagedCode.Repository.SQLite](https://www.nuget.org/packages/ManagedCode.Repository.SQLite) | SQLite |
-
-
-
-</div>
-
 
 
 
