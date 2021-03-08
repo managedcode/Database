@@ -49,7 +49,14 @@ jobs:
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}        
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}       
+        
+    - name: Publish Repository.SQLite to NuGet
+      uses: brandedoutcast/publish-nuget@v2.5.5
+      with:
+        PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.SQLite.csproj
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
         
         
         
