@@ -27,6 +27,7 @@
       <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.CosmosDB\ManagedCode.Repository.CosmosDB.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.LiteDB\ManagedCode.Repository.LiteDB.csproj" />
+      <ProjectReference Include="..\ManagedCode.Repository.SQLite\ManagedCode.Repository.SQLite.csproj" />
     </ItemGroup>
 
 </Project>

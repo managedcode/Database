@@ -10,6 +10,7 @@ namespace ManagedCode.Repository.CosmosDB
         private readonly string _collectionName;
         private readonly CosmosClient _cosmosClient;
         private readonly string _databaseName;
+        private readonly int _retryCount = 25;
         private readonly object _sync = new();
         private bool _tableClientInitialized;
 
@@ -17,7 +18,10 @@ namespace ManagedCode.Repository.CosmosDB
         {
             _databaseName = string.IsNullOrEmpty(databaseName) ? "database" : databaseName;
             _collectionName = string.IsNullOrEmpty(collectionName) ? "container" : collectionName;
+
             _cosmosClient = new CosmosClient(connectionString, cosmosClientOptions);
+            _cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = _retryCount;
+            _cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
         }
 
         public async Task<Container> GetContainer()

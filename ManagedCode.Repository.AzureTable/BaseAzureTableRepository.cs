@@ -26,11 +26,12 @@ namespace ManagedCode.Repository.AzureTable
             {
                 _tableAdapter = new AzureTableAdapter<TItem>(logger, options.ConnectionString);
             }
+
+            IsInitialized = true;
         }
 
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
-            IsInitialized = true;
             return Task.CompletedTask;
         }
 
@@ -38,27 +39,13 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
-                return result as TItem;
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
+            return result as TItem;
         }
 
         protected override async Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
-            {
-                return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Insert(s)), token);
-            }
-            catch (Exception e)
-            {
-                return 0;
-            }
+            return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Insert(s)), token);
         }
 
         #endregion
@@ -67,27 +54,13 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
-            {
-                var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.InsertOrReplace(item), token);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return default;
-            }
+            var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.InsertOrReplace(item), token);
+            return result;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
-            {
-                return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.InsertOrReplace(s)), token);
-            }
-            catch (Exception e)
-            {
-                return 0;
-            }
+            return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.InsertOrReplace(s)), token);
         }
 
         #endregion
@@ -96,40 +69,26 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
+            if (string.IsNullOrEmpty(item.ETag))
             {
-                if (string.IsNullOrEmpty(item.ETag))
-                {
-                    item.ETag = "*";
-                }
+                item.ETag = "*";
+            }
 
-                var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.Replace(item), token);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return default;
-            }
+            var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.Replace(item), token);
+            return result;
         }
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
+            return await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
             {
-                return await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
+                if (string.IsNullOrEmpty(s.ETag))
                 {
-                    if (string.IsNullOrEmpty(s.ETag))
-                    {
-                        s.ETag = "*";
-                    }
+                    s.ETag = "*";
+                }
 
-                    return TableOperation.Replace(s);
-                }), token);
-            }
-            catch (Exception e)
-            {
-                return 0;
-            }
+                return TableOperation.Replace(s);
+            }), token);
         }
 
         #endregion
@@ -138,64 +97,36 @@ namespace ManagedCode.Repository.AzureTable
 
         protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
         {
-            try
+            var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(new DynamicTableEntity(id.PartitionKey, id.RowKey)
             {
-                var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(new DynamicTableEntity(id.PartitionKey, id.RowKey)
-                {
-                    ETag = "*"
-                }), token);
-                return result != null;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
+                ETag = "*"
+            }), token);
+            return result != null;
         }
 
         protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
-            try
+            var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(new DynamicTableEntity(item.PartitionKey, item.RowKey)
             {
-                var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(new DynamicTableEntity(item.PartitionKey, item.RowKey)
-                {
-                    ETag = "*"
-                }), token);
-                return result != null;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
+                ETag = "*"
+            }), token);
+            return result != null;
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
         {
-            try
+            return await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
             {
-                return await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
-                {
-                    ETag = "*"
-                })), token);
-            }
-            catch (Exception e)
-            {
-                return 0;
-            }
+                ETag = "*"
+            })), token);
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            try
+            return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
             {
-                return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
-                {
-                    ETag = "*"
-                })), token);
-            }
-            catch (Exception e)
-            {
-                return 0;
-            }
+                ETag = "*"
+            })), token);
         }
 
         protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)

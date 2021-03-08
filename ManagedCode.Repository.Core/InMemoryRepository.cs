@@ -15,11 +15,11 @@ namespace ManagedCode.Repository.Core
 
         public InMemoryRepository(ILogger logger) : base(logger)
         {
+            IsInitialized = true;
         }
-        
+
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
-            IsInitialized = true;
             return Task.CompletedTask;
         }
 
@@ -468,7 +468,5 @@ namespace ManagedCode.Repository.Core
         }
 
         #endregion
-
-
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,9 +15,10 @@ namespace ManagedCode.Repository.AzureTable
 {
     public class AzureTableAdapter<T> where T : class, ITableEntity, new()
     {
-        private readonly ILogger _logger;
         private readonly bool _allowTableCreation = true;
         private readonly CloudStorageAccount _cloudStorageAccount;
+        private readonly ILogger _logger;
+        private readonly int _retryCount = 25;
         private readonly object _sync = new();
         private CloudTableClient _cloudTableClient;
         private bool _tableClientInitialized;
@@ -48,7 +50,7 @@ namespace ManagedCode.Repository.AzureTable
             return table.DeleteIfExistsAsync(token);
         }
 
-        public CloudTable GetTable()
+        private CloudTable GetTable()
         {
             lock (_sync)
             {
@@ -81,15 +83,53 @@ namespace ManagedCode.Repository.AzureTable
         public async Task<T> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
         {
             var table = GetTable();
-            var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
-            return result.Result as T;
+            var retryCount = _retryCount;
+            do
+            {
+                try
+                {
+                    var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
+                    return result.Result as T;
+                }
+                catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int) HttpStatusCode.TooManyRequests)
+                {
+                    retryCount--;
+                    if (retryCount == 0)
+                    {
+                        throw;
+                    }
+
+                    await WaitRandom(token);
+                }
+            } while (retryCount > 0);
+
+            throw new Exception(nameof(HttpStatusCode.TooManyRequests));
         }
 
         public async Task<object> ExecuteAsync(TableOperation operation, CancellationToken token = default)
         {
             var table = GetTable();
-            var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
-            return result.Result;
+            var retryCount = _retryCount;
+            do
+            {
+                try
+                {
+                    var result = await table.ExecuteAsync(operation, token).ConfigureAwait(false);
+                    return result.Result;
+                }
+                catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int) HttpStatusCode.TooManyRequests)
+                {
+                    retryCount--;
+                    if (retryCount == 0)
+                    {
+                        throw;
+                    }
+
+                    await WaitRandom(token);
+                }
+            } while (retryCount > 0);
+
+            throw new Exception(nameof(HttpStatusCode.TooManyRequests));
         }
 
         public async Task<int> ExecuteBatchAsync(IEnumerable<TableOperation> operations, CancellationToken token = default)
@@ -105,16 +145,27 @@ namespace ManagedCode.Repository.AzureTable
                     batchOperation.Add(item);
                     if (batchOperation.Count == BatchSize)
                     {
-                        try
+                        var retryCount = _retryCount;
+                        do
                         {
-                            var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
-                            totalCount += result.Count;
-                            batchOperation = new TableBatchOperation();
-                        }
-                        catch (Exception e)
-                        {
-                            // skip
-                        }
+                            try
+                            {
+                                var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
+                                totalCount += result.Count;
+                                batchOperation = new TableBatchOperation();
+                                break;
+                            }
+                            catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int) HttpStatusCode.TooManyRequests)
+                            {
+                                retryCount--;
+                                if (retryCount == 0)
+                                {
+                                    throw;
+                                }
+
+                                await WaitRandom(token);
+                            }
+                        } while (retryCount > 0);
                     }
 
                     token.ThrowIfCancellationRequested();
@@ -122,15 +173,26 @@ namespace ManagedCode.Repository.AzureTable
 
                 if (batchOperation.Count > 0)
                 {
-                    try
+                    var retryCount = _retryCount;
+                    do
                     {
-                        var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
-                        totalCount += result.Count;
-                    }
-                    catch (Exception e)
-                    {
-                        // skip
-                    }
+                        try
+                        {
+                            var result = await table.ExecuteBatchAsync(batchOperation, token).ConfigureAwait(false);
+                            totalCount += result.Count;
+                            break;
+                        }
+                        catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int) HttpStatusCode.TooManyRequests)
+                        {
+                            retryCount--;
+                            if (retryCount == 0)
+                            {
+                                throw;
+                            }
+
+                            await WaitRandom(token);
+                        }
+                    } while (retryCount > 0);
                 }
             }
 
@@ -235,8 +297,27 @@ namespace ManagedCode.Repository.AzureTable
 
             do
             {
-                var results = await table.ExecuteQuerySegmentedAsync(query, token, cancellationToken)
-                    .ConfigureAwait(false);
+                TableQuerySegment<T> results = null;
+                var retryCount = _retryCount;
+                do
+                {
+                    try
+                    {
+                        results = await table.ExecuteQuerySegmentedAsync(query, token, cancellationToken)
+                            .ConfigureAwait(false);
+                        break;
+                    }
+                    catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int) HttpStatusCode.TooManyRequests)
+                    {
+                        retryCount--;
+                        if (retryCount == 0)
+                        {
+                            throw;
+                        }
+
+                        await WaitRandom(cancellationToken);
+                    }
+                } while (retryCount > 0);
 
                 token = results.ContinuationToken;
 
@@ -265,6 +346,11 @@ namespace ManagedCode.Repository.AzureTable
                     break;
                 }
             } while (token != null);
+        }
+
+        private Task WaitRandom(CancellationToken token)
+        {
+            return Task.Delay(new Random().Next(750, 3500), token);
         }
     }
 }
