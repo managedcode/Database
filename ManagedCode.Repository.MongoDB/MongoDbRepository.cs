@@ -18,7 +18,7 @@ namespace ManagedCode.Repository.MongoDB
         where TItem : class, IItem<ObjectId>
     {
         private readonly IMongoCollection<TItem> _collection;
-
+        
         public MongoDbRepository(ILogger logger, [NotNull] MongoDbRepositoryOptions options) : base(logger)
         {
             var client = new MongoClient(options.ConnectionString);
@@ -53,11 +53,12 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            return await _collection.FindOneAndReplaceAsync<TItem>(w => w.Id == item.Id, item, new FindOneAndReplaceOptions<TItem>
+            var result = await _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
             {
                 IsUpsert = true,
-                ReturnDocument = ReturnDocument.After
             }, token);
+            
+            return item;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
@@ -78,7 +79,7 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            await _collection.UpdateOneAsync(w => w.Id == item.Id, new ObjectUpdateDefinition<TItem>(item), new UpdateOptions(), token);
+            var r = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item, cancellationToken: token);
             return item;
         }
 

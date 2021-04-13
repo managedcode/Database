@@ -1,5 +1,6 @@
 using ManagedCode.Repository.Core;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
 namespace ManagedCode.Repository.MongoDB
@@ -21,6 +22,8 @@ namespace ManagedCode.Repository.MongoDB
             Id = id;
         }
 
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId Id { get; set; }
     }
 }
