@@ -55,7 +55,8 @@ namespace ManagedCode.Repository.MongoDB
         {
             return await _collection.FindOneAndReplaceAsync<TItem>(w => w.Id == item.Id, item, new FindOneAndReplaceOptions<TItem>
             {
-                IsUpsert = true
+                IsUpsert = true,
+                ReturnDocument = ReturnDocument.After
             }, token);
         }
 
