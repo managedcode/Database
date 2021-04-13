@@ -3,14 +3,14 @@ using ManagedCode.Repository.LiteDB;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class LiteDbItem : LiteDbItem<string>
+    public class TestLiteDbItem : LiteDbItem<string>
     {
-        public LiteDbItem()
+        public TestLiteDbItem()
         {
             Id = Guid.NewGuid().ToString();
         }
 
-        public LiteDbItem(string id)
+        public TestLiteDbItem(string id)
         {
             Id = id;
         }

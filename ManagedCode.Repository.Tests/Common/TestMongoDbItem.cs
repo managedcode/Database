@@ -1,17 +1,20 @@
+using MongoDB.Bson;
+
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class CosmosDbItem : CosmosDB.CosmosDbItem
+    public class TestMongoDbItem : ManagedCode.Repository.MongoDB.MongoDbItem
     {
-        public CosmosDbItem()
+        public TestMongoDbItem() : base()
         {
         }
 
-        public CosmosDbItem(string id) : base(id)
+        public TestMongoDbItem(string id) : base(id)
         {
         }
 
-        public CosmosDbItem(string id, string partKey) : base(id)
+        public TestMongoDbItem(string id, string partKey) : base(id)
         {
+            Id = ObjectId.Parse(id);
             PartKey = partKey;
         }
 

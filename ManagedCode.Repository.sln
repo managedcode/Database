@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.Lite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.SQLite", "ManagedCode.Repository.SQLite\ManagedCode.Repository.SQLite.csproj", "{125EE573-E094-46E3-8D66-01F29EFBCFEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.MongoDB", "ManagedCode.Repository.MongoDB\ManagedCode.Repository.MongoDB.csproj", "{75A7F312-B448-4068-82C0-0512330ECAE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{125EE573-E094-46E3-8D66-01F29EFBCFEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{125EE573-E094-46E3-8D66-01F29EFBCFEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{125EE573-E094-46E3-8D66-01F29EFBCFEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75A7F312-B448-4068-82C0-0512330ECAE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75A7F312-B448-4068-82C0-0512330ECAE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75A7F312-B448-4068-82C0-0512330ECAE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75A7F312-B448-4068-82C0-0512330ECAE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

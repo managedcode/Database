@@ -15,8 +15,8 @@ namespace ManagedCode.Repository.Tests
     {
         public const string ConnecntionString = "litedb_test.db";
 
-        private readonly IRepository<string, LiteDbItem> _repository =
-            new LiteDbRepository<string, LiteDbItem>(null, new LiteDbRepositoryOptions
+        private readonly IRepository<string, TestLiteDbItem> _repository =
+            new LiteDbRepository<string, TestLiteDbItem>(null, new LiteDbRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });
@@ -43,14 +43,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, LiteDbItem>(null, new LiteDbRepositoryOptions
+            var localRepository = new LiteDbRepository<string, TestLiteDbItem>(null, new LiteDbRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });
 
             localRepository.IsInitialized.Should().BeTrue();
 
-            var item = await localRepository.InsertAsync(new LiteDbItem());
+            var item = await localRepository.InsertAsync(new TestLiteDbItem());
 
             item.Should().NotBeNull();
         }
@@ -60,10 +60,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Find()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "Find",
                     Id = "Find" + i,
@@ -81,10 +81,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task FindTakeSkip()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "FindTakeSkip",
                     Id = "FindTakeSkip" + i,
@@ -105,10 +105,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task FindTake()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "FindTake",
                     Id = "FindTake" + i,
@@ -129,10 +129,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task FindSkip()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "FindSkip",
                     Id = "FindSkip" + i,
@@ -153,10 +153,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task FindOrder()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "FindOrder",
                     Id = "FindOrder" + i,
@@ -187,10 +187,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "OrderThen is not supported.")]
         public async Task FindOrderThen()
         {
-            var list = new List<LiteDbItem>();
+            var list = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "FindOrderThen",
                     Id = "FindOrderThen" + i,
@@ -233,14 +233,14 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "need to check it out")]
         public async Task InsertOneItem()
         {
-            var insertFirstItem = await _repository.InsertAsync(new LiteDbItem
+            var insertFirstItem = await _repository.InsertAsync(new TestLiteDbItem
             {
                 Id = "InsertOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertSecondItem = await _repository.InsertAsync(new LiteDbItem
+            var insertSecondItem = await _repository.InsertAsync(new TestLiteDbItem
             {
                 Id = "InsertOneItem",
                 RowKey = "rk",
@@ -254,11 +254,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertListOfItems()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = $"InsertListOfItems{i % 2}",
                     Id = "InsertListOfItems" + i,
@@ -274,18 +274,18 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "need to check it out")]
         public async Task Insert100Items()
         {
-            await _repository.InsertAsync(new LiteDbItem
+            await _repository.InsertAsync(new TestLiteDbItem
             {
                 RowKey = "Insert100Items",
                 Id = "Insert100Items140",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     RowKey = "Insert100Items",
                     Id = "Insert100Items" + i,
@@ -301,14 +301,14 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOrUpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new LiteDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestLiteDbItem
             {
                 PartKey = "InsertOrUpdateOneItem",
                 Id = "InsertOrUpdateOneItem",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertTwoItem = await _repository.InsertOrUpdateAsync(new LiteDbItem
+            var insertTwoItem = await _repository.InsertOrUpdateAsync(new TestLiteDbItem
             {
                 PartKey = "InsertOrUpdateOneItem22",
                 Id = "InsertOrUpdateOneItem",
@@ -322,11 +322,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOrUpdateListOfItems()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = $"InsertOrUpdateListOfItems{i % 2}",
                     Id = "InsertOrUpdateListOfItems" + i,
@@ -344,18 +344,18 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task InsertOrUpdate100Items()
         {
-            await _repository.InsertOrUpdateAsync(new LiteDbItem
+            await _repository.InsertOrUpdateAsync(new TestLiteDbItem
             {
                 PartKey = "InsertOrUpdate100Items",
                 Id = "InsertOrUpdate100Items1",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "InsertOrUpdate100Items",
                     Id = "InsertOrUpdate100Items1" + i,
@@ -377,21 +377,21 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task UpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertAsync(new LiteDbItem
+            var insertOneItem = await _repository.InsertAsync(new TestLiteDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk",
                 Data = "test"
             });
 
-            var updateFirstItem = await _repository.UpdateAsync(new LiteDbItem
+            var updateFirstItem = await _repository.UpdateAsync(new TestLiteDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk",
                 Data = "test-test"
             });
 
-            var updateSecondItem = await _repository.UpdateAsync(new LiteDbItem
+            var updateSecondItem = await _repository.UpdateAsync(new TestLiteDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk-rk",
@@ -406,11 +406,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task UpdateListOfItems()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "UpdateListOfItems",
                     Id = "UpdateListOfItems" + i,
@@ -423,7 +423,7 @@ namespace ManagedCode.Repository.Tests
             list.Clear();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "UpdateListOfItems",
                     Id = "UpdateListOfItems" + i,
@@ -440,11 +440,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Update5Items()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 5; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "Update5Items",
                     Id = "Update5Items" + i,
@@ -457,7 +457,7 @@ namespace ManagedCode.Repository.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "Update5Items",
                     Id = "Update5Items" + i,
@@ -474,11 +474,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "need to check it out")]
         public async Task Update10Items()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 10; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "Update10Items",
                     Id = "Update10Items" + i,
@@ -491,7 +491,7 @@ namespace ManagedCode.Repository.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "Update10Items",
                     Id = "Update10Items" + i,
@@ -512,7 +512,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteOneItemById()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new LiteDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestLiteDbItem
             {
                 Id = "DeleteOneItemById",
                 RowKey = "rk",
@@ -527,7 +527,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteOneItem()
         {
-            var item = new LiteDbItem
+            var item = new TestLiteDbItem
             {
                 PartKey = "DeleteOneItem",
                 RowKey = "rk",
@@ -544,11 +544,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteListOfItems()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "DeleteListOfItems",
                     Id = "DeleteListOfItems" + i,
@@ -566,11 +566,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteListOfItemsById()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "DeleteListOfItemsById",
                     Id = "DeleteListOfItemsById" + i,
@@ -588,11 +588,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteByQuery()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     PartKey = "DeleteByQuery",
                     Id = "DeleteByQuery" + i,
@@ -609,11 +609,11 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task DeleteAll()
         {
-            List<LiteDbItem> list = new();
+            List<TestLiteDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new LiteDbItem
+                list.Add(new TestLiteDbItem
                 {
                     Id = "DeleteAll" + i,
                     PartKey = "DeleteAll",
@@ -638,7 +638,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetByWrongId()
         {
-            var insertOneItem = await _repository.InsertAsync(new LiteDbItem
+            var insertOneItem = await _repository.InsertAsync(new TestLiteDbItem
             {
                 PartKey = "GetByWrongId",
                 RowKey = "rk",
@@ -653,10 +653,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetById()
         {
-            var items = new List<LiteDbItem>();
+            var items = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new LiteDbItem
+                items.Add(new TestLiteDbItem
                 {
                     Id = "GetById" + i,
                     PartKey = "GetById",
@@ -675,10 +675,10 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task GetByQuery()
         {
-            var items = new List<LiteDbItem>();
+            var items = new List<TestLiteDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new LiteDbItem
+                items.Add(new TestLiteDbItem
                 {
                     PartKey = "GetByQuery",
                     Id = "GetByQuery" + i,
@@ -699,7 +699,7 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new LiteDbItem
+                await _repository.InsertAsync(new TestLiteDbItem
                 {
                     PartKey = "GetByWrongQuery",
                     RowKey = i.ToString(),
@@ -718,7 +718,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task Count()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new LiteDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestLiteDbItem
             {
                 PartKey = "Count",
                 RowKey = "rk",
@@ -735,7 +735,7 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new LiteDbItem
+                await _repository.InsertAsync(new TestLiteDbItem
                 {
                     PartKey = "CountByQuery",
                     Id = "CountByQuery" + i,
