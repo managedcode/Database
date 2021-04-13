@@ -57,6 +57,13 @@ jobs:
         PROJECT_FILE_PATH: ManagedCode.Repository.SQLite/ManagedCode.Repository.SQLite.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
+
+    - name: Publish Repository.MongoDB to NuGet
+      uses: brandedoutcast/publish-nuget@v2.5.5
+      with:
+        PROJECT_FILE_PATH: ManagedCode.Repository.MongoDB/ManagedCode.Repository.MongoDB.csproj
+        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
         
         
         

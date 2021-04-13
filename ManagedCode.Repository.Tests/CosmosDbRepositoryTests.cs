@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Repository.Core;
 using ManagedCode.Repository.CosmosDB;
+using ManagedCode.Repository.Tests.Common;
 using Xunit;
-using CosmosDbItem = ManagedCode.Repository.Tests.Common.CosmosDbItem;
 
 namespace ManagedCode.Repository.Tests
 {
@@ -15,10 +15,11 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
 
-        private readonly CosmosDB.ICosmosDbRepository<CosmosDbItem> _repository = new CosmosDbRepository<CosmosDbItem>(null, new CosmosDbRepositoryOptions
-        {
-            ConnectionString = ConnecntionString
-        });
+        private readonly CosmosDB.ICosmosDbRepository<TestCosmosDbItem> _repository = new CosmosDbRepository<TestCosmosDbItem>(null,
+            new CosmosDbRepositoryOptions
+            {
+                ConnectionString = ConnecntionString
+            });
 
         public CosmosDbRepositoryTests()
         {
@@ -38,14 +39,14 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new CosmosDbRepository<CosmosDbItem>(null, new CosmosDbRepositoryOptions
+            var localRepository = new CosmosDbRepository<TestCosmosDbItem>(null, new CosmosDbRepositoryOptions
             {
                 ConnectionString = ConnecntionString
             });
 
             localRepository.IsInitialized.Should().BeFalse();
 
-            var item = await localRepository.InsertAsync(new CosmosDbItem());
+            var item = await localRepository.InsertAsync(new TestCosmosDbItem());
 
             item.Should().NotBeNull();
         }
@@ -55,10 +56,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Find()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "Find",
                     Id = "Find" + i,
@@ -76,10 +77,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task FindTakeSkip()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "FindTakeSkip",
                     Id = "FindTakeSkip" + i,
@@ -100,10 +101,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task FindTake()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "FindTake",
                     Id = "FindTake" + i,
@@ -124,10 +125,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task FindSkip()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "FindSkip",
                     Id = "FindSkip" + i,
@@ -148,10 +149,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task FindOrder()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "FindOrder",
                     Id = "FindOrder" + i,
@@ -182,10 +183,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "The order by query does not have a corresponding composite index that it can be served from. CompositeIndexes required.")]
         public async Task FindOrderThen()
         {
-            var list = new List<CosmosDbItem>();
+            var list = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "FindOrderThen",
                     Id = "FindOrderThen" + i,
@@ -228,14 +229,14 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOneItem()
         {
-            var insertFirstItem = await _repository.InsertAsync(new CosmosDbItem
+            var insertFirstItem = await _repository.InsertAsync(new TestCosmosDbItem
             {
                 Id = "InsertOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertSecondItem = await _repository.InsertAsync(new CosmosDbItem
+            var insertSecondItem = await _repository.InsertAsync(new TestCosmosDbItem
             {
                 Id = "InsertOneItem",
                 RowKey = "rk",
@@ -249,11 +250,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertListOfItems()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = $"InsertListOfItems{i % 2}",
                     Id = "InsertListOfItems" + i,
@@ -269,18 +270,18 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Insert100Items()
         {
-            await _repository.InsertAsync(new CosmosDbItem
+            await _repository.InsertAsync(new TestCosmosDbItem
             {
                 RowKey = "Insert100Items",
                 Id = "Insert100Items140",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     RowKey = "Insert100Items",
                     Id = "Insert100Items" + i,
@@ -296,14 +297,14 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "InsertOrUpdateOneItem",
                 Id = "InsertOrUpdateOneItem",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertTwoItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
+            var insertTwoItem = await _repository.InsertOrUpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "InsertOrUpdateOneItem",
                 Id = "InsertOrUpdateOneItem",
@@ -317,11 +318,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdateListOfItems()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = $"InsertOrUpdateListOfItems{i % 2}",
                     Id = "InsertOrUpdateListOfItems" + i,
@@ -339,18 +340,18 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdate100Items()
         {
-            await _repository.InsertOrUpdateAsync(new CosmosDbItem
+            await _repository.InsertOrUpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "InsertOrUpdate100Items",
                 Id = "InsertOrUpdate100Items1",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "InsertOrUpdate100Items",
                     Id = "InsertOrUpdate100Items1" + i,
@@ -372,21 +373,21 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task UpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertAsync(new CosmosDbItem
+            var insertOneItem = await _repository.InsertAsync(new TestCosmosDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk",
                 Data = "test"
             });
 
-            var updateFirstItem = await _repository.UpdateAsync(new CosmosDbItem
+            var updateFirstItem = await _repository.UpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk",
                 Data = "test-test"
             });
 
-            var updateSecondItem = await _repository.UpdateAsync(new CosmosDbItem
+            var updateSecondItem = await _repository.UpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "UpdateOneItem",
                 Id = "rk-rk",
@@ -401,11 +402,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task UpdateListOfItems()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "UpdateListOfItems",
                     Id = "UpdateListOfItems" + i,
@@ -418,7 +419,7 @@ namespace ManagedCode.Repository.Tests
             list.Clear();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "UpdateListOfItems",
                     Id = "UpdateListOfItems" + i,
@@ -435,11 +436,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Update5Items()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 5; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "Update5Items",
                     Id = "Update5Items" + i,
@@ -452,7 +453,7 @@ namespace ManagedCode.Repository.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "Update5Items",
                     Id = "Update5Items" + i,
@@ -469,11 +470,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Update10Items()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 10; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "Update10Items",
                     Id = "Update10Items" + i,
@@ -486,7 +487,7 @@ namespace ManagedCode.Repository.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "Update10Items",
                     Id = "Update10Items" + i,
@@ -507,7 +508,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteOneItemById()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestCosmosDbItem
             {
                 Id = "DeleteOneItemById",
                 RowKey = "rk",
@@ -522,7 +523,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteOneItem()
         {
-            var item = new CosmosDbItem
+            var item = new TestCosmosDbItem
             {
                 PartKey = "DeleteOneItem",
                 RowKey = "rk",
@@ -539,11 +540,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteListOfItems()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "DeleteListOfItems",
                     Id = "DeleteListOfItems" + i,
@@ -561,11 +562,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteListOfItemsById()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "DeleteListOfItemsById",
                     Id = "DeleteListOfItemsById" + i,
@@ -583,11 +584,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteByQuery()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     PartKey = "DeleteByQuery",
                     Id = "DeleteByQuery" + i,
@@ -604,11 +605,11 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteAll()
         {
-            List<CosmosDbItem> list = new();
+            List<TestCosmosDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new CosmosDbItem
+                list.Add(new TestCosmosDbItem
                 {
                     Id = "DeleteAll" + i,
                     PartKey = "DeleteAll",
@@ -633,7 +634,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetByWrongId()
         {
-            var insertOneItem = await _repository.InsertAsync(new CosmosDbItem
+            var insertOneItem = await _repository.InsertAsync(new TestCosmosDbItem
             {
                 PartKey = "GetByWrongId",
                 RowKey = "rk",
@@ -648,10 +649,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetById()
         {
-            var items = new List<CosmosDbItem>();
+            var items = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new CosmosDbItem
+                items.Add(new TestCosmosDbItem
                 {
                     Id = "GetById" + i,
                     PartKey = "GetById",
@@ -670,10 +671,10 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetByQuery()
         {
-            var items = new List<CosmosDbItem>();
+            var items = new List<TestCosmosDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new CosmosDbItem
+                items.Add(new TestCosmosDbItem
                 {
                     PartKey = "GetByQuery",
                     Id = "GetByQuery" + i,
@@ -694,7 +695,7 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new CosmosDbItem
+                await _repository.InsertAsync(new TestCosmosDbItem
                 {
                     PartKey = "GetByWrongQuery",
                     RowKey = i.ToString(),
@@ -713,7 +714,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Count()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new CosmosDbItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestCosmosDbItem
             {
                 PartKey = "Count",
                 RowKey = "rk",
@@ -730,7 +731,7 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new CosmosDbItem
+                await _repository.InsertAsync(new TestCosmosDbItem
                 {
                     PartKey = "CountByQuery",
                     Id = "CountByQuery" + i,

@@ -3,23 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ManagedCode.Repository.AzureTable;
 using ManagedCode.Repository.Core;
+using ManagedCode.Repository.MongoDB;
 using ManagedCode.Repository.Tests.Common;
+using MongoDB.Bson;
 using Xunit;
 
 namespace ManagedCode.Repository.Tests
 {
-    public class AzureTableRepositoryTests
+    public class MongoDbRepositoryTests
     {
         public const string ConnecntionString =
-            "DefaultEndpointsProtocol=http;AccountName=localhost;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;TableEndpoint=http://localhost:8902/;";
+            "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
 
-        private readonly AzureTable.IAzureTableRepository<TestAzureTableItem> _repository = new AzureTableRepository<TestAzureTableItem>(null,
-            new AzureTableRepositoryOptions
-                {ConnectionString = ConnecntionString});
+        private readonly IMongoDbRepository<TestMongoDbItem> _repository = new MongoDbRepository<TestMongoDbItem>(null, new MongoDbRepositoryOptions
+        {
+            ConnectionString = ConnecntionString
+        });
 
-        public AzureTableRepositoryTests()
+        public MongoDbRepositoryTests()
         {
             _repository.InitializeAsync().Wait();
             //_repository.DeleteAllAsync().Wait();
@@ -37,17 +39,16 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new AzureTableRepository<TestAzureTableItem>(null, new AzureTableRepositoryOptions
-                {ConnectionString = ConnecntionString});
+            var localRepository = new MongoDbRepository<TestMongoDbItem>(null, new MongoDbRepositoryOptions
+            {
+                ConnectionString = ConnecntionString
+            });
 
             localRepository.IsInitialized.Should().BeFalse();
 
-            await localRepository.InsertAsync(new TestAzureTableItem
-            {
-                PartitionKey = "NotInitializedAsync",
-                RowKey = "rk",
-                Data = string.Empty
-            });
+            var item = await localRepository.InsertAsync(new TestMongoDbItem());
+
+            item.Should().NotBeNull();
         }
 
         #region Find
@@ -55,13 +56,13 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Find()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "Find",
-                    RowKey = i.ToString(),
+                    PartKey = "Find",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -69,20 +70,20 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "Find" && w.IntData >= 50).ToListAsync();
+            var items = await _repository.FindAsync(w => w.PartKey == "Find" && w.IntData >= 50).ToListAsync();
             items.Count.Should().Be(50);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task FindTakeSkip()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "FindTakeSkip",
-                    RowKey = i.ToString(),
+                    PartKey = "FindTakeSkip",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -90,22 +91,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindTakeSkip" && w.IntData > 0, 15, 10).ToListAsync();
-            items.Count.Should().Be(15);
-            items.First().IntData.Should().Be(19);
-            items.Last().IntData.Should().Be(31);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindTakeSkip" && w.IntData > 0, 15).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindTakeSkip" && w.IntData > 0, 15, 10).ToListAsync();
+            items1.Count.Should().Be(15);
+            items2.Count.Should().Be(15);
+            items1[10].Data.Should().BeEquivalentTo(items2[0].Data);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task FindTake()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "FindTake",
-                    RowKey = i.ToString(),
+                    PartKey = "FindTake",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -113,21 +115,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindTake" && w.IntData >= 50, 10).ToListAsync();
-            items.Count.Should().Be(10);
-            items.First().IntData.Should().Be(50);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindTake" && w.IntData >= 50, 10).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindTake" && w.IntData >= 50, 15).ToListAsync();
+            items1.Count.Should().Be(10);
+            items2.Count.Should().Be(15);
+            items1[0].Data.Should().Be(items2[0].Data);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task FindSkip()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "FindSkip",
-                    RowKey = i.ToString(),
+                    PartKey = "FindSkip",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -135,21 +139,23 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindSkip" && w.IntData >= 50, skip: 10).ToListAsync();
-            items.Count.Should().Be(40);
-            items.First().IntData.Should().Be(60);
+            var items1 = await _repository.FindAsync(w => w.PartKey == "FindSkip" && w.IntData >= 50, skip: 10).ToListAsync();
+            var items2 = await _repository.FindAsync(w => w.PartKey == "FindSkip" && w.IntData >= 50, skip: 11).ToListAsync();
+            items1.Count.Should().Be(40);
+            items2.Count.Should().Be(39);
+            items1[1].IntData.Should().Be(items2[0].IntData);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task FindOrder()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "FindOrder",
-                    RowKey = i.ToString(),
+                    PartKey = "FindOrder",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i}"
                 });
@@ -157,11 +163,11 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindOrder" && w.IntData > 9,
+            var items = await _repository.FindAsync(w => w.PartKey == "FindOrder" && w.IntData > 9,
                     o => o.Id, 10, 1)
                 .ToListAsync();
 
-            var itemsByDescending = await _repository.FindAsync(w => w.PartitionKey == "FindOrder" && w.IntData > 10,
+            var itemsByDescending = await _repository.FindAsync(w => w.PartKey == "FindOrder" && w.IntData > 10,
                     o => o.Id, Order.ByDescending, 10)
                 .ToListAsync();
 
@@ -170,20 +176,20 @@ namespace ManagedCode.Repository.Tests
             items[1].IntData.Should().Be(12);
 
             itemsByDescending.Count.Should().Be(10);
-            itemsByDescending[0].IntData.Should().Be(11);
-            itemsByDescending[1].IntData.Should().Be(12);
+            itemsByDescending[0].IntData.Should().Be(99);
+            itemsByDescending[1].IntData.Should().Be(98);
         }
 
-        [Fact(Skip = "Emulator issue")]
+        [Fact(Skip = "The order by query does not have a corresponding composite index that it can be served from. CompositeIndexes required.")]
         public async Task FindOrderThen()
         {
-            var list = new List<TestAzureTableItem>();
+            var list = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "FindOrderThen",
-                    RowKey = i.ToString(),
+                    PartKey = "FindOrderThen",
+                    Id = ObjectId.GenerateNewId(),
                     IntData = i,
                     Data = $"item{i % 2}"
                 });
@@ -191,15 +197,15 @@ namespace ManagedCode.Repository.Tests
 
             await _repository.InsertOrUpdateAsync(list);
 
-            var items = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 9,
+            var items = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 9,
                     o => o.Data, t => t.IntData, 10, 1)
                 .ToListAsync();
 
-            var itemsBy = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 10,
+            var itemsBy = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 10,
                     o => o.Data, Order.ByDescending, t => t.IntData, 10)
                 .ToListAsync();
 
-            var itemsThenByDescending = await _repository.FindAsync(w => w.PartitionKey == "FindOrderThen" && w.IntData >= 10,
+            var itemsThenByDescending = await _repository.FindAsync(w => w.PartKey == "FindOrderThen" && w.IntData >= 10,
                     o => o.Data, Order.ByDescending, t => t.IntData, Order.ByDescending, 10)
                 .ToListAsync();
 
@@ -223,16 +229,17 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOneItem()
         {
-            var insertFirstItem = await _repository.InsertAsync(new TestAzureTableItem
+            var id = ObjectId.GenerateNewId();
+            var insertFirstItem = await _repository.InsertAsync(new TestMongoDbItem
             {
-                PartitionKey = "InsertOneItem",
+                Id = id,
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertSecondItem = await _repository.InsertAsync(new TestAzureTableItem
+            var insertSecondItem = await _repository.InsertAsync(new TestMongoDbItem
             {
-                PartitionKey = "InsertOneItem",
+                Id = id,
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
@@ -244,14 +251,13 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertListOfItems()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = $"InsertListOfItems{i % 2}",
-                    RowKey = i.ToString(),
+                    PartKey = $"InsertListOfItems{i % 2}",
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -264,44 +270,46 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Insert100Items()
         {
-            await _repository.InsertAsync(new TestAzureTableItem
+            var item = new TestMongoDbItem
             {
-                PartitionKey = "Insert100Items",
-                RowKey = "140",
+                RowKey = "Insert100Items",
                 Data = Guid.NewGuid().ToString()
-            });
+            };
+            await _repository.InsertAsync(item);
 
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "Insert100Items",
-                    RowKey = i.ToString(),
+                    RowKey = "Insert100Items",
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
+            list[0] = item;
+
             var items = await _repository.InsertAsync(list);
 
-            items.Should().Be(100);
+            items.Should().Be(149);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestAzureTableItem
+            var id = ObjectId.GenerateNewId();
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "InsertOrUpdateOneItem",
-                RowKey = "1",
+                PartKey = "InsertOrUpdateOneItem",
+                Id = id,
                 Data = Guid.NewGuid().ToString()
             });
 
-            var insertTwoItem = await _repository.InsertOrUpdateAsync(new TestAzureTableItem
+            var insertTwoItem = await _repository.InsertOrUpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "InsertOrUpdateOneItem",
-                RowKey = "1",
+                PartKey = "InsertOrUpdateOneItem",
+                Id = id,
                 Data = Guid.NewGuid().ToString()
             });
 
@@ -312,14 +320,13 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdateListOfItems()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = $"InsertOrUpdateListOfItems{i % 2}",
-                    RowKey = i.ToString(),
+                    PartKey = $"InsertOrUpdateListOfItems{i % 2}",
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -334,21 +341,19 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task InsertOrUpdate100Items()
         {
-            await _repository.InsertOrUpdateAsync(new TestAzureTableItem
+            await _repository.InsertOrUpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "InsertOrUpdate100Items",
-                RowKey = "99",
+                PartKey = "InsertOrUpdate100Items",
                 Data = Guid.NewGuid().ToString()
             });
 
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "InsertOrUpdate100Items",
-                    RowKey = i.ToString(),
+                    PartKey = "InsertOrUpdate100Items",
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -367,24 +372,25 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task UpdateOneItem()
         {
-            var insertOneItem = await _repository.InsertAsync(new TestAzureTableItem
+            var id = ObjectId.GenerateNewId();
+            var insertOneItem = await _repository.InsertAsync(new TestMongoDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk",
+                PartKey = "UpdateOneItem",
+                Id = id,
                 Data = "test"
             });
 
-            var updateFirstItem = await _repository.UpdateAsync(new TestAzureTableItem
+            var updateFirstItem = await _repository.UpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk",
+                PartKey = "UpdateOneItem",
+                Id = id,
                 Data = "test-test"
             });
 
-            var updateSecondItem = await _repository.UpdateAsync(new TestAzureTableItem
+            var updateSecondItem = await _repository.UpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "UpdateOneItem",
-                RowKey = "rk-rk",
+                PartKey = "UpdateOneItem",
+                Id = ObjectId.GenerateNewId(),
                 Data = "test"
             });
 
@@ -396,29 +402,22 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task UpdateListOfItems()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "UpdateListOfItems",
-                    RowKey = i.ToString(),
+                    PartKey = "UpdateListOfItems",
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertAsync(list);
 
-            list.Clear();
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
-                {
-                    PartitionKey = "UpdateListOfItems",
-                    RowKey = i.ToString(),
-                    Data = Guid.NewGuid().ToString()
-                });
+                list[i].Data = Guid.NewGuid().ToString();
             }
 
             var updatedItems = await _repository.UpdateAsync(list);
@@ -430,29 +429,22 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Update5Items()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 5; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "Update5Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update5Items",
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertAsync(list);
-            list.Clear();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
-                {
-                    PartitionKey = "Update5Items",
-                    RowKey = i.ToString(),
-                    Data = Guid.NewGuid().ToString()
-                });
+                list[i].Data = Guid.NewGuid().ToString();
             }
 
             var updatedItems = await _repository.UpdateAsync(list);
@@ -464,34 +456,29 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Update10Items()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 10; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "Update10Items",
-                    RowKey = i.ToString(),
+                    PartKey = "Update10Items",
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertAsync(list);
+            ;
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
-                {
-                    PartitionKey = "Update10Items",
-                    RowKey = i.ToString(),
-                    Data = Guid.NewGuid().ToString()
-                });
+                list[i].Data = Guid.NewGuid().ToString();
             }
 
             var insertedItems = await _repository.InsertAsync(list);
 
             items.Should().Be(10);
-            insertedItems.Should().Be(0);
+            insertedItems.Should().Be(90);
         }
 
         #endregion
@@ -501,24 +488,25 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteOneItemById()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestAzureTableItem
+            var id = ObjectId.GenerateNewId();
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "DeleteOneItemById",
-                RowKey = "rk",
+                Id = id,
+                RowKey = id.ToString(),
                 Data = Guid.NewGuid().ToString()
             });
 
-            var deleteOneTimer = await _repository.DeleteAsync(new TableId("DeleteOneItemById", "rk"));
+            var deleteOneItem = await _repository.DeleteAsync(id);
             insertOneItem.Should().NotBeNull();
-            deleteOneTimer.Should().BeTrue();
+            deleteOneItem.Should().BeTrue();
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteOneItem()
         {
-            var item = new TestAzureTableItem
+            var item = new TestMongoDbItem
             {
-                PartitionKey = "DeleteOneItem",
+                PartKey = "DeleteOneItem",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             };
@@ -533,14 +521,13 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteListOfItems()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "DeleteListOfItems",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteListOfItems",
                     Data = Guid.NewGuid().ToString()
                 });
             }
@@ -555,57 +542,54 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteListOfItemsById()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 150; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "DeleteListOfItemsById",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteListOfItemsById",
                     Data = Guid.NewGuid().ToString()
                 });
             }
 
             var items = await _repository.InsertOrUpdateAsync(list);
-            var ids = Enumerable.Range(0, 150);
-            var deletedItems = await _repository.DeleteAsync(ids.Select(s => new TableId("DeleteListOfItemsById", s.ToString())));
+            var deletedItems = await _repository.DeleteAsync(list.Select(s => s.Id));
 
-            deletedItems.Should().Be(150);
             items.Should().Be(150);
+            deletedItems.Should().Be(150);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteByQuery()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "DeleteByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "DeleteByQuery",
                     IntData = i,
                     Data = i >= 50 ? i.ToString() : string.Empty
                 });
             }
 
             await _repository.InsertOrUpdateAsync(list);
-            var items = await _repository.DeleteAsync(w => w.PartitionKey == "DeleteByQuery" && w.IntData >= 50);
+            var items = await _repository.DeleteAsync(w => w.PartKey == "DeleteByQuery" && w.IntData >= 50);
             items.Should().Be(50);
         }
 
         [Fact(Skip = "Emulator issue")]
         public async Task DeleteAll()
         {
-            List<TestAzureTableItem> list = new();
+            List<TestMongoDbItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new TestAzureTableItem
+                list.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "DeleteAll",
+                    PartKey = "DeleteAll",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -627,14 +611,14 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetByWrongId()
         {
-            var insertOneItem = await _repository.InsertAsync(new TestAzureTableItem
+            var insertOneItem = await _repository.InsertAsync(new TestMongoDbItem
             {
-                PartitionKey = "GetByWrongId",
+                PartKey = "GetByWrongId",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
 
-            var item = await _repository.GetAsync(new TableId("GetByWrongId", "wrong"));
+            var item = await _repository.GetAsync(ObjectId.GenerateNewId());
             insertOneItem.Should().NotBeNull();
             item.Should().BeNull();
         }
@@ -642,12 +626,12 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetById()
         {
-            var items = new List<TestAzureTableItem>();
+            var items = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new TestAzureTableItem
+                items.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "GetById",
+                    PartKey = "GetById",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -655,7 +639,7 @@ namespace ManagedCode.Repository.Tests
 
             var insertOneItem = await _repository.InsertOrUpdateAsync(items);
 
-            var item = await _repository.GetAsync(new TableId("GetById", "10"));
+            var item = await _repository.GetAsync(items.First().Id);
             insertOneItem.Should().Be(100);
             item.Should().NotBeNull();
         }
@@ -663,20 +647,20 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task GetByQuery()
         {
-            var items = new List<TestAzureTableItem>();
+            var items = new List<TestMongoDbItem>();
             for (var i = 0; i < 100; i++)
             {
-                items.Add(new TestAzureTableItem
+                items.Add(new TestMongoDbItem
                 {
-                    PartitionKey = "GetByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "GetByQuery",
+                    RowKey = "4",
                     Data = $"item{i}"
                 });
             }
 
             var addedItems = await _repository.InsertOrUpdateAsync(items);
 
-            var item = await _repository.GetAsync(w => w.Data == "item4" && w.RowKey == "4" && w.PartitionKey == "GetByQuery");
+            var item = await _repository.GetAsync(w => w.Data == "item4" && w.RowKey == "4" && w.PartKey == "GetByQuery");
             addedItems.Should().Be(100);
             item.Should().NotBeNull();
         }
@@ -686,9 +670,9 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new TestAzureTableItem
+                await _repository.InsertAsync(new TestMongoDbItem
                 {
-                    PartitionKey = "GetByWrongQuery",
+                    PartKey = "GetByWrongQuery",
                     RowKey = i.ToString(),
                     Data = Guid.NewGuid().ToString()
                 });
@@ -705,9 +689,9 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task Count()
         {
-            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestAzureTableItem
+            var insertOneItem = await _repository.InsertOrUpdateAsync(new TestMongoDbItem
             {
-                PartitionKey = "Count",
+                PartKey = "Count",
                 RowKey = "rk",
                 Data = Guid.NewGuid().ToString()
             });
@@ -722,15 +706,14 @@ namespace ManagedCode.Repository.Tests
         {
             for (var i = 0; i < 100; i++)
             {
-                await _repository.InsertAsync(new TestAzureTableItem
+                await _repository.InsertAsync(new TestMongoDbItem
                 {
-                    PartitionKey = "CountByQuery",
-                    RowKey = i.ToString(),
+                    PartKey = "CountByQuery",
                     IntData = i
                 });
             }
 
-            var count = await _repository.CountAsync(w => w.PartitionKey == "CountByQuery" && w.IntData == 4);
+            var count = await _repository.CountAsync(w => w.PartKey == "CountByQuery" && w.IntData == 4);
             count.Should().Be(1);
         }
 
