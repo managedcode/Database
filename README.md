@@ -13,7 +13,7 @@
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.AzureTable.svg)](https://www.nuget.org/packages/ManagedCode.Repository.AzureTable) | [ManagedCode.Repository.AzureTable](https://www.nuget.org/packages/ManagedCode.Repository.AzureTable) | AzureTable |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.CosmosDB.svg)](https://www.nuget.org/packages/ManagedCode.Repository.CosmosDB) | [ManagedCode.Repository.CosmosDB](https://www.nuget.org/packages/ManagedCode.Repository.CosmosDB) | CosmosDB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.LiteDB.svg)](https://www.nuget.org/packages/ManagedCode.Repository.LiteDB) | [ManagedCode.Repository.LiteDB](https://www.nuget.org/packages/ManagedCode.Repository.LiteDB) | LiteDB |
-|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.SQLite.svg)](https://www.nuget.org/packages/ManagedCode.Repository.MongoDB) | [ManagedCode.Repository.SQLite](https://www.nuget.org/packages/ManagedCode.Repository.MongoDB) | MongoDB |
+|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.SQLite.svg)](https://www.nuget.org/packages/ManagedCode.Repository.MongoDB) | [ManagedCode.Repository.MongoDB](https://www.nuget.org/packages/ManagedCode.Repository.MongoDB) | MongoDB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Repository.SQLite.svg)](https://www.nuget.org/packages/ManagedCode.Repository.SQLite) | [ManagedCode.Repository.SQLite](https://www.nuget.org/packages/ManagedCode.Repository.SQLite) | SQLite |
 
 
