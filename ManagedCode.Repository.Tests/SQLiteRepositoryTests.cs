@@ -17,7 +17,7 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString = "sqlite_test.db";
 
         private readonly IRepository<int, SQLiteDbItem> _repository =
-            new SQLiteRepository<int, SQLiteDbItem>(null, new SQLiteRepositoryOptions
+            new SQLiteRepository<int, SQLiteDbItem>( new SQLiteRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });
@@ -44,7 +44,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            IRepository<int, SQLiteDbItem> localRepository = new SQLiteRepository<int, SQLiteDbItem>(null, new SQLiteRepositoryOptions
+            IRepository<int, SQLiteDbItem> localRepository = new SQLiteRepository<int, SQLiteDbItem>(new SQLiteRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });

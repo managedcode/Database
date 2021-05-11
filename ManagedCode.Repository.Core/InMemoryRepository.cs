@@ -13,7 +13,7 @@ namespace ManagedCode.Repository.Core
     {
         private readonly Dictionary<TId, TItem> _storage = new();
 
-        public InMemoryRepository(ILogger logger) : base(logger)
+        public InMemoryRepository()
         {
             IsInitialized = true;
         }
@@ -468,5 +468,18 @@ namespace ManagedCode.Repository.Core
         }
 
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.Run(DisposeInternal));
+        }
+
+        protected override void DisposeInternal()
+        {
+            lock (_storage)
+            {
+                _storage.Clear();
+            }
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace ManagedCode.Repository.MongoDB
     {
         private readonly IMongoCollection<TItem> _collection;
         
-        public MongoDbRepository(ILogger logger, [NotNull] MongoDbRepositoryOptions options) : base(logger)
+        public MongoDbRepository([NotNull] MongoDbRepositoryOptions options)
         {
             var client = new MongoClient(options.ConnectionString);
             var database = client.GetDatabase(options.DataBaseName);
@@ -375,5 +375,15 @@ namespace ManagedCode.Repository.MongoDB
         }
 
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            
+        }
     }
 }

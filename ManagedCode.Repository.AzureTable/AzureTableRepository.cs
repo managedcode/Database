@@ -8,7 +8,7 @@ namespace ManagedCode.Repository.AzureTable
     public class AzureTableRepository<TItem> : BaseAzureTableRepository<TableId, TItem>, IAzureTableRepository<TItem>
         where TItem : class, IItem<TableId>, ITableEntity, new()
     {
-        public AzureTableRepository(ILogger logger, [NotNull] AzureTableRepositoryOptions options) : base(logger, options)
+        public AzureTableRepository([NotNull] AzureTableRepositoryOptions options) : base(options)
         {
         }
     }

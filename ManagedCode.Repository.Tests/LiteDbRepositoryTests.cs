@@ -16,7 +16,7 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString = "litedb_test.db";
 
         private readonly IRepository<string, TestLiteDbItem> _repository =
-            new LiteDbRepository<string, TestLiteDbItem>(null, new LiteDbRepositoryOptions
+            new LiteDbRepository<string, TestLiteDbItem>( new LiteDbRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });
@@ -43,7 +43,7 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new LiteDbRepository<string, TestLiteDbItem>(null, new LiteDbRepositoryOptions
+            var localRepository = new LiteDbRepository<string, TestLiteDbItem>(new LiteDbRepositoryOptions
             {
                 ConnectionString = GetTempDbName()
             });

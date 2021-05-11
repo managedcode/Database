@@ -16,15 +16,15 @@ namespace ManagedCode.Repository.AzureTable
     {
         private readonly AzureTableAdapter<TItem> _tableAdapter;
 
-        public BaseAzureTableRepository(ILogger logger, AzureTableRepositoryOptions options) : base(logger)
+        public BaseAzureTableRepository(AzureTableRepositoryOptions options)
         {
             if (string.IsNullOrEmpty(options.ConnectionString))
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(logger, options.TableStorageCredentials, options.TableStorageUri);
+                _tableAdapter = new AzureTableAdapter<TItem>(base.Logger, options.TableStorageCredentials, options.TableStorageUri);
             }
             else
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(logger, options.ConnectionString);
+                _tableAdapter = new AzureTableAdapter<TItem>(base.Logger, options.ConnectionString);
             }
 
             IsInitialized = true;
@@ -255,7 +255,17 @@ namespace ManagedCode.Repository.AzureTable
 
             return count;
         }
-
+        
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            
+        }
     }
 }

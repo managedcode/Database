@@ -18,7 +18,7 @@ namespace ManagedCode.Repository.CosmosDB
         private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
         private readonly bool _splitByType;
 
-        public CosmosDbRepository(ILogger logger, [NotNull] CosmosDbRepositoryOptions options) : base(logger)
+        public CosmosDbRepository([NotNull] CosmosDbRepositoryOptions options)
         {
             _splitByType = options.SplitByType;
             _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
@@ -627,5 +627,15 @@ namespace ManagedCode.Repository.CosmosDB
         }
 
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            
+        }
     }
 }

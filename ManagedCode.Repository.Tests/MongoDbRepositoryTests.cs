@@ -16,7 +16,7 @@ namespace ManagedCode.Repository.Tests
         public const string ConnecntionString =
             "mongodb://localhost:55000";
 
-        private readonly IMongoDbRepository<TestMongoDbItem> _repository = new MongoDbRepository<TestMongoDbItem>(null, new MongoDbRepositoryOptions
+        private readonly IMongoDbRepository<TestMongoDbItem> _repository = new MongoDbRepository<TestMongoDbItem>(new MongoDbRepositoryOptions
         {
             ConnectionString = ConnecntionString,
             DataBaseName = "db"
@@ -40,7 +40,7 @@ namespace ManagedCode.Repository.Tests
         [Fact(Skip = "Emulator issue")]
         public async Task NotInitializedAsync()
         {
-            var localRepository = new MongoDbRepository<TestMongoDbItem>(null, new MongoDbRepositoryOptions
+            var localRepository = new MongoDbRepository<TestMongoDbItem>(new MongoDbRepositoryOptions
             {
                 ConnectionString = ConnecntionString
             });

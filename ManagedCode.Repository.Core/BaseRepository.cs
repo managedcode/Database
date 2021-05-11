@@ -12,11 +12,10 @@ namespace ManagedCode.Repository.Core
 {
     public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where TItem : IItem<TId>
     {
-        protected readonly ILogger Logger;
+        protected readonly ILogger Logger = NullLogger.Instance;
 
-        protected BaseRepository(ILogger logger)
+        protected BaseRepository()
         {
-            Logger = logger ?? NullLogger.Instance;
         }
 
         public bool IsInitialized { get; protected set; }
@@ -725,5 +724,27 @@ namespace ManagedCode.Repository.Core
         protected abstract Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
 
         #endregion
+
+        private bool _disposed;
+        public void Dispose()
+        {
+            if(_disposed)
+                return;
+            
+            _disposed = true;
+            DisposeInternal();
+        }
+        
+        public ValueTask DisposeAsync()
+        {
+            if(_disposed)
+                return new ValueTask(Task.CompletedTask);
+            
+            _disposed = true;
+            return DisposeAsyncInternal();
+        }
+        
+        protected abstract ValueTask DisposeAsyncInternal();
+        protected abstract void DisposeInternal();
     }
 }

@@ -15,9 +15,9 @@ namespace ManagedCode.Repository.SQLite
     {
         private readonly SQLiteConnection _database;
 
-        public SQLiteRepository(ILogger logger,
+        public SQLiteRepository(
             [System.Diagnostics.CodeAnalysis.NotNull]
-            SQLiteRepositoryOptions options) : base(logger)
+            SQLiteRepositoryOptions options)
         {
             _database = options.Connection ?? new SQLiteConnection(options.ConnectionString);
             _database.CreateTable<TItem>();
@@ -387,5 +387,15 @@ namespace ManagedCode.Repository.SQLite
         }
 
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            
+        }
     }
 }

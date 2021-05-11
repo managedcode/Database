@@ -16,7 +16,7 @@ namespace ManagedCode.Repository.LiteDB
     {
         private readonly LiteDatabase _database;
 
-        public LiteDbRepository(ILogger logger, [NotNull] LiteDbRepositoryOptions options) : base(logger)
+        public LiteDbRepository([NotNull] LiteDbRepositoryOptions options)
         {
             _database = options.Database ?? new LiteDatabase(options.ConnectionString);
             IsInitialized = true;
@@ -380,5 +380,15 @@ namespace ManagedCode.Repository.LiteDB
         }
 
         #endregion
+        
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            
+        }
     }
 }

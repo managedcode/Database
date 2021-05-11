@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Repository.Core
 {
-    public interface IRepository<in TId, TItem> where TItem : IItem<TId>
+    public interface IRepository<in TId, TItem> : IDisposable, IAsyncDisposable where TItem : IItem<TId>
     {
         bool IsInitialized { get; }
 

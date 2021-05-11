@@ -4,11 +4,16 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <LangVersion>latest</LangVersion>
+
+        <DebugType>embedded</DebugType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <Title>ManagedCode.Repository.SQLite</Title>
         <Authors>ManagedCode</Authors>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-        <PackageVersion>1.0.10</PackageVersion>
+        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
+        <PackageVersion>1.0.11</PackageVersion>
         <Description>Repository for SQLite</Description>
     </PropertyGroup>
 
@@ -17,8 +22,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-      <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
 </Project>
