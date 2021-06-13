@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Repository.Core;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.LiteDB
 {
@@ -30,6 +29,15 @@ namespace ManagedCode.Repository.LiteDB
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
         }
 
         #region Insert
@@ -380,15 +388,5 @@ namespace ManagedCode.Repository.LiteDB
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            
-        }
     }
 }

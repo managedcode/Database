@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
 using Microsoft.Azure.Cosmos.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.CosmosDB
 {
@@ -38,6 +37,15 @@ namespace ManagedCode.Repository.CosmosDB
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
         }
 
         #region Insert
@@ -627,15 +635,5 @@ namespace ManagedCode.Repository.CosmosDB
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            
-        }
     }
 }

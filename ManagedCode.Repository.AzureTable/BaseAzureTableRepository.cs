@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.AzureTable
 {
@@ -20,11 +19,11 @@ namespace ManagedCode.Repository.AzureTable
         {
             if (string.IsNullOrEmpty(options.ConnectionString))
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(base.Logger, options.TableStorageCredentials, options.TableStorageUri);
+                _tableAdapter = new AzureTableAdapter<TItem>(Logger, options.TableStorageCredentials, options.TableStorageUri);
             }
             else
             {
-                _tableAdapter = new AzureTableAdapter<TItem>(base.Logger, options.ConnectionString);
+                _tableAdapter = new AzureTableAdapter<TItem>(Logger, options.ConnectionString);
             }
 
             IsInitialized = true;
@@ -33,6 +32,15 @@ namespace ManagedCode.Repository.AzureTable
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
         }
 
         #region Insert
@@ -255,17 +263,7 @@ namespace ManagedCode.Repository.AzureTable
 
             return count;
         }
-        
-        #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
 
-        protected override void DisposeInternal()
-        {
-            
-        }
+        #endregion
     }
 }
