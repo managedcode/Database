@@ -10,7 +10,7 @@ using Xunit;
 
 namespace ManagedCode.Repository.Tests
 {
-    public abstract class BaseRepositoryTests<TId, TItem> where TItem : IItem<TId>
+    public abstract class BaseRepositoryTests<TId, TItem> where TItem : BaseItem<TId>, new()
     {
         protected readonly IRepository<TId, TItem> Repository;
 
@@ -20,8 +20,26 @@ namespace ManagedCode.Repository.Tests
         }
 
         protected abstract TId GenerateId();
-        protected abstract TItem CreateNewItem();
-        protected abstract TItem CreateNewItem(TId id);
+        
+        protected TItem CreateNewItem()
+        {
+            var rnd = new Random();
+            return new TItem
+            {
+                Id = GenerateId(),
+                StringData = Guid.NewGuid().ToString(),
+                IntData = rnd.Next(),
+                FloatData = Convert.ToSingle(rnd.NextDouble()),
+                DateTimeData = DateTime.Now
+            };
+        }
+        
+        protected TItem CreateNewItem(TId id)
+        {
+            var item = CreateNewItem();
+            item.Id = id;
+            return item;
+        }
         
         [Fact]
         public async Task InitializeAsync()
@@ -32,7 +50,7 @@ namespace ManagedCode.Repository.Tests
             Repository.IsInitialized.Should().BeTrue();
         }
         
-#region Insert
+        #region Insert
 
         [Fact]
         public virtual async Task InsertOneItem()
@@ -60,6 +78,7 @@ namespace ManagedCode.Repository.Tests
 
             var items = await Repository.InsertAsync(list);
 
+            list.Count.Should().Be(100);
             items.Should().Be(100);
         }
 
@@ -79,104 +98,306 @@ namespace ManagedCode.Repository.Tests
             }
 
             var items = await Repository.InsertAsync(list);
+
+            list.Count.Should().Be(100);
             items.Should().Be(99);
         }
 
         [Fact]
         public virtual async Task InsertOrUpdateOneItem()
         {
-            var insertOneItem = await Repository.InsertOrUpdateAsync(new InMemoryItem
+            var id = GenerateId();
+            for (int i = 0; i < 100; i++)
             {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            insertOneItem.Should().NotBeNull();
+                var insertOneItem = await Repository.InsertOrUpdateAsync(CreateNewItem(id));
+                insertOneItem.Should().NotBeNull();
+            }
         }
 
         [Fact]
         public virtual async Task InsertOrUpdateListOfItems()
         {
-            List<InMemoryItem> list = new();
+            List<TItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
+                list.Add(CreateNewItem());
+            }
+            
+            var itemsInsert = await Repository.InsertOrUpdateAsync(list);
+            itemsInsert.Should().Be(100);
+            
+            var itemsUpdate = await Repository.InsertOrUpdateAsync(list.ToArray());
+            itemsUpdate.Should().Be(100);
+            
+            list.Count.Should().Be(100);
+            
+        }
+
+        #endregion
+        
+        #region Update
+
+        [Fact]
+        public virtual async Task UpdateOneItem()
+        {
+            var id = GenerateId();
+            
+            var insertOneItem = await Repository.InsertAsync(CreateNewItem(id));
+            var updateFirstItem = await Repository.UpdateAsync(CreateNewItem(id));
+            var updateSecondItem = await Repository.UpdateAsync(CreateNewItem());
+
+            insertOneItem.Should().NotBeNull();
+            updateFirstItem.Should().NotBeNull();
+            updateSecondItem.Should().BeNull();
+        }
+
+        [Fact]
+        public virtual async Task UpdateListOfItems()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
             }
 
-            var items = await Repository.InsertOrUpdateAsync(list);
+            var items = await Repository.InsertAsync(list);
+            var updatedItems = await Repository.UpdateAsync(list.ToArray());
 
+            items.Should().Be(100);
+            updatedItems.Should().Be(100);
+        }
+
+        [Fact]
+        public virtual async Task Update5Items()
+        {
+            List<TItem> list = new();
+
+            var id = GenerateId();
+            
+            list.Add(CreateNewItem(id));
+            for (var i = 0; i < 9; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var items = await Repository.InsertAsync(list);
+            list.Clear();
+
+            list.Add(CreateNewItem(id));
+            for (var i = 0; i < 9; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var updatedItems = await Repository.UpdateAsync(list);
+
+            list.Count.Should().Be(10);
+            items.Should().Be(10);
+            updatedItems.Should().Be(1);
+        }
+        
+        #endregion
+        
+        #region Delete
+
+        [Fact]
+        public virtual async Task DeleteOneItemById()
+        {
+            var item = CreateNewItem();
+            await Repository.InsertAsync(item);
+            var deleted = await Repository.DeleteAsync(item.Id);
+            item.Should().NotBeNull();
+            deleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public virtual async Task DeleteOneItem()
+        {
+            var item = CreateNewItem();
+            await Repository.InsertAsync(item);
+            var deleted = await Repository.DeleteAsync(item);
+            item.Should().NotBeNull();
+            deleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public virtual async Task DeleteListOfItems()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var items = await Repository.InsertAsync(list);
+            var deletedItems = await Repository.DeleteAsync(list);
+
+            deletedItems.Should().Be(100);
             items.Should().Be(100);
         }
 
         [Fact]
-        public virtual async Task InsertOrUpdate100Items()
+        public virtual async Task DeleteListOfItemsById()
         {
-            await Repository.InsertOrUpdateAsync(new InMemoryItem
-            {
-                Id = 99,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            List<InMemoryItem> list = new();
+            List<TItem> list = new();
 
             for (var i = 0; i < 100; i++)
             {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
+                list.Add(CreateNewItem());
             }
 
-            var items = await Repository.InsertOrUpdateAsync(list);
+            var items = await Repository.InsertAsync(list);
+            var ids = list.Select(s => s.Id);
+            var deletedItems = await Repository.DeleteAsync(ids);
 
+            deletedItems.Should().Be(100);
             items.Should().Be(100);
         }
 
+        [Fact]
+        public virtual async Task DeleteByQuery()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            await Repository.InsertOrUpdateAsync(list);
+            
+            var equals = await Repository.DeleteAsync(w => w.StringData == list[0].StringData);
+            var or = await Repository.DeleteAsync(w => w.StringData == list[1].StringData || w.StringData == list[2].StringData);
+
+            equals.Should().Be(1);
+            or.Should().Be(2);
+            
+        }
+
+        [Fact]
+        public virtual async Task DeleteAll()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var items = await Repository.InsertAsync(list);
+            var deletedItems = await Repository.DeleteAllAsync();
+            var count = await Repository.CountAsync();
+
+            deletedItems.Should().BeTrue();
+            items.Should().Be(100);
+            count.Should().Be(0);
+        }
+
         #endregion
-    }
-    
-    public class InMemoryRepositoryTests : BaseRepositoryTests<int, InMemoryItem>
-    {
-        private static int _count = 0;
-        public override int GenerateId()
+        
+        #region Count
+
+        [Fact]
+        public virtual async Task Count()
         {
-            _count++;
-            return _count;
+            await Repository.DeleteAllAsync();
+            
+            var insertOneItem = await Repository.InsertAsync(CreateNewItem());
+
+            var count = await Repository.CountAsync();
+            insertOneItem.Should().NotBeNull();
+            count.Should().Be(1);
         }
 
-        public override InMemoryItem CreateNewItem()
+        [Fact]
+        public virtual async Task CountByQuery()
         {
-            return new InMemoryItem
+            int count = 0;
+            var guid = Guid.NewGuid().ToString();
+            for (var i = 0; i < 100; i++)
             {
-                Id = GenerateId(),
-                Data = Guid.NewGuid().ToString()
-            };
+                var item = CreateNewItem();
+                if (i % 2 == 0)
+                {
+                    item.StringData = guid;
+                    count++;
+                }
+                await Repository.InsertAsync(item);
+            }
+
+            var deletedCount = await Repository.CountAsync(w => w.StringData == guid);
+            deletedCount.Should().Be(count);
         }
+
+        #endregion
         
-        public override InMemoryItem CreateNewItem(int id)
+        #region Get
+
+        [Fact]
+        public virtual async Task GetByWrongId()
         {
-            return new InMemoryItem
-            {
-                Id = id,
-                Data = Guid.NewGuid().ToString()
-            };
+            var id1 = GenerateId();
+            var id2 = GenerateId();
+            
+            var insertOneItem = await Repository.InsertAsync(CreateNewItem(id1));
+
+            var item = await Repository.GetAsync(id2);
+            insertOneItem.Should().NotBeNull();
+            item.Should().BeNull();
         }
 
-        public InMemoryRepositoryTests() : base(new InMemoryRepository<int, InMemoryItem>())
+        [Fact]
+        public virtual async Task GetById()
         {
-            Repository.InitializeAsync().Wait();
+            var id = GenerateId();
+            var insertOneItem = await Repository.InsertAsync(CreateNewItem(id));
+
+            var item = await Repository.GetAsync(id);
+            insertOneItem.Should().NotBeNull();
+            item.Should().NotBeNull();
+        }
+        
+        [Fact]
+        public virtual async Task GetByIdFirst()
+        {
+            var item1 = CreateNewItem();
+            var item2 = CreateNewItem();
+
+            await Repository.InsertAsync(item1);
+            await Repository.InsertAsync(item2);
+            
+            var item = await Repository.GetAsync(w => w.StringData == item1.StringData || w.StringData == item2.StringData);
+            item.Should().NotBeNull();
         }
 
-        
+        [Fact]
+        public virtual async Task GetByQuery()
+        {
+            var item1 = CreateNewItem();
+            var item2 = CreateNewItem();
 
-        
+            await Repository.InsertAsync(item1);
+            await Repository.InsertAsync(item2);
+            
+            var item = await Repository.GetAsync(w => w.StringData == item1.StringData);
+            item.Should().NotBeNull();
+        }
 
+        [Fact]
+        public virtual async Task GetByWrongQuery()
+        {
+            await Repository.InsertAsync(CreateNewItem());
+            await Repository.InsertAsync(CreateNewItem());
+            
+            var item = await Repository.GetAsync(w => w.StringData == "non existing value");
+            item.Should().BeNull();
+        }
+
+        #endregion
+        
         #region Find
 
         [Fact]
@@ -334,348 +555,21 @@ namespace ManagedCode.Repository.Tests
         }
 
         #endregion
-
-        #region Update
-
-        [Fact]
-        public async Task UpdateOneItem()
+    }
+    
+    public class InMemoryRepositoryTests : BaseRepositoryTests<int, InMemoryItem>
+    {
+        private static int _count = 0;
+        protected override int GenerateId()
         {
-            var insertOneItem = await Repository.InsertAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var updateFirstItem = await Repository.UpdateAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var updateSecondItem = await Repository.UpdateAsync(new InMemoryItem
-            {
-                Id = 2,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            insertOneItem.Should().NotBeNull();
-            updateFirstItem.Should().NotBeNull();
-            updateSecondItem.Should().BeNull();
+            _count++;
+            return _count;
         }
 
-        [Fact]
-        public async Task UpdateListOfItems()
+        public InMemoryRepositoryTests() : base(new InMemoryRepository<int, InMemoryItem>())
         {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-
-            list.Clear();
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var updatedItems = await Repository.UpdateAsync(list);
-
-            items.Should().Be(100);
-            updatedItems.Should().Be(100);
+            Repository.InitializeAsync().Wait();
         }
-
-        [Fact]
-        public async Task Update5Items()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 5; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-            list.Clear();
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var updatedItems = await Repository.UpdateAsync(list);
-
-            items.Should().Be(5);
-            updatedItems.Should().Be(5);
-        }
-
-        [Fact]
-        public async Task Update10Items()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 10; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var insertedItems = await Repository.InsertAsync(list);
-
-            items.Should().Be(10);
-            insertedItems.Should().Be(90);
-        }
-
-        #endregion
-
-        #region Delete
-
-        [Fact]
-        public async Task DeleteOneItemById()
-        {
-            var insertOneItem = await Repository.InsertAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var deleteOneTimer = await Repository.DeleteAsync(1);
-            insertOneItem.Should().NotBeNull();
-            deleteOneTimer.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task DeleteOneItem()
-        {
-            var item = new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            };
-
-            var insertOneItem = await Repository.InsertAsync(item);
-
-            var deleteOneTimer = await Repository.DeleteAsync(item);
-            insertOneItem.Should().NotBeNull();
-            deleteOneTimer.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task DeleteListOfItems()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-            var deletedItems = await Repository.DeleteAsync(list);
-
-            deletedItems.Should().Be(100);
-            items.Should().Be(100);
-        }
-
-        [Fact]
-        public async Task DeleteListOfItemsById()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-            var ids = Enumerable.Range(0, 100);
-            var deletedItems = await Repository.DeleteAsync(ids);
-
-            deletedItems.Should().Be(100);
-            items.Should().Be(100);
-        }
-
-        [Fact]
-        public async Task DeleteByQuery()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 100; i++)
-            {
-                await Repository.InsertAsync(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.DeleteAsync(w => w.Id >= 50);
-            items.Should().Be(50);
-        }
-
-        [Fact]
-        public async Task DeleteAll()
-        {
-            List<InMemoryItem> list = new();
-
-            for (var i = 0; i < 100; i++)
-            {
-                list.Add(new InMemoryItem
-                {
-                    Id = i,
-                    Data = Guid.NewGuid().ToString()
-                });
-            }
-
-            var items = await Repository.InsertAsync(list);
-            var deletedItems = await Repository.DeleteAllAsync();
-            var count = await Repository.CountAsync();
-
-            deletedItems.Should().BeTrue();
-            items.Should().Be(100);
-            count.Should().Be(0);
-        }
-
-        #endregion
-
-        #region Get
-
-        [Fact]
-        public async Task GetByWrongId()
-        {
-            var insertOneItem = await Repository.InsertAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var item = await Repository.GetAsync(2);
-            insertOneItem.Should().NotBeNull();
-            item.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task GetById()
-        {
-            var insertOneItem = await Repository.InsertAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var item = await Repository.GetAsync(1);
-            insertOneItem.Should().NotBeNull();
-            item.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task GetByQuery()
-        {
-            for (var i = 0; i < 100; i++)
-            {
-                await Repository.InsertAsync(new InMemoryItem
-                {
-                    Id = i,
-                    Data = $"item{i}"
-                });
-            }
-
-            var item = await Repository.GetAsync(w => w.Data == "item4");
-            item.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task GetByWrongQuery()
-        {
-            for (var i = 0; i < 100; i++)
-            {
-                await Repository.InsertAsync(new InMemoryItem
-                {
-                    Id = i,
-                    Data = $"item{i}"
-                });
-            }
-
-            var item = await Repository.GetAsync(w => w.Data == "some");
-            item.Should().BeNull();
-        }
-
-        #endregion
-
-        #region Count
-
-        [Fact]
-        public async Task Count()
-        {
-            var insertOneItem = await Repository.InsertAsync(new InMemoryItem
-            {
-                Id = 1,
-                Data = Guid.NewGuid().ToString()
-            });
-
-            var count = await Repository.CountAsync();
-            insertOneItem.Should().NotBeNull();
-            count.Should().Be(1);
-        }
-
-        [Fact]
-        public async Task CountByQuery()
-        {
-            for (var i = 0; i < 100; i++)
-            {
-                await Repository.InsertAsync(new InMemoryItem
-                {
-                    Id = i,
-                    Data = $"item{i}"
-                });
-            }
-
-            var count = await Repository.CountAsync(w => w.Data == "item4");
-            count.Should().Be(1);
-        }
-
-        #endregion
-
 
     }
 }
