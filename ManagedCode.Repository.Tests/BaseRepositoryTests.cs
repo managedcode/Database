@@ -268,8 +268,12 @@ namespace ManagedCode.Repository.Tests
 
             await Repository.InsertOrUpdateAsync(list);
 
-            var equals = await Repository.DeleteAsync(w => w.StringData == list[0].StringData);
-            var or = await Repository.DeleteAsync(w => w.StringData == list[1].StringData || w.StringData == list[2].StringData);
+            var q1 = list[0].StringData;
+            var q2 = list[1].StringData;
+            var q3 = list[2].StringData;
+            
+            var equals = await Repository.DeleteAsync(w => w.StringData == q1);
+            var or = await Repository.DeleteAsync(w => w.StringData == q2 || w.StringData == q3);
 
             equals.Should().Be(1);
             or.Should().Be(2);

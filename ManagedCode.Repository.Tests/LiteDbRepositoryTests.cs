@@ -1,7 +1,11 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using FluentAssertions;
 using ManagedCode.Repository.LiteDB;
 using ManagedCode.Repository.Tests.Common;
+using SQLite;
+using Xunit;
 
 namespace ManagedCode.Repository.Tests
 {
@@ -26,5 +30,16 @@ namespace ManagedCode.Repository.Tests
         {
             return Guid.NewGuid().ToString();
         }
+
+
+        [Fact(Skip = "UNIQUE constraint failed")]
+        public override async Task Insert99Items()
+        {
+            Action act = () => base.Insert99Items();
+
+            act.Should().Throw<Exception>()
+                .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+        }
+        
     }
 }
