@@ -16,6 +16,7 @@ namespace ManagedCode.Repository.CosmosDB
     {
         private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
         private readonly bool _splitByType;
+        private int _capacity = 50;
 
         public CosmosDbRepository([NotNull] CosmosDbRepositoryOptions options)
         {
@@ -64,7 +65,7 @@ namespace ManagedCode.Repository.CosmosDB
 
             var container = await _cosmosDbAdapter.GetContainer();
 
-            var batch = new List<Task>(10);
+            var batch = new List<Task>(_capacity);
             foreach (var item in items)
             {
                 token.ThrowIfCancellationRequested();
@@ -110,7 +111,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var count = 0;
-            var batch = new List<Task>(10);
+            var batch = new List<Task>(_capacity);
             foreach (var item in items)
             {
                 token.ThrowIfCancellationRequested();
@@ -156,7 +157,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var count = 0;
-            var batch = new List<Task>(10);
+            var batch = new List<Task>(_capacity);
             foreach (var item in items)
             {
                 token.ThrowIfCancellationRequested();
@@ -215,7 +216,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var count = 0;
-            var batch = new List<Task>(10);
+            var batch = new List<Task>(_capacity);
             foreach (var item in ids)
             {
                 token.ThrowIfCancellationRequested();
@@ -250,7 +251,7 @@ namespace ManagedCode.Repository.CosmosDB
         {
             var container = await _cosmosDbAdapter.GetContainer();
             var count = 0;
-            var batch = new List<Task>(10);
+            var batch = new List<Task>(_capacity);
             foreach (var item in items)
             {
                 token.ThrowIfCancellationRequested();
@@ -290,37 +291,35 @@ namespace ManagedCode.Repository.CosmosDB
                 .Where(predicate)
                 .ToFeedIterator();
 
-            var batch = new List<Task>(10);
-            using (var iterator = feedIterator)
+            var batch = new List<Task>(_capacity);
+            using var iterator = feedIterator;
+            while (iterator.HasMoreResults)
             {
-                while (iterator.HasMoreResults)
+                token.ThrowIfCancellationRequested();
+
+                foreach (var item in await iterator.ReadNextAsync(token))
                 {
                     token.ThrowIfCancellationRequested();
-
-                    foreach (var item in await iterator.ReadNextAsync(token))
-                    {
-                        token.ThrowIfCancellationRequested();
-                        batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
-                            .ContinueWith(task =>
-                            {
-                                if (task.Result != null)
-                                {
-                                    Interlocked.Increment(ref count);
-                                }
-                            }, token));
-
-                        if (count == batch.Capacity)
+                    batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
+                        .ContinueWith(task =>
                         {
-                            await Task.WhenAll(batch);
-                            batch.Clear();
-                        }
-                    }
+                            if (task.Result != null)
+                            {
+                                Interlocked.Increment(ref count);
+                            }
+                        }, token));
 
-                    if (batch.Count > 0)
+                    if (count == batch.Capacity)
                     {
                         await Task.WhenAll(batch);
                         batch.Clear();
                     }
+                }
+
+                if (batch.Count > 0)
+                {
+                    await Task.WhenAll(batch);
+                    batch.Clear();
                 }
             }
 
@@ -329,6 +328,11 @@ namespace ManagedCode.Repository.CosmosDB
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
+            if (_splitByType)
+            {
+                return await DeleteAsyncInternal(item => true, token) > 0;
+            }
+            
             var container = await _cosmosDbAdapter.GetContainer();
             var result = await container.DeleteContainerAsync(cancellationToken: token);
             return result != null;

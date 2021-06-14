@@ -62,12 +62,8 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            if (GetDatabase().Upsert(item))
-            {
-                return GetDatabase().FindById(new BsonValue(item.Id));
-            }
-
-            return default;
+            GetDatabase().Upsert(item);
+            return GetDatabase().FindById(new BsonValue(item.Id));
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)

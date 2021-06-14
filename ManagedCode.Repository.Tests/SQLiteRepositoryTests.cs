@@ -33,10 +33,19 @@ namespace ManagedCode.Repository.Tests
             return _count;
         }
         
-        [Fact(Skip = "UNIQUE constraint failed")]
+        [Fact]
+        public override async Task InsertOneItem()
+        {
+            Func<Task> act = () => base.InsertOneItem();
+
+            act.Should().Throw<Exception>()
+                .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+        }
+        
+        [Fact]
         public override async Task Insert99Items()
         {
-            Action act = () => base.Insert99Items();
+            Func<Task> act = () => base.Insert99Items();
 
             act.Should().Throw<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");

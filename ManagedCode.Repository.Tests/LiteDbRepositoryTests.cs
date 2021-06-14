@@ -31,14 +31,22 @@ namespace ManagedCode.Repository.Tests
             return Guid.NewGuid().ToString();
         }
 
-
-        [Fact(Skip = "UNIQUE constraint failed")]
-        public override async Task Insert99Items()
+        [Fact]
+        public override async Task InsertOneItem()
         {
-            Action act = () => base.Insert99Items();
+            Func<Task> act = () => base.Insert99Items();
 
             act.Should().Throw<Exception>()
-                .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+                .WithMessage("Cannot insert duplicate key in unique index '_id'*");
+        }
+
+        [Fact]
+        public override async Task Insert99Items()
+        {
+            Func<Task> act = () => base.Insert99Items();
+
+            act.Should().Throw<Exception>()
+                .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
         
     }

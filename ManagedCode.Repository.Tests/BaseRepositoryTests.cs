@@ -127,7 +127,12 @@ namespace ManagedCode.Repository.Tests
             var itemsInsert = await Repository.InsertOrUpdateAsync(list);
             itemsInsert.Should().Be(100);
 
-            var itemsUpdate = await Repository.InsertOrUpdateAsync(list.ToArray());
+            foreach (var item in list)
+            {
+                item.DateTimeData = DateTime.Now.AddDays(-1);
+            }
+            
+            var itemsUpdate = await Repository.InsertOrUpdateAsync(list);
             itemsUpdate.Should().Be(100);
 
             list.Count.Should().Be(100);
@@ -406,6 +411,8 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public virtual async Task FindByCondition()
         {
+            await Repository.DeleteAllAsync();
+            
             var item1 = CreateNewItem();
             await Repository.InsertAsync(item1);
             for (var i = 0; i < 10; i++)
@@ -424,6 +431,8 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public virtual async Task Find()
         {
+            await Repository.DeleteAllAsync();
+            
             for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
@@ -438,6 +447,8 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public virtual async Task FindTakeSkip()
         {
+            await Repository.DeleteAllAsync();
+            
             for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
@@ -454,6 +465,8 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public virtual async Task FindTake()
         {
+            await Repository.DeleteAllAsync();
+            
             for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
@@ -469,78 +482,84 @@ namespace ManagedCode.Repository.Tests
         [Fact]
         public virtual async Task FindSkip()
         {
-            for (var i = 100; i < 200; i++)
+            await Repository.DeleteAllAsync();
+            
+            for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
                 await Repository.InsertAsync(item);
             }
 
-            var items = await Repository.FindAsync(w => w.IntData >= 150, skip: 10).ToListAsync();
+            var items = await Repository.FindAsync(w => w.IntData >= 50, skip: 10).ToListAsync();
             items.Count.Should().Be(40);
-            items.First().IntData.Should().Be(160);
+            items.First().IntData.Should().Be(60);
         }
 
         [Fact]
         public virtual async Task FindOrder()
         {
-            for (var i = 300; i < 400; i++)
+            await Repository.DeleteAllAsync();
+            
+            for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
                 await Repository.InsertAsync(item);
             }
 
-            var items = await Repository.FindAsync(w => w.IntData >= 350,
+            var items = await Repository.FindAsync(w => w.IntData >= 50,
                     o => o.IntData, 10, 1)
                 .ToListAsync();
 
-            var itemsByDescending = await Repository.FindAsync(w => w.IntData >= 10,
+            var itemsByDescending = await Repository.FindAsync(w => w.IntData >= 50,
                     o => o.IntData, Order.ByDescending, 10)
                 .ToListAsync();
 
             items.Count.Should().Be(10);
-            items[0].IntData.Should().Be(351);
-            items[1].IntData.Should().Be(352);
+            items[0].IntData.Should().Be(51);
+            items[1].IntData.Should().Be(52);
 
             itemsByDescending.Count.Should().Be(10);
-            itemsByDescending[0].IntData.Should().Be(399);
-            itemsByDescending[1].IntData.Should().Be(398);
+            itemsByDescending[0].IntData.Should().Be(99);
+            itemsByDescending[1].IntData.Should().Be(98);
         }
 
         [Fact]
         public virtual async Task FindOrderThen()
         {
-            for (var i = 400; i < 500; i++)
+            await Repository.DeleteAllAsync();
+            
+            for (var i = 0; i < 100; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
                 await Repository.InsertAsync(item);
             }
 
-            var items = await Repository.FindAsync(w => w.IntData >= 450,
-                    o => o.IntData, t => t.IntData, 10, 1)
+            var items = await Repository.FindAsync(w => w.IntData >= 50,
+                    o => o.IntData, t => t.DateTimeData, 10, 1)
                 .ToListAsync();
 
-            var itemsBy = await Repository.FindAsync(w => w.IntData >= 450,
-                    o => o.IntData, Order.ByDescending, t => t.IntData, 10)
+            var itemsBy = await Repository.FindAsync(w => w.IntData >= 50,
+                    o => o.IntData, Order.ByDescending,  10)
                 .ToListAsync();
 
-            var itemsThenByDescending = await Repository.FindAsync(w => w.IntData >= 450,
-                    o => o.IntData, Order.ByDescending, t => t.IntData, Order.ByDescending, 10)
+            var itemsThenByDescending = await Repository.FindAsync(w => w.IntData >= 50,
+                    o => o.IntData, Order.ByDescending, t => t.DateTimeData, Order.ByDescending, 10)
                 .ToListAsync();
 
             items.Count.Should().Be(10);
-            items[0].IntData.Should().Be(451);
-            items[1].IntData.Should().Be(452);
+            items[0].IntData.Should().Be(51);
+            items[1].IntData.Should().Be(52);
 
             itemsBy.Count.Should().Be(10);
-            itemsBy[0].IntData.Should().Be(499);
-            itemsBy[1].IntData.Should().Be(498);
+            itemsBy[0].IntData.Should().Be(99);
+            itemsBy[1].IntData.Should().Be(98);
 
             itemsThenByDescending.Count.Should().Be(10);
-            itemsThenByDescending[0].IntData.Should().Be(499);
-            itemsThenByDescending[1].IntData.Should().Be(498);
+            itemsThenByDescending[0].IntData.Should().Be(99);
+            itemsThenByDescending[1].IntData.Should().Be(98);
         }
 
         #endregion

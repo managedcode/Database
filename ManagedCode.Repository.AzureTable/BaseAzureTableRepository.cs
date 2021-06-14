@@ -147,8 +147,8 @@ namespace ManagedCode.Repository.AzureTable
                 token.ThrowIfCancellationRequested();
                 var ids = await _tableAdapter
                     .Query<DynamicTableEntity>(new[] {predicate}, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                        take: _tableAdapter.BatchSize)
-                    .ToListAsync();
+                        take: _tableAdapter.BatchSize, cancellationToken: token)
+                    .ToListAsync(cancellationToken: token);
 
                 count = ids.Count;
 
@@ -162,9 +162,10 @@ namespace ManagedCode.Repository.AzureTable
             return totalCount;
         }
 
-        protected override Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
+        protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
-            return _tableAdapter.DropTable(token);
+            //return _tableAdapter.DropTable(token);
+            return await DeleteAsyncInternal(item => true, token) > 0;
         }
 
         #endregion

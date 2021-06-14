@@ -210,7 +210,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (take != null)
@@ -254,15 +254,30 @@ namespace ManagedCode.Repository.MongoDB
             {
                 query = query.Where(predicate);
             }
-
-            foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
+            
+            if (take != null)
             {
-                if (token.IsCancellationRequested)
+                foreach (var item in await Task.Run(() => query.Skip(skip).Take(take.Value).ToArray(), token))
                 {
-                    break;
-                }
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
-                yield return item;
+                    yield return item;
+                }
+            }
+            else
+            {
+                foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    yield return item;
+                }
             }
         }
 
@@ -286,7 +301,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (take != null)
@@ -337,7 +352,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (thenType == Order.By)
@@ -346,7 +361,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(thenBy);
+                query = query.OrderByDescending(thenBy);
             }
 
             if (take != null)

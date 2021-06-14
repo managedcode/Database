@@ -11,7 +11,9 @@ namespace ManagedCode.Repository.Tests
 
         public AzureTableRepositoryTests() : base(new AzureTableRepository<TestAzureTableItem>(
             new AzureTableRepositoryOptions
-                {ConnectionString = ConnectionString}))
+            {
+                ConnectionString = ConnectionString
+            }))
         {
             Repository.InitializeAsync().Wait();
         }
