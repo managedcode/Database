@@ -38,7 +38,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.InsertOneItem();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
         
@@ -47,7 +47,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.Insert99Items();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
     }

@@ -10,14 +10,12 @@ namespace ManagedCode.Repository.Tests
     public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbItem>
     {
         public const string ConnectionString =
-            "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
+            "AccountEndpoint=https://unhardevdb.documents.azure.com:443/;AccountKey=xE9bNGHnSjuj70bFCDkVRBjNZwm4Bkr7RZf8FJHUZYMACLwqy330Bh8mqjCRR0hOQhy9bVzf6x4VnBf6zWvq3Q==;";
 
         public CosmosDbRepositoryTests() : base(new CosmosDbRepository<TestCosmosDbItem>(
             new CosmosDbRepositoryOptions
             {
-                ConnectionString = ConnectionString,
-                DatabaseName = "database",
-                CollectionName = "container",
+                ConnectionString = ConnectionString
             }))
         {
             Repository.InitializeAsync().Wait();
@@ -33,7 +31,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.FindOrderThen();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*The order by query does not have a corresponding composite index that it can be served from*");
         }
         
@@ -42,7 +40,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.Insert99Items();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource with specified id or name already exists*");
         }
         
@@ -51,7 +49,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.UpdateOneItem();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource Not Found*");
         }
         
@@ -60,7 +58,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.InsertOneItem();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource with specified id or name already exists*");
         }
         
@@ -69,7 +67,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.Update5Items();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource Not Found*");
         }
     }

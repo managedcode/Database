@@ -13,7 +13,7 @@
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-        <PackageVersion>1.0.11</PackageVersion>
+        <PackageVersion>1.0.12</PackageVersion>
         <Description>Repository for MongoDB</Description>
     </PropertyGroup>
 
@@ -27,10 +27,10 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-        <PackageReference Include="Humanizer.Core" Version="2.8.26" />
+        <PackageReference Include="Humanizer.Core" Version="2.11.10" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-        <PackageReference Include="MongoDB.Driver" Version="2.12.2" />
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+        <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>

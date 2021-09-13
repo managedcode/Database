@@ -13,7 +13,7 @@
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-        <PackageVersion>1.0.11</PackageVersion>
+        <PackageVersion>1.0.12</PackageVersion>
         <Description>Repository for SQLite</Description>
     </PropertyGroup>
 
@@ -28,7 +28,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-        <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     </ItemGroup>
 
     <ItemGroup>

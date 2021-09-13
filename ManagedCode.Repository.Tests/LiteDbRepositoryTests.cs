@@ -36,7 +36,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.Insert99Items();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
 
@@ -45,7 +45,7 @@ namespace ManagedCode.Repository.Tests
         {
             Func<Task> act = () => base.Insert99Items();
 
-            act.Should().Throw<Exception>()
+            await act.Should().ThrowAsync<Exception>()
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
         

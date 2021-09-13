@@ -13,7 +13,7 @@
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-        <PackageVersion>1.0.11</PackageVersion>
+        <PackageVersion>1.0.12</PackageVersion>
         <Description>Repository for CosmosDB</Description>
     </PropertyGroup>
 
@@ -27,7 +27,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.16.0" />
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.21.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 

@@ -14,7 +14,7 @@
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-        <PackageVersion>1.0.11</PackageVersion>
+        <PackageVersion>1.0.12</PackageVersion>
         <Description>Repository for AzureTable</Description>
     </PropertyGroup>
 
@@ -28,7 +28,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-        <PackageReference Include="Humanizer.Core" Version="2.8.26" />
+        <PackageReference Include="Humanizer.Core" Version="2.11.10" />
         <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
         <PackageReference Include="System.Linq.Async" Version="5.0.0" />
