@@ -10,12 +10,14 @@ namespace ManagedCode.Repository.Tests
     public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbItem>
     {
         public const string ConnectionString =
-            "AccountEndpoint=https://unhardevdb.documents.azure.com:443/;AccountKey=xE9bNGHnSjuj70bFCDkVRBjNZwm4Bkr7RZf8FJHUZYMACLwqy330Bh8mqjCRR0hOQhy9bVzf6x4VnBf6zWvq3Q==;";
+            "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
 
         public CosmosDbRepositoryTests() : base(new CosmosDbRepository<TestCosmosDbItem>(
             new CosmosDbRepositoryOptions
             {
-                ConnectionString = ConnectionString
+                ConnectionString = ConnectionString,
+                DatabaseName = "database",
+                CollectionName = "container",
             }))
         {
             Repository.InitializeAsync().Wait();
