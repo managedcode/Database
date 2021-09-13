@@ -1,4 +1,4 @@
-using System;
+/*using System;
 using ManagedCode.Repository.AzureTable;
 using ManagedCode.Repository.Tests.Common;
 
@@ -23,4 +23,4 @@ namespace ManagedCode.Repository.Tests
             return new(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
         }
     }
-}
+}*/
