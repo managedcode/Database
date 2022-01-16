@@ -2,7 +2,5 @@
 
 namespace ManagedCode.Repository.EntityFramework.Interfaces
 {
-    public interface IEFItem<TId> : IItem<TId>
-    {
-    }
+    public interface IEFItem<TId> : IItem<TId> {}
 }

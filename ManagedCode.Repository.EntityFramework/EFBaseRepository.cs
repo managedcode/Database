@@ -8,7 +8,5 @@ namespace ManagedCode.Repository.EntityFramework
         BaseRepository<TId, TItem>,
         IEFRepository<TId, TItem, TContext> 
         where TItem : class, IEFItem<TId>, new()
-        where TContext : DbContext
-    {
-    }
+        where TContext : DbContext {}
 }

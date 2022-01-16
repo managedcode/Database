@@ -1,6 +1,6 @@
 ﻿using ManagedCode.Repository.EntityFramework.MSSQL;
 
-namespace ManagedCode.Repository.Tests.MSSQL
+namespace ManagedCode.Repository.Tests.MSSQL.Models
 {
     public class Customer : MSSQLItem<int>
     {

@@ -5,7 +5,5 @@ namespace ManagedCode.Repository.EntityFramework.Interfaces
 {
     public interface IEFRepository<TId, TItem, TContext> : IRepository<TId, TItem> 
         where TItem : IEFItem<TId>, new()
-        where TContext : DbContext
-    {
-    }
+        where TContext : DbContext {}
 }

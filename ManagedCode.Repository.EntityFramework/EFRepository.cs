@@ -21,13 +21,7 @@ namespace ManagedCode.Repository.EntityFramework
         public EFRepository(TContext context)
         {
             _context = context;
-
             _items = _context.Set<TItem>();
-
-            //var config = new DbMigrationsConfiguration<TContext> { AutomaticMigrationsEnabled = true };
-            //var migrator = new DbMigrator(config);
-            //migrator.Update();
-
             _context.Database.EnsureCreated();
 
             IsInitialized = true;
@@ -71,12 +65,28 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var dbItem = GetAsync(item.Id);
+
+            if (dbItem == null)
+            {
+                await InsertAsync(item);
+            }
+            else
+            {
+                await UpdateAsync(item);
+            }
+
+            return item;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            foreach (var item in items)
+            {
+                await InsertOrUpdateAsync(item);
+            }
+
+            return items.ToList().Count();
         }
 
         #endregion
@@ -85,12 +95,18 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            _items.Update(item);
+            await _context.SaveChangesAsync(token);
+
+            return item;
         }
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            _items.UpdateRange(items);
+            await _context.SaveChangesAsync(token);
+
+            return 1;
         }
 
         #endregion
@@ -99,32 +115,64 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var item = await GetAsync(id);
+            _items.Remove(item);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            _items.Remove(item);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var itemsToDelete = ids.Select(id => new TItem { Id = id });
+
+            _items.RemoveRange(itemsToDelete);
+            await _context.SaveChangesAsync();
+
+            return itemsToDelete.Count();
         }
 
-        protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+        protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> itemsToDelete, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            _items.RemoveRange(itemsToDelete);
+            await _context.SaveChangesAsync();
+
+            return itemsToDelete.Count();
         }
 
         protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var itemsToDelete = _items.Where(predicate);
+            int count = itemsToDelete.Count();
+
+            _items.RemoveRange(itemsToDelete);
+            await _context.SaveChangesAsync();
+
+            return count;
         }
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var itemsToDelete = new List<TItem>();
+
+            await foreach(var item in GetAllAsync())
+            {
+                itemsToDelete.Add(item);
+            }
+
+            _items.RemoveRange(itemsToDelete);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         #endregion
@@ -138,9 +186,7 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
         {
-            Func<TItem, bool> func = predicate.Compile();
-
-            return await _items.FirstOrDefaultAsync(x => func(x), token);
+            return await _items.FirstOrDefaultAsync(predicate, token);
         }
 
         protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
@@ -259,12 +305,19 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            return await _items.CountAsync();
         }
 
         protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            int count = 0;
+
+            foreach (var predicate in predicates)
+            {
+                count += await _items.Where(predicate).CountAsync();
+            }
+
+            return count;
         }
 
         #endregion
