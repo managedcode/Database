@@ -195,6 +195,61 @@ namespace ManagedCode.Repository.Tests.MSSQL
 
         #endregion
 
+        #region Find
+
+        [Fact]
+        public async Task WhenWithoutSortingFindAsyncIsCalled()
+        {
+            var elements = _customerRepository.FindAsync(
+                new List<Expression<Func<Customer, bool>>>
+                {
+                    c => c.Id >= 20
+                },
+                4, 0);
+
+            var list = await elements.ToListAsync();
+
+            list.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task WhenWithSortingFindAsyncIsCalled()
+        {
+            var elements = _customerRepository.FindAsync(
+                new List<Expression<Func<Customer, bool>>>
+                {
+                    c => c.Id >= 20
+                },
+                c => c.Name,
+                Core.Order.By,
+                4, 0);
+
+            var list = await elements.ToListAsync();
+
+            list.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task WhenWithThenSortingFindAsyncIsCalled()
+        {
+            var elements = _customerRepository.FindAsync(
+                new List<Expression<Func<Customer, bool>>>
+                {
+                    c => c.Id >= 20
+                },
+                c => c.Name,
+                Core.Order.By,
+                c => c.Id,
+                Core.Order.By,
+                4, 0);
+
+            var list = await elements.ToListAsync();
+
+            list.Should().NotBeEmpty();
+        }
+
+        #endregion
+
         #region Count
 
         [Fact]

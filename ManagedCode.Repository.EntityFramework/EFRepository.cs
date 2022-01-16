@@ -241,27 +241,17 @@ namespace ManagedCode.Repository.EntityFramework
 
             if (take != null)
             {
-                foreach (var item in query.Take(take.Value))
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    yield return item;
-                }
+                query = query.Take(take.Value);   
             }
-            else
-            {
-                foreach (var item in query)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
 
-                    yield return item;
+            foreach (var item in query)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    break;
                 }
+
+                yield return item;
             }
         }
 
@@ -269,25 +259,91 @@ namespace ManagedCode.Repository.EntityFramework
 
         #region Find
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            var query = _items.AsQueryable();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+
+            query = query.Skip(skip);
+
+            if (take != null)
+            {
+                query = query.Take(take.Value);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            var list = query.ToList();
+
+            foreach (var item in list)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                yield return item;
+            }
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
             int skip = 0,
-            CancellationToken token = default)
+            [EnumeratorCancellation] CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            var query = _items.AsQueryable();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+
+            query = query.Skip(skip);
+
+            if (take != null)
+            {
+                query = query.Take(take.Value);
+            }
+
+            if (orderType == Order.By)
+            {
+                query = query.OrderBy(orderBy);
+            }
+            else
+            {
+                query.OrderByDescending(orderBy);
+            }
+
+            var list = query.ToList();
+
+            foreach (var item in list)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                yield return item;
+            }
         }
 
-        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,
@@ -296,7 +352,45 @@ namespace ManagedCode.Repository.EntityFramework
             int skip = 0,
             CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+            var query = _items.AsQueryable();
+
+            foreach (var predicate in predicates)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (orderType == Order.By)
+            {
+                query = query.OrderBy(orderBy);
+            }
+            else
+            {
+                query.OrderByDescending(orderBy);
+            }
+
+            if (thenType == Order.By)
+            {
+                query = query.OrderBy(thenBy);
+            }
+            else
+            {
+                query.OrderByDescending(thenBy);
+            }
+
+            query = query.Skip(skip);
+
+            if (take != null)
+            {
+                query = query.Take(take.Value);
+            }
+
+            var list = query.ToList();
+
+            foreach (var item in list)
+            {
+                yield return item;
+            }
         }
 
         #endregion
@@ -310,14 +404,14 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
         {
-            int count = 0;
+            var query = _items.AsQueryable();
 
             foreach (var predicate in predicates)
             {
-                count += await _items.Where(predicate).CountAsync();
+                query = query.Where(predicate);
             }
 
-            return count;
+            return await query.CountAsync();
         }
 
         #endregion
