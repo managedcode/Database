@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ManagedCode.Repository.Core;
+using ManagedCode.Repository.EntityFramework.Interfaces;
 
 namespace ManagedCode.Repository.EntityFramework
 {

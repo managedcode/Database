@@ -6,6 +6,8 @@ namespace ManagedCode.Repository.Core.Extensions
     {
         public static IServiceCollection AddManagedCodeRepository(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton(new ServiceCollectionHolder(serviceCollection));
+
             return serviceCollection;
         }
     }

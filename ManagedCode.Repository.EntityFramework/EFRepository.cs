@@ -1,4 +1,5 @@
 ﻿using ManagedCode.Repository.Core;
+using ManagedCode.Repository.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace ManagedCode.Repository.EntityFramework
 {
     public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, TContext>
         where TItem : class, IEFItem<TId>, new()
-        where TContext : DbContext
+        where TContext : EFDbContext<TContext>
     {
         protected DbSet<TItem> _items;
         protected TContext _context { get; private set; }
@@ -20,14 +21,21 @@ namespace ManagedCode.Repository.EntityFramework
         public EFRepository(TContext context)
         {
             _context = context;
-        }
 
-        protected override async Task InitializeAsyncInternal(CancellationToken token = default)
-        {
             _items = _context.Set<TItem>();
-            await _context.Database.EnsureCreatedAsync(token);
+
+            //var config = new DbMigrationsConfiguration<TContext> { AutomaticMigrationsEnabled = true };
+            //var migrator = new DbMigrator(config);
+            //migrator.Update();
+
+            _context.Database.EnsureCreated();
 
             IsInitialized = true;
+        }
+
+        protected override Task InitializeAsyncInternal(CancellationToken token = default)
+        {
+            return Task.CompletedTask;
         }
 
         protected override ValueTask DisposeAsyncInternal()
@@ -215,7 +223,7 @@ namespace ManagedCode.Repository.EntityFramework
 
         #region Find
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             int? take = null,
             int skip = 0,
             CancellationToken token = default)
@@ -223,7 +231,7 @@ namespace ManagedCode.Repository.EntityFramework
             throw new NotImplementedException();
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             int? take = null,
@@ -233,7 +241,7 @@ namespace ManagedCode.Repository.EntityFramework
             throw new NotImplementedException();
         }
 
-        protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+        protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
             Expression<Func<TItem, object>> orderBy,
             Order orderType,
             Expression<Func<TItem, object>> thenBy,

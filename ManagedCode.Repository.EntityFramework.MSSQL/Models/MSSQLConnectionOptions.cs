@@ -1,4 +1,6 @@
-﻿namespace ManagedCode.Repository.EntityFramework.MSSQL.Models
+﻿using System.Reflection;
+
+namespace ManagedCode.Repository.EntityFramework.MSSQL.Models
 {
     public class MSSQLConnectionOptions
     {
