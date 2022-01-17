@@ -27,6 +27,7 @@
       <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.CosmosDB\ManagedCode.Repository.CosmosDB.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.EntityFramework.MSSQL\ManagedCode.Repository.EntityFramework.MSSQL.csproj" />
+      <ProjectReference Include="..\ManagedCode.Repository.EntityFramework.PostgreSQL\ManagedCode.Repository.EntityFramework.PostgreSQL.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.LiteDB\ManagedCode.Repository.LiteDB.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.MongoDB\ManagedCode.Repository.MongoDB.csproj" />
       <ProjectReference Include="..\ManagedCode.Repository.SQLite\ManagedCode.Repository.SQLite.csproj" />
