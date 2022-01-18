@@ -25,7 +25,7 @@ namespace ManagedCode.Repository.Tests.MSSQL
 
             services.AddManagedCodeRepository()
                 .AddMSSQLBasedOnEF(opt => {
-                    opt.ConnectionString = "Server=localhost;Database=ManagedCode;Trusted_Connection=True;";
+                    opt.ConnectionString = "Server=localhost\\SQLEXPRESS;Database=ManagedCode;Trusted_Connection=True;";
                     opt.UseTracking = false;
                 });
 
@@ -106,7 +106,7 @@ namespace ManagedCode.Repository.Tests.MSSQL
         [Fact]
         public async Task WhenByIdDeleteAsyncIsCalled()
         {
-            int idToDelete = 5;
+            int idToDelete = 1;
             var result = await _customerRepository.DeleteAsync(idToDelete);
 
             result.Should().BeTrue();
@@ -138,8 +138,8 @@ namespace ManagedCode.Repository.Tests.MSSQL
         {
             var customersToDelete = new List<Customer> 
             { 
-                new Customer { Id = 1 },
-                new Customer { Id = 2 }
+                new Customer { Id = 5 },
+                new Customer { Id = 7 }
             };
 
             var deletedCount = await _customerRepository.DeleteAsync(customersToDelete);

@@ -21,15 +21,16 @@ namespace ManagedCode.Repository.EntityFramework
         public EFRepository(TContext context)
         {
             _context = context;
-            _items = _context.Set<TItem>();
-            _context.Database.EnsureCreated();
 
-            IsInitialized = true;
+            InitializeAsyncInternal().Wait();
         }
 
-        protected override Task InitializeAsyncInternal(CancellationToken token = default)
+        protected override async Task InitializeAsyncInternal(CancellationToken token = default)
         {
-            return Task.CompletedTask;
+            _items = _context.Set<TItem>();
+            await _context.Database.EnsureCreatedAsync(token);
+
+            IsInitialized = true;
         }
 
         protected override ValueTask DisposeAsyncInternal()
@@ -115,9 +116,9 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
         {
-            var item = await GetAsync(id);
-            _items.Remove(item);
+            var item = new TItem { Id = id };
 
+            _context.Entry(item).State = EntityState.Deleted;
             await _context.SaveChangesAsync();
 
             return true;
@@ -125,7 +126,7 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
         {
-            _items.Remove(item);
+            _context.Entry(item).State = EntityState.Deleted;
             await _context.SaveChangesAsync();
 
             return true;
@@ -135,7 +136,11 @@ namespace ManagedCode.Repository.EntityFramework
         {
             var itemsToDelete = ids.Select(id => new TItem { Id = id });
 
-            _items.RemoveRange(itemsToDelete);
+            foreach (var item in itemsToDelete)
+            {
+                _context.Entry(item).State = EntityState.Deleted;
+            }
+
             await _context.SaveChangesAsync();
 
             return itemsToDelete.Count();
@@ -143,7 +148,11 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> itemsToDelete, CancellationToken token = default)
         {
-            _items.RemoveRange(itemsToDelete);
+            foreach (var item in itemsToDelete)
+            {
+                _context.Entry(item).State = EntityState.Deleted;
+            }
+
             await _context.SaveChangesAsync();
 
             return itemsToDelete.Count();
@@ -154,7 +163,11 @@ namespace ManagedCode.Repository.EntityFramework
             var itemsToDelete = _items.Where(predicate);
             int count = itemsToDelete.Count();
 
-            _items.RemoveRange(itemsToDelete);
+            foreach (var item in itemsToDelete)
+            {
+                _context.Entry(item).State = EntityState.Deleted;
+            }
+
             await _context.SaveChangesAsync();
 
             return count;
@@ -162,14 +175,11 @@ namespace ManagedCode.Repository.EntityFramework
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
-            var itemsToDelete = new List<TItem>();
-
             await foreach(var item in GetAllAsync())
             {
-                itemsToDelete.Add(item);
+                _context.Entry(item).State = EntityState.Deleted;
             }
 
-            _items.RemoveRange(itemsToDelete);
             await _context.SaveChangesAsync();
 
             return true;
