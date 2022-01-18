@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
+    <ProjectReference Include="..\ManagedCode.Repository.EntityFramework\ManagedCode.Repository.EntityFramework.csproj" />
+  </ItemGroup>
+
+</Project>
