@@ -8,13 +8,17 @@
         <DebugType>embedded</DebugType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <Title>ManagedCode.Repository.CosmosDB</Title>
+
         <Authors>ManagedCode</Authors>
-        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-        <PackageVersion>1.0.12</PackageVersion>
+        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
+        <RepositoryType>Github</RepositoryType>
+        <Product>Managed Repository</Product>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <Title>ManagedCode.Repository.CosmosDB</Title>
         <Description>Repository for CosmosDB</Description>
+        <PackageVersion>1.0.13</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,13 +30,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.21.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.21.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

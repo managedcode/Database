@@ -4,23 +4,30 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <LangVersion>latest</LangVersion>
-        
+
         <DebugType>embedded</DebugType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <Title>ManagedCode.Repository.AzureTable</Title>
+
         <Authors>ManagedCode</Authors>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
         <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-        <PackageVersion>1.0.12</PackageVersion>
+        <RepositoryType>Github</RepositoryType>
+        <Product>Managed Repository</Product>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <Title>ManagedCode.Repository.AzureTable</Title>
         <Description>Repository for AzureTable</Description>
+        <PackageVersion>1.0.13</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
+    </ItemGroup>
     
     <ItemGroup>
       <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
@@ -32,10 +39,6 @@
         <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
         <PackageReference Include="System.Linq.Async" Version="5.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
 </Project>
