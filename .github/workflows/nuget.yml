@@ -2,86 +2,87 @@ name: nuget
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
-          
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+            dotnet-version: 6.0.x
+      - name: Build
+        run: dotnet build --configuration Release
+      - name: Test
+        run: dotnet test --configuration Release --no-build
       
-    - name: Publish Repository.Core to NuGet
+      - name: Publish Repository.Core to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.Core/ManagedCode.Repository.Core.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-        
-    - name: Publish Repository.AzureTable to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.AzureTable/ManagedCode.Repository.AzureTable.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
-        
-    - name: Publish Repository.CosmosDB to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.CosmosDB/ManagedCode.Repository.CosmosDB.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}   
-        
-    - name: Publish Repository.LiteDB to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}       
-        
-    - name: Publish Repository.SQLite to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.SQLite/ManagedCode.Repository.SQLite.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
 
-    - name: Publish Repository.MongoDB to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.MongoDB/ManagedCode.Repository.MongoDB.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}  
+      - name: Publish Repository.AzureTable to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.AzureTable/ManagedCode.Repository.AzureTable.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
 
-    - name: Publish Repository.EntityFramework to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework/ManagedCode.Repository.EntityFramework.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}         
-        
-    - name: Publish Repository.EntityFramework.MSSQL to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework.MSSQL/ManagedCode.Repository.EntityFramework.MSSQL.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}         
+      - name: Publish Repository.CosmosDB to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.CosmosDB/ManagedCode.Repository.CosmosDB.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
 
-     - name: Publish Repository.EntityFramework.PostgreSQL to NuGet
+      - name: Publish Repository.LiteDB to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish Repository.SQLite to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.SQLite/ManagedCode.Repository.SQLite.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish Repository.MongoDB to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.MongoDB/ManagedCode.Repository.MongoDB.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish Repository.EntityFramework to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework/ManagedCode.Repository.EntityFramework.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish Repository.EntityFramework.MSSQL to NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework.MSSQL/ManagedCode.Repository.EntityFramework.MSSQL.csproj
+          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Publish Repository.EntityFramework.PostgreSQL to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
         PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework.PostgreSQL/ManagedCode.Repository.EntityFramework.PostgreSQL.csproj
         VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}           
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}    
+             
         
         
         
