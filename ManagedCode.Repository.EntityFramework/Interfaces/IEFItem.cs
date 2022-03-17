@@ -1,6 +1,7 @@
 ﻿using ManagedCode.Repository.Core;
 
-namespace ManagedCode.Repository.EntityFramework.Interfaces
+namespace ManagedCode.Repository.EntityFramework.Interfaces;
+
+public interface IEFItem<TId> : IItem<TId>
 {
-    public interface IEFItem<TId> : IItem<TId> {}
 }

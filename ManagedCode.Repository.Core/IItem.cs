@@ -1,7 +1,6 @@
-namespace ManagedCode.Repository.Core
+namespace ManagedCode.Repository.Core;
+
+public interface IItem<TId>
 {
-    public interface IItem<TId>
-    {
-        TId Id { get; set; }
-    }
+    TId Id { get; set; }
 }

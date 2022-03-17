@@ -1,42 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <LangVersion>latest</LangVersion>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <LangVersion>10</LangVersion>
 
-    <DebugType>embedded</DebugType>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
-    <Authors>ManagedCode</Authors>
-    <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
-    <RepositoryType>Github</RepositoryType>
-    <Product>Managed Repository</Product>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <Title>ManagedCode.Repository.SqlServer</Title>
-    <Description>Repository for SqlServer</Description>
-    <PackageVersion>1.0.13</PackageVersion>
-  </PropertyGroup>
+        <Authors>ManagedCode</Authors>
+        <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
+        <RepositoryType>Github</RepositoryType>
+        <Product>Managed Repository</Product>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <Title>ManagedCode.Repository.SqlServer</Title>
+        <Description>Repository for SqlServer</Description>
+        <PackageVersion>1.0.13</PackageVersion>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-      <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
-  <ItemGroup>
-      <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath=""/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.10" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.10"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
-    <ProjectReference Include="..\ManagedCode.Repository.EntityFramework\ManagedCode.Repository.EntityFramework.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj"/>
+        <ProjectReference Include="..\ManagedCode.Repository.EntityFramework\ManagedCode.Repository.EntityFramework.csproj"/>
+    </ItemGroup>
 
 </Project>

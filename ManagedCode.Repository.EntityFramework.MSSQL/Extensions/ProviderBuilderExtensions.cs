@@ -1,27 +1,24 @@
 ﻿using System;
+using ManagedCode.Repository.EntityFramework.MSSQL.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ManagedCode.Repository.EntityFramework.MSSQL.Models;
 
-namespace ManagedCode.Repository.EntityFramework.MSSQL.Extensions
+namespace ManagedCode.Repository.EntityFramework.MSSQL.Extensions;
+
+public static class ProviderBuilderExtensions
 {
-    public static class ProviderBuilderExtensions
+    public static IServiceCollection AddMSSQLBasedOnEF(this IServiceCollection serviceCollection, Action<MSSQLConnectionOptions> action)
     {
-        public static IServiceCollection AddMSSQLBasedOnEF(this IServiceCollection serviceCollection, Action<MSSQLConnectionOptions> action)
-        {
-            var connectionOptions = new MSSQLConnectionOptions();
-            action.Invoke(connectionOptions);
+        var connectionOptions = new MSSQLConnectionOptions();
+        action.Invoke(connectionOptions);
 
-            serviceCollection.AddDbContext<MSSQLDatabaseContext>(options => options
-               .UseSqlServer(connectionOptions.ConnectionString)
-               .UseQueryTrackingBehavior(
-                    connectionOptions.UseTracking ? 
-                    QueryTrackingBehavior.TrackAll :
-                    QueryTrackingBehavior.NoTracking
-               )
-            );
+        serviceCollection.AddDbContext<MSSQLDatabaseContext>(options => options
+            .UseSqlServer(connectionOptions.ConnectionString)
+            .UseQueryTrackingBehavior(
+                connectionOptions.UseTracking ? QueryTrackingBehavior.TrackAll : QueryTrackingBehavior.NoTracking
+            )
+        );
 
-            return serviceCollection;
-        }
+        return serviceCollection;
     }
 }

@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Repository.SQLite.Extensions
+namespace ManagedCode.Repository.SQLite.Extensions;
+
+public static class ProviderBuilderExtension
 {
-    public static class ProviderBuilderExtension
+    public static IServiceCollection AddSQLite(this IServiceCollection serviceCollection, Action<SQLiteRepositoryOptions> action)
     {
-        public static IServiceCollection AddSQLite(this IServiceCollection serviceCollection, Action<SQLiteRepositoryOptions> action)
-        {
-            var connectionOptions = new SQLiteRepositoryOptions();
-            action.Invoke(connectionOptions);
+        var connectionOptions = new SQLiteRepositoryOptions();
+        action.Invoke(connectionOptions);
 
-            serviceCollection.AddSingleton(connectionOptions);
+        serviceCollection.AddSingleton(connectionOptions);
 
-            return serviceCollection;
-        }
+        return serviceCollection;
     }
 }

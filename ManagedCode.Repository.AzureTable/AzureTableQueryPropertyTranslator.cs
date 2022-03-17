@@ -3,67 +3,66 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.Azure.Cosmos.Table;
 
-namespace ManagedCode.Repository.AzureTable
+namespace ManagedCode.Repository.AzureTable;
+
+internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
 {
-    internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
+    private readonly List<string> _memberNames = new();
+    private string _currentMemberName = string.Empty;
+    private int _memberDepth;
+
+    private EntityPropertyConverterOptions _options = new();
+
+    public static List<string> TranslateExpressionToMemberNames(Expression e)
     {
-        private readonly List<string> _memberNames = new();
-        private string _currentMemberName = string.Empty;
-        private int _memberDepth;
+        var translator = new AzureTableQueryPropertyTranslator();
+        translator._options = new EntityPropertyConverterOptions();
+        translator.Visit(e);
+        return translator._memberNames;
+    }
 
-        private EntityPropertyConverterOptions _options = new();
-
-        public static List<string> TranslateExpressionToMemberNames(Expression e)
+    protected override Expression VisitNew(NewExpression node)
+    {
+        foreach (var argument in node.Arguments)
         {
-            var translator = new AzureTableQueryPropertyTranslator();
-            translator._options = new EntityPropertyConverterOptions();
-            translator.Visit(e);
-            return translator._memberNames;
+            Visit(argument);
         }
 
-        protected override Expression VisitNew(NewExpression node)
+        return node;
+    }
+
+    protected override Expression VisitMember(MemberExpression node)
+    {
+        if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
         {
-            foreach (var argument in node.Arguments)
+            _currentMemberName += node.Member.Name;
+            if (_memberDepth != 0)
             {
-                Visit(argument);
+                return node;
+            }
+
+            _memberNames.Add(_currentMemberName);
+            _currentMemberName = string.Empty;
+
+            return node;
+        }
+
+        if (node.Expression != null && node.Expression.NodeType == ExpressionType.MemberAccess)
+        {
+            var innerExpression = node.Expression as MemberExpression;
+            _memberDepth++;
+            VisitMember(innerExpression);
+            _currentMemberName += _options.PropertyNameDelimiter + node.Member.Name;
+            _memberDepth--;
+            if (_memberDepth == 0)
+            {
+                _memberNames.Add(_currentMemberName);
+                _currentMemberName = string.Empty;
             }
 
             return node;
         }
 
-        protected override Expression VisitMember(MemberExpression node)
-        {
-            if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
-            {
-                _currentMemberName += node.Member.Name;
-                if (_memberDepth != 0)
-                {
-                    return node;
-                }
-
-                _memberNames.Add(_currentMemberName);
-                _currentMemberName = string.Empty;
-
-                return node;
-            }
-
-            if (node.Expression != null && node.Expression.NodeType == ExpressionType.MemberAccess)
-            {
-                var innerExpression = node.Expression as MemberExpression;
-                _memberDepth++;
-                VisitMember(innerExpression);
-                _currentMemberName += _options.PropertyNameDelimiter + node.Member.Name;
-                _memberDepth--;
-                if (_memberDepth == 0)
-                {
-                    _memberNames.Add(_currentMemberName);
-                    _currentMemberName = string.Empty;
-                }
-
-                return node;
-            }
-
-            throw new NotSupportedException("Expression not supported");
-        }
+        throw new NotSupportedException("Expression not supported");
     }
 }

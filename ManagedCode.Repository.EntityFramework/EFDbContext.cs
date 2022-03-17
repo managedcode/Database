@@ -1,44 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using ManagedCode.Repository.Core;
 using ManagedCode.Repository.Core.Extensions;
+using Microsoft.EntityFrameworkCore;
 
-namespace ManagedCode.Repository.EntityFramework
+namespace ManagedCode.Repository.EntityFramework;
+
+public class EFDbContext<TContext> : DbContext where TContext : EFDbContext<TContext>
 {
-    public class EFDbContext<TContext> : DbContext where TContext : EFDbContext<TContext>
+    private readonly IList<Type> _entityTypes;
+
+    public EFDbContext(DbContextOptions<TContext> options, ServiceCollectionHolder serviceCollectionHolder) : base(options)
     {
-        private IList<Type> _entityTypes;
+        _entityTypes = new List<Type>();
 
-        public EFDbContext(DbContextOptions<TContext> options, ServiceCollectionHolder serviceCollectionHolder) : base(options)
+        foreach (var item in serviceCollectionHolder.ServiceCollection)
         {
-            _entityTypes = new List<Type>();
+            var belongs = item.ImplementationType?.BaseType?.BaseType.EqualsToGeneric(typeof(EFRepository<,,>));
 
-            foreach (var item in serviceCollectionHolder.ServiceCollection)
+            if (belongs != null && belongs.Value)
             {
-                var belongs = item.ImplementationType?.BaseType?.BaseType.EqualsToGeneric(typeof(EFRepository<,,>));
+                var typeParameters = item.ImplementationType.BaseType.GetGenericArguments();
 
-                if (belongs != null && belongs.Value)
+                if (typeParameters.Length == 2)
                 {
-                    var typeParameters = item.ImplementationType.BaseType.GetGenericArguments();
-
-                    if (typeParameters.Length == 2)
-                    {
-                        _entityTypes.Add(typeParameters[1]);
-                    }
+                    _entityTypes.Add(typeParameters[1]);
                 }
             }
         }
+    }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        var entityMethod = typeof(ModelBuilder).GetMethod("Entity", new[] { typeof(Type) });
+
+        foreach (var type in _entityTypes)
         {
-            var entityMethod = typeof(ModelBuilder).GetMethod("Entity", new[] { typeof(Type) });
-
-            foreach (var type in _entityTypes)
-            {
-                entityMethod
-                  .Invoke(modelBuilder, new object[] { type });
-            }
+            entityMethod
+                .Invoke(modelBuilder, new object[] { type });
         }
     }
 }

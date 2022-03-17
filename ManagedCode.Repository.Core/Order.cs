@@ -1,8 +1,7 @@
-namespace ManagedCode.Repository.Core
+namespace ManagedCode.Repository.Core;
+
+public enum Order
 {
-    public enum Order
-    {
-        By,
-        ByDescending
-    }
+    By,
+    ByDescending
 }

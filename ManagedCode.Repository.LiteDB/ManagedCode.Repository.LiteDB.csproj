@@ -3,12 +3,12 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>10</LangVersion>
 
         <DebugType>embedded</DebugType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
-       
+
         <Authors>ManagedCode</Authors>
         <PackageLicenseUrl>https://github.com/managed-code-hub/Repository/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
@@ -22,7 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj" />
+        <ProjectReference Include="..\ManagedCode.Repository.Core\ManagedCode.Repository.Core.csproj"/>
     </ItemGroup>
 
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -30,14 +30,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath="" />
+        <None Include="..\logo.png" Pack="true" Visible="false" PackagePath=""/>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-        <PackageReference Include="LiteDB" Version="5.0.11" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+        <PackageReference Include="LiteDB" Version="5.0.11"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
     </ItemGroup>
-    
+
 </Project>

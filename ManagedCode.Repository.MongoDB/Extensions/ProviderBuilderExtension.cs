@@ -1,18 +1,17 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Repository.MongoDB.Extensions
+namespace ManagedCode.Repository.MongoDB.Extensions;
+
+public static class ProviderBuilderExtension
 {
-    public static class ProviderBuilderExtension
+    public static IServiceCollection AddMongoDb(this IServiceCollection serviceCollection, Action<MongoDbRepositoryOptions> action)
     {
-        public static IServiceCollection AddMongoDb(this IServiceCollection serviceCollection, Action<MongoDbRepositoryOptions> action)
-        {
-            var connectionOptions = new MongoDbRepositoryOptions();
-            action.Invoke(connectionOptions);
+        var connectionOptions = new MongoDbRepositoryOptions();
+        action.Invoke(connectionOptions);
 
-            serviceCollection.AddSingleton(connectionOptions);
+        serviceCollection.AddSingleton(connectionOptions);
 
-            return serviceCollection;
-        }
+        return serviceCollection;
     }
 }
