@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -51,5 +51,5 @@ namespace ManagedCode.Repository.Tests
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
     }
-}*/
+}
 

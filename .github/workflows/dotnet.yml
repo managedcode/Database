@@ -14,7 +14,25 @@ jobs:
   
   build-and-test:
     runs-on: ubuntu-latest
-  
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          SA_PASSWORD: password
+          ACCEPT_EULA: Y
   
     steps:
 
@@ -27,15 +45,6 @@ jobs:
       - name: azuright
         uses: potatoqualitee/azuright@v1.1
 
-      - name: docker run MSSQL
-        run: |
-          docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=password" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
-          sleep 5s
-      - name: docker run MSSQL
-        run: |
-          docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
-          sleep 5s
-        
         # run build and test           
       - name: Restore dependencies
         run: dotnet restore

@@ -10,10 +10,10 @@
 
     <!--NuGet-->
     <PropertyGroup>
-        <Title>ManagedCode.Storage.Aws</Title>
-        <PackageId>ManagedCode.Storage.Aws</PackageId>
-        <Description>Storage for AWS</Description>
-        <PackageTags>managedcode, aws, storage, cloud, s3, blob</PackageTags>
+        <Title>ManagedCode.Repository.MongoDB</Title>
+        <PackageId>ManagedCode.Repository.MongoDB</PackageId>
+        <Description>Repository for MongoDB</Description>
+        <PackageTags>managedcode, repository, MongoDB</PackageTags>
     </PropertyGroup>
     
     <ItemGroup>
