@@ -2,87 +2,31 @@ name: nuget
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
 jobs:
-  build:
+  nuget-pack:
+
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-            dotnet-version: 6.0.x
+          dotnet-version: 6.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release
-      - name: Test
-        run: dotnet test --configuration Release --no-build
-      
-      - name: Publish Repository.Core to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.Core/ManagedCode.Repository.Core.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Pack
+        run: dotnet pack --configuration Release
 
-      - name: Publish Repository.AzureTable to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.AzureTable/ManagedCode.Repository.AzureTable.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.CosmosDB to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.CosmosDB/ManagedCode.Repository.CosmosDB.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.LiteDB to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.LiteDB/ManagedCode.Repository.LiteDB.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.SQLite to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.SQLite/ManagedCode.Repository.SQLite.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.MongoDB to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.MongoDB/ManagedCode.Repository.MongoDB.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.EntityFramework to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework/ManagedCode.Repository.EntityFramework.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.EntityFramework.MSSQL to NuGet
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework.MSSQL/ManagedCode.Repository.EntityFramework.MSSQL.csproj
-          VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: Publish Repository.EntityFramework.PostgreSQL to NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
-      with:
-        PROJECT_FILE_PATH: ManagedCode.Repository.EntityFramework.PostgreSQL/ManagedCode.Repository.EntityFramework.PostgreSQL.csproj
-        VERSION_REGEX: ^\s*<PackageVersion>(.*)<\/PackageVersion>
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}    
-             
-        
-        
-        
+      - name: publish nuget packages
+        run: |
+          shopt -s globstar
+          for file in **/*.nupkg
+          do
+            dotnet nuget push "$file" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          done  

@@ -41,7 +41,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
 
     protected override void DisposeInternal()
     {
-        _context.dis;
+        _context.Dispose();
     }
 
     #region Insert

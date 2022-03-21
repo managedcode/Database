@@ -27,7 +27,7 @@ public class MSSQLRepositoryTests
         services.AddManagedCodeRepository()
             .AddMSSQLBasedOnEF(opt =>
             {
-                opt.ConnectionString = "Server=localhost\\SQLEXPRESS;Database=ManagedCode;Trusted_Connection=True;";
+                opt.ConnectionString = "Server=127.0.0.1;Database=managed-code;User Id=sa;Password=password;";
                 opt.UseTracking = false;
             });
 

@@ -27,7 +27,7 @@ public class PostgreSQLRepositoryTests
         services.AddManagedCodeRepository()
             .AddPostgreSQLBasedOnEF(opt =>
             {
-                opt.ConnectionString = "Host=localhost;Port=5433;Database=ManagedCode;Username=postgres;Password=123";
+                opt.ConnectionString = "Host=localhost;Port=5433;Database=ManagedCode;Username=postgres;Password=mysecretpassword";
                 opt.UseTracking = false;
             });
 
