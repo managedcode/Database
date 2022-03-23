@@ -1,6 +1,4 @@
-
-<img alt="managed code repository" src="https://github.com/managed-code-hub/Repository/raw/main/logo.png" width="300px" />
-
+![img|300x200](https://github.com/managed-code-hub/Repository/raw/main/logo.png)
 # Repository
 [![.NET](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml/badge.svg)](https://github.com/managed-code-hub/Repository/actions/workflows/dotnet.yml)
 [![Coverage Status](https://coveralls.io/repos/github/managed-code-hub/Repository/badge.svg?branch=main)](https://coveralls.io/github/managed-code-hub/Repository?branch=main)
