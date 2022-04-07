@@ -14,6 +14,7 @@ using Xunit;
 
 namespace ManagedCode.Repository.Tests.PostgreSQL;
 
+/*
 public class PostgreSQLRepositoryTests
 {
     private readonly ICustomerRepository _customerRepository;
@@ -299,4 +300,4 @@ public class PostgreSQLRepositoryTests
     }
 
     #endregion
-}
+}*/

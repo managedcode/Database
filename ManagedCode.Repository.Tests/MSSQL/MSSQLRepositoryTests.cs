@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace ManagedCode.Repository.Tests.MSSQL;
-
+/*
 public class MSSQLRepositoryTests
 {
     private readonly ICustomerRepository _customerRepository;
@@ -299,4 +299,4 @@ public class MSSQLRepositoryTests
     }
 
     #endregion
-}
+}*/
