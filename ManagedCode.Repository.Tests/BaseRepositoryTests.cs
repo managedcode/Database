@@ -28,8 +28,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         {
             Id = GenerateId(),
             StringData = Guid.NewGuid().ToString(),
-            IntData = rnd.Next(0, 10),
-            FloatData = Convert.ToSingle(rnd.NextDouble() + rnd.Next(0, 10)),
+            IntData = rnd.Next(),
+            FloatData = Convert.ToSingle(rnd.NextDouble()),
             DateTimeData = DateTime.Now
         };
     }
