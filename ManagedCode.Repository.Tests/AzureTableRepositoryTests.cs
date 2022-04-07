@@ -4,6 +4,7 @@ using ManagedCode.Repository.Tests.Common;
 
 namespace ManagedCode.Repository.Tests
 {
+    /*
     public class AzureTableRepositoryTests : BaseRepositoryTests<TableId, TestAzureTableItem>
     {
         public const string ConnectionString =
@@ -22,6 +23,6 @@ namespace ManagedCode.Repository.Tests
         {
             return new(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
         }
-    }
+    }*/
 }
 
