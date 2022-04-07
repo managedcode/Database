@@ -4,7 +4,7 @@ using MongoDB.Bson;
 
 namespace ManagedCode.Repository.Tests
 {
-    /*
+    
     public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>
     {
         public const string ConnectionString =
@@ -23,6 +23,6 @@ namespace ManagedCode.Repository.Tests
         {
             return ObjectId.GenerateNewId();
         }
-    }*/
+    }
 }
 
