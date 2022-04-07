@@ -9,7 +9,7 @@ public class CosmosDbItem : IItem<string>
 {
     public CosmosDbItem()
     {
-        Id = Guid.NewGuid().ToString();
+        Id = Guid.NewGuid().ToString("N");
         Type = GetType().Name;
     }
 

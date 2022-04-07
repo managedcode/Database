@@ -9,4 +9,5 @@ public class CosmosDbRepositoryOptions
     public string CollectionName { get; set; }
     public CosmosClientOptions CosmosClientOptions { get; set; }
     public bool SplitByType { get; set; } = true;
+    public bool UseItemIdAsPartitionKey { get; set; } = true;
 }

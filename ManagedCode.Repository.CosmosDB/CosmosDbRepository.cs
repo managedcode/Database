@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
 namespace ManagedCode.Repository.CosmosDB;
@@ -17,10 +18,12 @@ public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosD
     private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
     private readonly bool _splitByType;
     private readonly int _capacity = 50;
+    private readonly bool _useItemIdAsPartitionKey;
 
     public CosmosDbRepository([NotNull] CosmosDbRepositoryOptions options)
     {
         _splitByType = options.SplitByType;
+        _useItemIdAsPartitionKey = options.UseItemIdAsPartitionKey;
         _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
         IsInitialized = true;
     }
@@ -195,6 +198,13 @@ public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosD
     protected override async Task<bool> DeleteAsyncInternal(string id, CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
+
+        if (_useItemIdAsPartitionKey)
+        {
+            var deleteItemResult = await container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: token);
+            return deleteItemResult != null;
+        }
+        
         var item = await GetAsync(g => g.Id == id, token);
         if (item == null)
         {
