@@ -35,6 +35,8 @@ jobs:
           ACCEPT_EULA: Y
       cosmosdb:
         image: ridhoq/cosmosdb-server
+        ports:
+          - 3000:3000
       mongodb:
         image: mongo
         ports:
