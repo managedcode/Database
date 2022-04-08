@@ -33,6 +33,8 @@ jobs:
         env:
           SA_PASSWORD: password
           ACCEPT_EULA: Y
+      cosmosdb:
+        image: ridhoq/cosmosdb-server
       mongodb:
         image: mongo
         ports:
@@ -42,10 +44,7 @@ jobs:
 
       - name: azuright
         uses: potatoqualitee/azuright@v1.1
-        
-      - name: Azure Cosmos Emulator
-        uses: galvesribeiro/AzureCosmosAction@v1.0.0
-
+      
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
