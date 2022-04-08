@@ -48,7 +48,10 @@ jobs:
 
       - name: azuright
         uses: potatoqualitee/azuright@v1.1
-
+        
+      - name: Azure Cosmos Emulator
+        uses: galvesribeiro/AzureCosmosAction@v1.0.0        
+        
         # run build and test           
       - name: Restore dependencies
         run: dotnet restore
