@@ -5,11 +5,20 @@ namespace ManagedCode.Repository.AzureTable;
 
 public class AzureTableItem : TableEntity, IItem<TableId>
 {
+    private TableId _id;
     public AzureTableItem()
     {
-        Id = new TableId(this);
+        _id = new TableId(this);
     }
-
+    
     [IgnoreProperty]
-    public TableId Id { get; set; }
+    public TableId Id
+    {
+        get => _id;
+        set
+        {
+            _id = value;
+            _id.SetEntity(this);
+        }
+    }
 }

@@ -4,27 +4,34 @@ namespace ManagedCode.Repository.AzureTable;
 
 public class TableId
 {
-    private readonly ITableEntity _entity;
+    private ITableEntity _internalEntity;
 
     public TableId(ITableEntity entity)
     {
-        _entity = entity;
+        _internalEntity = entity;
     }
 
     public TableId(string partitionKey, string rowKey)
     {
-        _entity = new TableEntity(partitionKey, rowKey);
+        _internalEntity = new TableEntity(partitionKey, rowKey);
     }
-
-    public string RowKey
-    {
-        get => _entity.RowKey;
-        set => _entity.RowKey = value;
-    }
-
+    
     public string PartitionKey
     {
-        get => _entity.PartitionKey;
-        set => _entity.PartitionKey = value;
+        get => _internalEntity.PartitionKey;
+        set => _internalEntity.PartitionKey = value;
+    }
+    
+    public string RowKey
+    {
+        get => _internalEntity.RowKey;
+        set => _internalEntity.RowKey = value;
+    }
+    
+    public void SetEntity(ITableEntity entity)
+    {
+        entity.PartitionKey = PartitionKey;
+        entity.RowKey = RowKey;
+        _internalEntity = entity;
     }
 }
