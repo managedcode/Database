@@ -12,8 +12,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Product>Managed Code - Repository</Product>
-        <Version>1.0.15</Version>
-        <PackageVersion>1.0.15</PackageVersion>
+        <Version>1.0.16</Version>
+        <PackageVersion>1.0.16</PackageVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

@@ -34,4 +34,13 @@ public class TableId
         entity.RowKey = RowKey;
         _internalEntity = entity;
     }
+
+    public override string ToString()
+    {
+        return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
+    }
+    public override int GetHashCode()
+    {
+        return ToString().GetHashCode();
+    }
 }
