@@ -39,8 +39,19 @@ public class TableId
     {
         return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
     }
+    
+    public override bool Equals(object obj) 
+    { 
+        return Equals(obj as TableId); 
+    }
+
+    public bool Equals(TableId obj)
+    { 
+        return obj != null && obj.PartitionKey == this.PartitionKey && obj.RowKey == this.RowKey;  
+    }
+
     public override int GetHashCode()
     {
-        return ToString().GetHashCode();
+        return PartitionKey.GetHashCode() ^ RowKey.GetHashCode();
     }
 }
