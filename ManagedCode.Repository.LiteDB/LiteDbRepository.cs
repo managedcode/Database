@@ -33,11 +33,13 @@ public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem>, ILiteDbR
 
     protected override ValueTask DisposeAsyncInternal()
     {
+        _database.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
+        _database.Dispose();
     }
 
     #region Insert

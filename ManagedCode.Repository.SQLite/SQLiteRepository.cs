@@ -30,11 +30,15 @@ public class SQLiteRepository<TId, TItem> : BaseRepository<TId, TItem> where TIt
 
     protected override ValueTask DisposeAsyncInternal()
     {
+        _database.Close();
+        _database.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
+        _database.Close();
+        _database.Dispose();
     }
 
     #region Insert
