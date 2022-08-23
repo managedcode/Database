@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <IsPackable>false</IsPackable>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="6.7.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
+        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <PackageReference Include="xunit" Version="2.4.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="3.1.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.msbuild" Version="3.1.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ManagedCode.Database.AzureTable\ManagedCode.Database.AzureTable.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.CosmosDB\ManagedCode.Database.CosmosDB.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.EntityFramework.MSSQL\ManagedCode.Database.EntityFramework.MSSQL.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.EntityFramework.PostgreSQL\ManagedCode.Database.EntityFramework.PostgreSQL.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.LiteDB\ManagedCode.Database.LiteDB.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.MongoDB\ManagedCode.Database.MongoDB.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.SQLite\ManagedCode.Database.SQLite.csproj" />
+    </ItemGroup>
+
+</Project>

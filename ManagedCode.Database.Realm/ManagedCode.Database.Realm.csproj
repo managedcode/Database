@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <LangVersion>10</LangVersion>
+        <DebugType>embedded</DebugType>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    </PropertyGroup>
+
+    <!--NuGet-->
+    <PropertyGroup>
+        <Title>ManagedCode.Repository.Realm</Title>
+        <PackageId>ManagedCode.Database.Realm</PackageId>
+        <Description>Repository for Realm</Description>
+        <PackageTags>managedcode, repository, Realm</PackageTags>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+        <PackageReference Include="Humanizer.Core" Version="2.14.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Realm" Version="10.15.1" />
+    </ItemGroup>
+
+
+</Project>

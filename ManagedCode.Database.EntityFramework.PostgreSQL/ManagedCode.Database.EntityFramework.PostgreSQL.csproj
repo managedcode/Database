@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <LangVersion>10</LangVersion>
+        <DebugType>embedded</DebugType>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <!--NuGet-->
+    <PropertyGroup>
+        <Title>ManagedCode.Repository.EntityFramework.PostgreSQL</Title>
+        <PackageId>ManagedCode.Database.EntityFramework.PostgreSQL</PackageId>
+        <Description>Repository for PostgreSQL</Description>
+        <PackageTags>managedcode, repository, EntityFramework, PostgreSQL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+        <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.EntityFramework\ManagedCode.Database.EntityFramework.csproj" />
+    </ItemGroup>
+
+</Project>
