@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Repository.Enti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.EntityFramework.PostgreSQL", "ManagedCode.Repository.EntityFramework.PostgreSQL\ManagedCode.Repository.EntityFramework.PostgreSQL.csproj", "{223BAA68-4FA6-4B41-B6C6-ECD6FEDD944A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCode.Repository.Realm", "ManagedCode.Repository.Realm\ManagedCode.Repository.Realm.csproj", "{5C40D806-7844-46A0-B183-8549D5EEB39F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{223BAA68-4FA6-4B41-B6C6-ECD6FEDD944A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{223BAA68-4FA6-4B41-B6C6-ECD6FEDD944A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{223BAA68-4FA6-4B41-B6C6-ECD6FEDD944A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C40D806-7844-46A0-B183-8549D5EEB39F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C40D806-7844-46A0-B183-8549D5EEB39F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C40D806-7844-46A0-B183-8549D5EEB39F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C40D806-7844-46A0-B183-8549D5EEB39F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
