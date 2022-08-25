@@ -9,42 +9,86 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class BaseAzureTableRepository<TId, TItem> : BaseRepository<TId, TItem>
-    where TId : TableId
-    where TItem : class, IItem<TId>, ITableEntity, new()
+public class AzureTableDBCollection : BaseDatabase, IDatabase<CloudTableClient>
 {
-    private readonly AzureTableAdapter<TItem> _tableAdapter;
-
-    public BaseAzureTableRepository(AzureTableRepositoryOptions options)
+    private readonly AzureTableRepositoryOptions _options;
+    private Dictionary<string, object> tableAdapters = new();
+    public AzureTableDBCollection(AzureTableRepositoryOptions options)
     {
-        if (string.IsNullOrEmpty(options.ConnectionString))
-        {
-            _tableAdapter = new AzureTableAdapter<TItem>(Logger, options.TableStorageCredentials, options.TableStorageUri);
-        }
-        else
-        {
-            _tableAdapter = new AzureTableAdapter<TItem>(Logger, options.ConnectionString);
-        }
-
+        _options = options;
         IsInitialized = true;
     }
-
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
     }
-
+    
     protected override ValueTask DisposeAsyncInternal()
     {
+        DisposeInternal();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
+        tableAdapters.Clear();
+    }
+
+    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
+    {
+        lock (tableAdapters)
+        {
+            if (tableAdapters.TryGetValue(name, out var table))
+            {
+                return (IDBCollection<TId, TItem>)table;
+            }
+
+            AzureTableAdapter<TItem> tableAdapter;
+            if (string.IsNullOrEmpty(_options.ConnectionString))
+            {
+                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.TableStorageCredentials, _options.TableStorageUri);
+            }
+            else
+            {
+                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.ConnectionString);
+            }
+            
+            tableAdapters[name] = new AzureTableDBCollection<TItem>(tableAdapter);
+            return tableAdapter;
+        }
+        
+        
+    }
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public CloudTableClient DataBase { get; }
+}
+
+public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
+    where TItem : class, IItem<TableId>, ITableEntity, new()
+{
+    private readonly AzureTableAdapter<TItem> _tableAdapter;
+
+    public AzureTableDBCollection(AzureTableAdapter<TItem> tableAdapter)
+    {
+        _tableAdapter = tableAdapter;
+    }
+    
+    public override void Dispose()
+    {
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
     }
 
     #region Insert
-
+    
     protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
     {
         var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
@@ -103,7 +147,7 @@ public class BaseAzureTableRepository<TId, TItem> : BaseRepository<TId, TItem>
 
     #region Delete
 
-    protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
+    protected override async Task<bool> DeleteAsyncInternal(TableId id, CancellationToken token = default)
     {
         var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(new DynamicTableEntity(id.PartitionKey, id.RowKey)
         {
@@ -121,7 +165,7 @@ public class BaseAzureTableRepository<TId, TItem> : BaseRepository<TId, TItem>
         return result != null;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
+    protected override async Task<int> DeleteAsyncInternal(IEnumerable<TableId> ids, CancellationToken token = default)
     {
         return await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
         {
@@ -172,7 +216,7 @@ public class BaseAzureTableRepository<TId, TItem> : BaseRepository<TId, TItem>
 
     #region Get
 
-    protected override Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
+    protected override Task<TItem> GetAsyncInternal(TableId id, CancellationToken token = default)
     {
         return _tableAdapter.ExecuteAsync<TItem>(TableOperation.Retrieve<TItem>(id.PartitionKey, id.RowKey), token);
     }

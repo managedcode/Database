@@ -3,63 +3,18 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ManagedCode.Database.Core.Common;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ManagedCode.Database.Core;
 
-public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where TItem : IItem<TId>
+public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TItem : IItem<TId>
 {
-    protected readonly ILogger Logger = NullLogger.Instance;
-
-    private bool _disposed;
-
-    public bool IsInitialized { get; protected set; }
-
-    public async Task InitializeAsync(CancellationToken token = default)
-    {
-        if (IsInitialized == false)
-        {
-            await InitializeAsyncInternal(token);
-        }
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        DisposeInternal();
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        _disposed = true;
-        return DisposeAsyncInternal();
-    }
-
-    protected abstract Task InitializeAsyncInternal(CancellationToken token = default);
-
-    protected abstract ValueTask DisposeAsyncInternal();
-    protected abstract void DisposeInternal();
+    public abstract void Dispose();
+    public abstract ValueTask DisposeAsync();
 
     #region Insert
 
     public Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (item == null)
         {
@@ -71,11 +26,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (items == null)
         {
             throw new ArgumentNullException(nameof(items));
@@ -94,11 +44,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (item == null)
         {
             throw new ArgumentNullException(nameof(item));
@@ -109,11 +54,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (items == null)
         {
             throw new ArgumentNullException(nameof(items));
@@ -137,11 +77,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<bool> DeleteAsync(TId id, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (id == null)
         {
             throw new ArgumentNullException(nameof(id));
@@ -152,11 +87,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (item == null)
         {
             throw new ArgumentNullException(nameof(item));
@@ -167,11 +97,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (ids == null)
         {
             throw new ArgumentNullException(nameof(ids));
@@ -182,11 +107,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (items == null)
         {
             throw new ArgumentNullException(nameof(items));
@@ -197,11 +117,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> DeleteAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -212,11 +127,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<bool> DeleteAllAsync(CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         return DeleteAllAsyncInternal(token);
     }
 
@@ -238,11 +148,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (item == null)
         {
             throw new ArgumentNullException(nameof(item));
@@ -253,10 +158,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (items == null)
         {
@@ -276,11 +177,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<TItem> GetAsync(TId id, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (id == null)
         {
             throw new ArgumentNullException(nameof(id));
@@ -291,10 +187,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<TItem> GetAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (predicate == null)
         {
@@ -306,20 +198,11 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public IAsyncEnumerable<TItem> GetAllAsync(int? take = null, int skip = 0, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         return GetAllAsyncInternal(take, skip, token);
     }
 
     public IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy, int? take = null, int skip = 0, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (orderBy == null)
         {
@@ -335,10 +218,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (orderBy == null)
         {
@@ -365,11 +244,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate, int? take = null, int skip = 0, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -384,11 +258,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -409,11 +278,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -434,10 +298,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (predicate == null)
         {
@@ -465,11 +325,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -497,10 +352,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
 
         if (predicate == null)
         {
@@ -525,11 +376,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         return FindAsyncInternal(predicates, take, skip, token);
     }
 
@@ -539,11 +385,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));
@@ -564,11 +405,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));
@@ -589,11 +425,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));
@@ -620,11 +451,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));
@@ -652,11 +478,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
         int skip = 0,
         CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));
@@ -702,21 +523,11 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> CountAsync(CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         return CountAsyncInternal(token);
     }
 
     public Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
@@ -727,11 +538,6 @@ public abstract class BaseRepository<TId, TItem> : IRepository<TId, TItem> where
 
     public Task<int> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
-        if (!IsInitialized)
-        {
-            throw new RepositoryNotInitializedException(GetType());
-        }
-
         if (predicates == null)
         {
             throw new ArgumentNullException(nameof(predicates));

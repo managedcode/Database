@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core;
 
-public interface IRepository<in TId, TItem> : IDisposable, IAsyncDisposable where TItem : IItem<TId>
+public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable where TItem : IItem<TId>
 {
-    bool IsInitialized { get; }
-
-    Task InitializeAsync(CancellationToken token = default);
-
     Task<TItem> InsertAsync(TItem item, CancellationToken token = default);
     Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
@@ -30,23 +26,7 @@ public interface IRepository<in TId, TItem> : IDisposable, IAsyncDisposable wher
 
     Task<TItem> GetAsync(TId id, CancellationToken token = default);
     Task<TItem> GetAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
-
-    IAsyncEnumerable<TItem> GetAllAsync(
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default);
-
-    IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default);
-
-    IAsyncEnumerable<TItem> GetAllAsync(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default);
-
+    
     IAsyncEnumerable<TItem> FindAsync(Expression<Func<TItem, bool>> predicate,
         int? take = null,
         int skip = 0,

@@ -6,33 +6,24 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ManagedCode.Database.Core;
+namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : IItem<TId>
+public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where TItem : IItem<TId>
 {
-    private readonly Dictionary<TId, TItem> _storage = new();
-
-    public InMemoryRepository()
-    {
-        IsInitialized = true;
-    }
-
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override ValueTask DisposeAsyncInternal()
-    {
-        return new ValueTask(Task.Run(DisposeInternal));
-    }
-
-    protected override void DisposeInternal()
+    private readonly Dictionary<TId, TItem> _storage = new ();
+    
+    public override void Dispose()
     {
         lock (_storage)
         {
             _storage.Clear();
         }
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        Dispose();
+        return new ValueTask(Task.CompletedTask);
     }
 
     #region Insert

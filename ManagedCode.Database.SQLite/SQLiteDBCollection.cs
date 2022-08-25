@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -10,35 +10,22 @@ using SQLite;
 
 namespace ManagedCode.Database.SQLite;
 
-public class SQLiteRepository<TId, TItem> : BaseRepository<TId, TItem> where TItem : class, IItem<TId>, new()
+public class SQLiteDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where TItem : class, IItem<TId>, new()
 {
     private readonly SQLiteConnection _database;
 
-    public SQLiteRepository(
-        [System.Diagnostics.CodeAnalysis.NotNull]
-        SQLiteRepositoryOptions options)
+    public SQLiteDBCollection(SQLiteConnection database)
     {
-        _database = options.Connection ?? new SQLiteConnection(options.ConnectionString);
-        _database.CreateTable<TItem>();
-        IsInitialized = true;
+        _database = database;
     }
 
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
+    public override ValueTask DisposeAsync()
     {
-        return Task.CompletedTask;
-    }
-
-    protected override ValueTask DisposeAsyncInternal()
-    {
-        _database.Close();
-        _database.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
-    protected override void DisposeInternal()
+    public override void Dispose()
     {
-        _database.Close();
-        _database.Dispose();
     }
 
     #region Insert

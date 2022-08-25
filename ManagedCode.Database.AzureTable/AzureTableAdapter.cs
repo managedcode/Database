@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableAdapter<T> where T : class, ITableEntity, new()
+public class AzureTableAdapter<T>  where T : class, ITableEntity, new()
 {
     private readonly bool _allowTableCreation = true;
     private readonly CloudStorageAccount _cloudStorageAccount;

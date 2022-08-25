@@ -12,13 +12,8 @@ namespace ManagedCode.Database.Tests;
 
 public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TId>, new()
 {
-    protected readonly IRepository<TId, TItem> Repository;
-
-    protected BaseRepositoryTests(IRepository<TId, TItem> repository)
-    {
-        Repository = repository;
-    }
-
+    protected abstract IDBCollection<TId, TItem> Repository { get; }
+    
     protected abstract TId GenerateId();
 
     protected TItem CreateNewItem()
@@ -29,8 +24,10 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             Id = GenerateId(),
             StringData = Guid.NewGuid().ToString(),
             IntData = rnd.Next(),
+            LongData =  rnd.Next(),
             FloatData = Convert.ToSingle(rnd.NextDouble()),
-            DateTimeData = DateTime.Now
+            DoubleData = rnd.NextDouble(),
+            DateTimeData = DateTime.Now,
         };
     }
 
@@ -40,16 +37,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         item.Id = id;
         return item;
     }
-
-    [Fact]
-    public async Task InitializeAsync()
-    {
-        await Repository.InitializeAsync();
-        Repository.IsInitialized.Should().BeTrue();
-        await Repository.InitializeAsync();
-        Repository.IsInitialized.Should().BeTrue();
-    }
-
+    
     #region Insert
 
     [Fact]

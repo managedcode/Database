@@ -15,8 +15,7 @@ public class TimeMetrics : IDisposable
     {
         _logger = logger;
         _method = method;
-        _sw = new Stopwatch();
-        _sw.Start();
+        _sw = Stopwatch.StartNew();
     }
 
     public void Dispose()
