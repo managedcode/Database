@@ -58,17 +58,17 @@ public abstract class BaseDatabase : IDatabase
     {
         if (!IsInitialized)
         {
-            throw new RepositoryNotInitializedException(GetType());
+            throw new DatabaseNotInitializedException(GetType());
         }
         
         return GetCollectionInternal<TId, TItem>(typeof(TItem).FullName);
     }
 
-    public IDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<TId>, new()
+    public IDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
     {
         if (!IsInitialized)
         {
-            throw new RepositoryNotInitializedException(GetType());
+            throw new DatabaseNotInitializedException(GetType());
         }
         
         return GetCollectionInternal<TId, TItem>(name);

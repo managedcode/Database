@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core;
 
-
 public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable where TItem : IItem<TId>
 {
     Task<TItem> InsertAsync(TItem item, CancellationToken token = default);
