@@ -12,8 +12,8 @@ public interface IDatabase : IDisposable, IAsyncDisposable
     
     Task Delete(CancellationToken token = default);
 
-    IDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>, new();
-    IDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<TId>, new();
+    IDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>;
+    IDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>;
 }
 
 public interface IDatabase<out T> : IDatabase

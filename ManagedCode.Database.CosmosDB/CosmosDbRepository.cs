@@ -12,20 +12,55 @@ using Microsoft.Azure.Cosmos.Linq;
 
 namespace ManagedCode.Database.CosmosDB;
 
-public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosDbRepository<TItem>
-    where TItem : CosmosDbItem, IItem<string>, new()
+public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
+{
+    private readonly CosmosDbRepositoryOptions _options;
+
+    public CosmosDatabase([NotNull] CosmosDbRepositoryOptions options)
+    {
+        _options = options;
+    }
+    protected override Task InitializeAsyncInternal(CancellationToken token = default)
+    {
+        return Task.CompletedTask;
+    }
+    
+    protected override ValueTask DisposeAsyncInternal()
+    {
+        DisposeInternal();
+        return new ValueTask(Task.CompletedTask);
+    }
+
+    protected override void DisposeInternal()
+    {
+    }
+
+    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
+    {
+        return new CosmosDBCollection<TItem>(_options);
+    }
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public CosmosClient DataBase { get; }
+}
+
+public class CosmosDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
+    where TItem : CosmosDbItem, IItem<TId>, new()
 {
     private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
     private readonly bool _splitByType;
     private readonly int _capacity = 50;
     private readonly bool _useItemIdAsPartitionKey;
 
-    public CosmosDbRepository([NotNull] CosmosDbRepositoryOptions options)
+    public CosmosDBCollection([NotNull] CosmosDbRepositoryOptions options)
     {
         _splitByType = options.SplitByType;
         _useItemIdAsPartitionKey = options.UseItemIdAsPartitionKey;
         _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions, options.DatabaseName, options.CollectionName);
-        IsInitialized = true;
     }
 
     private Expression<Func<TItem, bool>> SplitByType()
@@ -37,22 +72,18 @@ public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosD
 
         return w => true;
     }
+    
 
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
+    #region Insert
+
+    public override void Dispose()
     {
-        return Task.CompletedTask;
     }
 
-    protected override ValueTask DisposeAsyncInternal()
+    public override ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
     }
-
-    protected override void DisposeInternal()
-    {
-    }
-
-    #region Insert
 
     protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
     {
@@ -195,7 +226,7 @@ public class CosmosDbRepository<TItem> : BaseRepository<string, TItem>, ICosmosD
 
     #region Delete
 
-    protected override async Task<bool> DeleteAsyncInternal(string id, CancellationToken token = default)
+    protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
 

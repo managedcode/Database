@@ -51,10 +51,10 @@ public abstract class BaseDatabase : IDatabase
     protected abstract void DisposeInternal();
 
 
-    protected abstract IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name) where TItem : class, IItem<TId>, new();
+    protected abstract IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name) where TItem : IItem<TId>;
     public abstract Task Delete(CancellationToken token = default);
 
-    public IDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>, new()
+    public IDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
         if (!IsInitialized)
         {

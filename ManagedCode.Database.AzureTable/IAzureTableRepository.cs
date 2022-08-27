@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public interface IAzureTableRepository<T> : IRepository<TableId, T>
+public interface IAzureDBCollection<T> : IDBCollection<TableId, T>
     where T : class, IItem<TableId>, ITableEntity, new()
 {
 }

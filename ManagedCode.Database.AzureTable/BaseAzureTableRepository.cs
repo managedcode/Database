@@ -9,11 +9,11 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDBCollection : BaseDatabase, IDatabase<CloudTableClient>
+public class AzureDatabase : BaseDatabase, IDatabase<CloudTableClient>
 {
     private readonly AzureTableRepositoryOptions _options;
     private Dictionary<string, object> tableAdapters = new();
-    public AzureTableDBCollection(AzureTableRepositoryOptions options)
+    public AzureDatabase(AzureTableRepositoryOptions options)
     {
         _options = options;
         IsInitialized = true;
@@ -53,13 +53,12 @@ public class AzureTableDBCollection : BaseDatabase, IDatabase<CloudTableClient>
                 tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.ConnectionString);
             }
             
-            tableAdapters[name] = new AzureTableDBCollection<TItem>(tableAdapter);
-            return tableAdapter;
-        }
-        
-        
-    }
+            var collection = new AzureTableDBCollection<TItem>(tableAdapter);
 
+            tableAdapters[name] = collection;
+            return (IDBCollection<TId, TItem>)collection;
+        }
+    }
     public override Task Delete(CancellationToken token = default)
     {
         throw new NotImplementedException();
@@ -69,7 +68,7 @@ public class AzureTableDBCollection : BaseDatabase, IDatabase<CloudTableClient>
 }
 
 public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
-    where TItem : class, IItem<TableId>, ITableEntity, new()
+    where TItem : AzureTableItem
 {
     private readonly AzureTableAdapter<TItem> _tableAdapter;
 

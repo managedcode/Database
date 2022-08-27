@@ -4,10 +4,11 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableRepository<TItem> : BaseAzureTableRepository<TableId, TItem>, IAzureTableRepository<TItem>
+/*
+public class AzureDBCollection<TItem> : BaseAzureTableRepository<TableId, TItem>, IAzureTableRepository<TItem>
     where TItem : class, IItem<TableId>, ITableEntity, new()
 {
-    public AzureTableRepository([NotNull] AzureTableRepositoryOptions options) : base(options)
+    public AzureDBCollection([NotNull] AzureTableRepositoryOptions options) : base(options)
     {
     }
-}
+}*/
