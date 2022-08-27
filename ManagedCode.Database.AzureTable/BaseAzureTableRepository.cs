@@ -291,7 +291,7 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
 
     #region Count
 
-    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         var count = 0;
 
@@ -307,7 +307,7 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
         return count;
     }
 
-    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         var count = 0;
 

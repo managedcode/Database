@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using Tenray.ZoneTree.Core;
+using Tenray.ZoneTree.Options;
 using Tenray.ZoneTree.WAL;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
@@ -79,7 +80,7 @@ public class DbCollection<TValue> : IDisposable where TValue : ZoneTreeItem
         _zoneTree.Delete(key);
     }
 
-    public int Count()
+    public long Count()
     {
         return _zoneTree.Count();
     }

@@ -21,7 +21,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
-        <PackageReference Include="ZoneTree" Version="1.3.7" />
+        <PackageReference Include="ZoneTree" Version="1.4.4" />
     </ItemGroup>
 
 </Project>

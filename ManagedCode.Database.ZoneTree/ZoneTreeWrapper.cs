@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using Tenray.ZoneTree;
 using Tenray.ZoneTree.AbstractFileStream;
-using Tenray.ZoneTree.BlobFileSystem;
-using Tenray.ZoneTree.Maintainers;
+using Tenray.ZoneTree.Options;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
@@ -13,7 +12,7 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
     private readonly ILogger _logger;
     private readonly string _path;
     private IZoneTree<TKey, TValue?> _zoneTree;
-    private BasicZoneTreeMaintainer<TKey, TValue?> _maintainer;
+    private IMaintainer _maintainer;
 
     public ZoneTreeWrapper(ILogger logger, string path)
     {
@@ -44,9 +43,8 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
             
             //.SetIsValueDeletedDelegate((in Deletable<TValue> x) => x.IsDeleted)
             //.SetMarkValueDeletedDelegate((ref Deletable<TValue> x) => x.IsDeleted = true)
-
-
-            .ConfigureWriteAheadLogProvider(x =>
+            
+            .ConfigureWriteAheadLogOptions(x =>
             {
                 // x.CompressionBlockSize = 1024 * 1024 * 20;
                 x.WriteAheadLogMode = options.WALMode;
@@ -54,17 +52,16 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
             })
             .Configure(x =>
             {
-                x.EnableDiskSegmentCompression = true;
-                x.DiskSegmentMode = options.DiskSegmentMode;
-                x.DiskSegmentCompressionBlockSize = 1024 * 1024 * 30;
-                //x.DiskSegmentMinimumRecordCount = 10_000;
-                //x.DiskSegmentMaximumRecordCount = 100_000;
-                x.DiskSegmentBlockCacheLimit = 2;
+                x.DiskSegmentOptions.CompressionMethod = CompressionMethod.Brotli;
+                x.DiskSegmentOptions.CompressionBlockSize= 1024 * 1024 * 30;
+                x.DiskSegmentOptions.DiskSegmentMode = options.DiskSegmentMode;
+                x.DiskSegmentOptions.BlockCacheLimit = 2;
                 x.MutableSegmentMaxItemCount = 10_000; // number of data im memory  
             });
         
+    
         _zoneTree = factory.OpenOrCreate();
-        _maintainer = new (_zoneTree);
+        _maintainer =  _zoneTree.CreateMaintainer();
     }
 
     
@@ -93,7 +90,7 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
     
     public void InsertOrUpdate(TKey key, TValue value)
     {
-        _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? old) => value);
+        _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? val) => true);
     }
     
     public void Upsert(TKey key, TValue value)
@@ -121,7 +118,12 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
         _zoneTree.ForceDelete(in key);
     }
 
-    public int Count()
+    public void DeleteAll()
+    {
+        _zoneTree.Maintenance.DestroyTree();
+    }
+    
+    public long Count()
     {
         //add more cache logic
         return _zoneTree.Count();

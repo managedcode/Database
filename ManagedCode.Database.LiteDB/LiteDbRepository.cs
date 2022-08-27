@@ -11,9 +11,9 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDataBase : BaseDatabase, IDatabase<LiteDatabase>
+public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
 {
-    public LiteDbDataBase([NotNull] LiteDbRepositoryOptions options)
+    public LiteDbDatabase([NotNull] LiteDbRepositoryOptions options)
     {
         DataBase = options.Database ?? new LiteDatabase(options.ConnectionString);
         IsInitialized = true;
@@ -402,13 +402,13 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region Count
 
-    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Count();
     }
 
-    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         await Task.Yield();
         var query = GetDatabase().Query();

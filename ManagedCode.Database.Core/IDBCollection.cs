@@ -103,7 +103,7 @@ public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable wh
         int skip = 0,
         CancellationToken token = default);
 
-    Task<int> CountAsync(CancellationToken token = default);
-    Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
-    Task<int> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
+    Task<long> CountAsync(CancellationToken token = default);
+    Task<long> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
+    Task<long> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
 }

@@ -366,13 +366,13 @@ public class SQLiteDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where
 
     #region Count
 
-    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         await Task.Yield();
         return _database.Table<TItem>().Count();
     }
 
-    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         await Task.Yield();
         var query = _database.Table<TItem>();

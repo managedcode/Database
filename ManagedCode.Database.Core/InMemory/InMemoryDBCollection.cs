@@ -439,15 +439,15 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     #region Count
 
-    protected override Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         lock (_storage)
         {
-            return Task.FromResult(_storage.Count);
+            return Task.FromResult((long)_storage.Count);
         }
     }
 
-    protected override Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         lock (_storage)
         {
@@ -465,7 +465,7 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
                 }
             }
 
-            var count = items.Count();
+            var count = (long)items.Count();
             return Task.FromResult(count);
         }
     }

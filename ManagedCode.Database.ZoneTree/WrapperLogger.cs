@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Logging;
-using LogLevel = Tenray.ZoneTree.Core.LogLevel;
+using LogLevel = Tenray.ZoneTree.Logger.LogLevel;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
-public class WrapperLogger : Tenray.ZoneTree.ILogger
+public class WrapperLogger : Tenray.ZoneTree.Logger.ILogger
 {
     private readonly ILogger _logger;
 

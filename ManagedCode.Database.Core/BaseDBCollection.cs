@@ -59,15 +59,10 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
             throw new ArgumentNullException(nameof(items));
         }
 
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
-
         return UpdateAsyncInternal(items, token);
     }
 
-    protected abstract Task<TItem> UpdateAsyncInternal(TItem items, CancellationToken token = default);
+    protected abstract Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default);
 
     protected abstract Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default);
 
@@ -521,12 +516,12 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
 
     #region Count
 
-    public Task<int> CountAsync(CancellationToken token = default)
+    public Task<long> CountAsync(CancellationToken token = default)
     {
         return CountAsyncInternal(token);
     }
 
-    public Task<int> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+    public Task<long> CountAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
         if (predicate == null)
         {
@@ -536,7 +531,7 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
         return CountAsyncInternal(new[] { predicate }, token);
     }
 
-    public Task<int> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    public Task<long> CountAsync(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         if (predicates == null)
         {
@@ -546,9 +541,9 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
         return CountAsyncInternal(predicates, token);
     }
 
-    protected abstract Task<int> CountAsyncInternal(CancellationToken token = default);
+    protected abstract Task<long> CountAsyncInternal(CancellationToken token = default);
 
-    protected abstract Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
+    protected abstract Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
 
     #endregion
 }

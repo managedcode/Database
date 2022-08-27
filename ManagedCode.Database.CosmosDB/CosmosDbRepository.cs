@@ -666,13 +666,13 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
 
     #region Count
 
-    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
         return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
     }
 
-    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
         var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
