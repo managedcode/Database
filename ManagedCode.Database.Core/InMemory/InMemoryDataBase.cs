@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.Core.InMemory;
 
@@ -26,23 +27,32 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
         }
         DataBase.Clear();
     }
-
-    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
+    
+    public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
+        return GetCollection<TId, TItem>(typeof(TItem).FullName);
+    }
+    
+    public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
+    {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
         lock (DataBase)
         {
             if (DataBase.TryGetValue(name, out var table))
             {
-                return (IDBCollection<TId, TItem>)table;
+                return (InMemoryDBCollection<TId, TItem>)table;
             }
 
             var db = new InMemoryDBCollection<TId, TItem>();
             DataBase[name] = db;
             return db;
         }
-
     }
-
+    
     public override Task Delete(CancellationToken token = default)
     {
         DisposeInternal();

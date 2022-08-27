@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Common;
+using ManagedCode.Database.Core.InMemory;
 using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
@@ -33,14 +35,24 @@ public class AzureDatabase : BaseDatabase, IDatabase<CloudTableClient>
     {
         tableAdapters.Clear();
     }
-
-    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
+    
+    public AzureTableDBCollection<TItem>  GetCollection<TId, TItem>()  where TItem : AzureTableItem, IItem<TId>, new()
     {
+        return GetCollection<TId, TItem>(typeof(TItem).FullName);
+    }
+    
+    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : AzureTableItem, IItem<TId>, new()
+    {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
         lock (tableAdapters)
         {
             if (tableAdapters.TryGetValue(name, out var table))
             {
-                return (IDBCollection<TId, TItem>)table;
+                return (AzureTableDBCollection<TItem>)table;
             }
 
             AzureTableAdapter<TItem> tableAdapter;
@@ -56,9 +68,10 @@ public class AzureDatabase : BaseDatabase, IDatabase<CloudTableClient>
             var collection = new AzureTableDBCollection<TItem>(tableAdapter);
 
             tableAdapters[name] = collection;
-            return (IDBCollection<TId, TItem>)collection;
+            return collection;
         }
     }
+    
     public override Task Delete(CancellationToken token = default)
     {
         throw new NotImplementedException();
@@ -68,7 +81,7 @@ public class AzureDatabase : BaseDatabase, IDatabase<CloudTableClient>
 }
 
 public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
-    where TItem : AzureTableItem
+    where TItem : AzureTableItem, new()
 {
     private readonly AzureTableAdapter<TItem> _tableAdapter;
 

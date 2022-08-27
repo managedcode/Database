@@ -34,13 +34,7 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
     {
         return Task.CompletedTask;
     }
-
-    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
-    {
-        DataBase.CreateTable<TItem>();
-        return new SQLiteDBCollection<TId, TItem>(DataBase);
-    }
-
+    
     public override Task Delete(CancellationToken token = default)
     {
         throw new NotImplementedException();

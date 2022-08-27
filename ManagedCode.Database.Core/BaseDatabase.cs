@@ -49,28 +49,6 @@ public abstract class BaseDatabase : IDatabase
 
     protected abstract ValueTask DisposeAsyncInternal();
     protected abstract void DisposeInternal();
-
-
-    protected abstract IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name) where TItem : IItem<TId>;
     public abstract Task Delete(CancellationToken token = default);
-
-    public IDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        return GetCollectionInternal<TId, TItem>(typeof(TItem).FullName);
-    }
-
-    public IDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        return GetCollectionInternal<TId, TItem>(name);
-    }
+    
 }

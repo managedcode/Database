@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Common;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
@@ -34,12 +35,17 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
     protected override void DisposeInternal()
     {
     }
-
-    protected override IDBCollection<TId, TItem> GetCollectionInternal<TId, TItem>(string name)
+    
+    public CosmosDBCollection<TItem> GetCollection<TItem>() where TItem : CosmosDbItem, new()
     {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
         return new CosmosDBCollection<TItem>(_options);
     }
-
+    
     public override Task Delete(CancellationToken token = default)
     {
         throw new NotImplementedException();
@@ -48,8 +54,8 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
     public CosmosClient DataBase { get; }
 }
 
-public class CosmosDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
-    where TItem : CosmosDbItem, IItem<TId>, new()
+public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
+    where TItem : CosmosDbItem, IItem<string>, new()
 {
     private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
     private readonly bool _splitByType;
@@ -226,7 +232,7 @@ public class CosmosDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region Delete
 
-    protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
+    protected override async Task<bool> DeleteAsyncInternal(string id, CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
 

@@ -7,25 +7,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem>, ILiteDbRepository<TId, TItem>
-    where TItem : LiteDbItem<TId>, IItem<TId>, new()
+public class LiteDbDataBase : BaseDatabase, IDatabase<LiteDatabase>
 {
-    private readonly LiteDatabase _database;
-
-    public LiteDbRepository([NotNull] LiteDbRepositoryOptions options)
+    public LiteDbDataBase([NotNull] LiteDbRepositoryOptions options)
     {
-        _database = options.Database ?? new LiteDatabase(options.ConnectionString);
+        DataBase = options.Database ?? new LiteDatabase(options.ConnectionString);
         IsInitialized = true;
     }
-
-    private ILiteCollection<TItem> GetDatabase()
-    {
-        return _database.GetCollection<TItem>();
-    }
-
+    
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
@@ -33,17 +26,60 @@ public class LiteDbRepository<TId, TItem> : BaseRepository<TId, TItem>, ILiteDbR
 
     protected override ValueTask DisposeAsyncInternal()
     {
-        _database.Dispose();
+        DataBase.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
-        _database.Dispose();
+        DataBase.Dispose();
+    }
+    
+    public LiteDbDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDbItem<TId>, new()
+    {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
+        return new LiteDbDBCollection<TId, TItem>(DataBase.GetCollection<TItem>());
+    }
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public LiteDatabase DataBase { get; }
+}
+
+public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
+    where TItem : LiteDbItem<TId>, IItem<TId>, new()
+{
+    private readonly ILiteCollection<TItem> _collection;
+
+    public LiteDbDBCollection(ILiteCollection<TItem> collection)
+    {
+        _collection = collection;
+    }
+
+
+    private ILiteCollection<TItem> GetDatabase()
+    {
+        return _collection;
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
+    }
+
+    public override void Dispose()
+    {
     }
 
     #region Insert
-
+    
     protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
     {
         await Task.Yield();
