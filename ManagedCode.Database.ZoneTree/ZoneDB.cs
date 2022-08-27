@@ -230,9 +230,12 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
         }
     }
 
-    protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
+    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        foreach (var item in _zoneTree.Enumerate().OrderBy(orderBy.Compile()).Skip(skip).Take(take ?? int.MaxValue))
+        {
+            yield return item;
+        }
     }
 
     protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, int? take = null, int skip = 0, CancellationToken token = default)
