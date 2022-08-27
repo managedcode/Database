@@ -179,7 +179,8 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
     protected override Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
         var i = 0;
-        foreach (var item in  _zoneTree.Enumerate().Where(predicate.Compile()))
+        var compiled = predicate.Compile();
+        foreach (var item in  _zoneTree.Enumerate().Where(compiled))
         {
             _zoneTree.Delete(item.Id);
             i++;
@@ -219,7 +220,8 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     protected override Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
     {
-        return Task.FromResult(_zoneTree.Enumerate().FirstOrDefault(predicate.Compile()));
+        var compiled = predicate.Compile();
+        return Task.FromResult(_zoneTree.Enumerate().FirstOrDefault(compiled));
     }
 
     protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
@@ -232,28 +234,40 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
     {
-        foreach (var item in _zoneTree.Enumerate().OrderBy(orderBy.Compile()).Skip(skip).Take(take ?? int.MaxValue))
+        var compiled = orderBy.Compile();
+        foreach (var item in _zoneTree.Enumerate().OrderBy(compiled).Skip(skip).Take(take ?? int.MaxValue))
         {
             yield return item;
         }
     }
 
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, int? take = null, int skip = 0, CancellationToken token = default)
+    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, int? take = null, int skip = 0, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var conditions = predicates.Select(s => s.Compile()).ToArray();
+        
+        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).Skip(skip).Take(take ?? int.MaxValue))
+        {
+            yield return item;
+        }
     }
 
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
         Expression<Func<TItem, object>> orderBy,
         Order orderType,
         int? take = null,
         int skip = 0,
         CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var conditions = predicates.Select(s => s.Compile()).ToArray();
+        var order = orderBy.Compile();
+        
+        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).OrderBy(order).Skip(skip).Take(take ?? int.MaxValue))
+        {
+            yield return item;
+        }
     }
 
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
+    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
         Expression<Func<TItem, object>> orderBy,
         Order orderType,
         Expression<Func<TItem, object>> thenBy,
@@ -262,7 +276,15 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
         int skip = 0,
         CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var conditions = predicates.Select(s => s.Compile()).ToArray();
+        var order = orderBy.Compile();
+        var then = thenBy.Compile();
+        
+        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).OrderBy(order).ThenBy(then)
+                     .Skip(skip).Take(take ?? int.MaxValue))
+        {
+            yield return item;
+        }
     }
 
     protected override Task<long> CountAsyncInternal(CancellationToken token = default)
@@ -272,9 +294,7 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     protected override Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
-        
-        
-        
-        return _zoneTree.Enumerate()
+        var conditions = predicates.Select(s => s.Compile()).ToArray();
+        return Task.FromResult(_zoneTree.Enumerate().Where(w => conditions.All(a => a.Invoke(w))).LongCount());
     }
 }
