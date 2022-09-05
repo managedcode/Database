@@ -1,21 +1,19 @@
-using Benchmark.DB;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Engines;
 
 namespace Benchmark;
 
-[HtmlExporter]
-[SimpleJob(RunStrategy.ColdStart, targetCount: 1)]
-[MinColumn, MaxColumn, MeanColumn, MedianColumn, /*AllStatisticsColumn*/]
-[RPlotExporter]
-[MemoryDiagnoser]
-[ThreadingDiagnoser]
+//[HtmlExporter]
+//[SimpleJob(RunStrategy.ColdStart, targetCount: 1)]
+//[MinColumn, MaxColumn, MeanColumn, MedianColumn, /*AllStatisticsColumn*/]
+//[RPlotExporter]
+//[MemoryDiagnoser]
+//[ThreadingDiagnoser]
 /*[HardwareCounters(
     HardwareCounter.TotalCycles,
     HardwareCounter.TotalIssues,
     HardwareCounter.CacheMisses,
     HardwareCounter.Timer)]*/
+
+/*
 public class ZoneTreeBenchmarks
 {
 
@@ -177,12 +175,7 @@ public void ZoneTree_Search()
 
 #endregion
 
-
-
-
-
-
-
-
 }
 
+
+*/

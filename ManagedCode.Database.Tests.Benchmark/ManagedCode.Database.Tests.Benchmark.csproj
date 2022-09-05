@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
 
@@ -17,6 +18,12 @@
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.328102" />
         <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="LocalDB" />
+      <Folder Include="ServerDB" />
     </ItemGroup>
 
 </Project>

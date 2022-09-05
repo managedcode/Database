@@ -6,18 +6,66 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Common;
 using ManagedCode.Database.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ManagedCode.Database.EntityFramework;
 
-public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, TContext>
+
+public class EFDatabase : BaseDatabase, IDatabase<DbContext>
+{
+    private readonly DbContext _context;
+
+    public EFDatabase(DbContext context)
+    {
+        _context = context;
+        IsInitialized = true;
+    }
+
+    
+    protected override ValueTask DisposeAsyncInternal()
+    {
+        return DataBase.DisposeAsync();
+    }
+
+    protected override void DisposeInternal()
+    {
+        DataBase.Dispose();
+    }
+    
+    protected override async Task InitializeAsyncInternal(CancellationToken token = default)
+    {
+        await _context.Database.EnsureCreatedAsync(token);
+    }
+    
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public DbContext DataBase { get; }
+    
+    public EFDBCollection<TId, TItem, TContext> GetCollection<TId, TItem, TContext>()     
+        where TItem : class, IEFItem<TId>, new()
+        where TContext : EFDbContext<TContext>
+    {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
+        return new  EFDBCollection<TId, TItem, TContext>(DataBase);
+    }
+}
+
+public class EFDBCollection<TId, TItem, TContext> : EFBaseDBCollection<TId, TItem, TContext>
     where TItem : class, IEFItem<TId>, new()
     where TContext : EFDbContext<TContext>
 {
     protected DbSet<TItem> _items;
 
-    public EFRepository(TContext context)
+    public EFDBCollection(TContext context)
     {
         _context = context;
 
@@ -29,19 +77,19 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
     protected override async Task InitializeAsyncInternal(CancellationToken token = default)
     {
         _items = _context.Set<TItem>();
-        await _context.Database.EnsureCreatedAsync(token);
+
 
         IsInitialized = true;
     }
 
-    protected override ValueTask DisposeAsyncInternal()
-    {
-        return default;
-    }
-
-    protected override void DisposeInternal()
+    public override void Dispose()
     {
         _context.Dispose();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        return _context.DisposeAsync();
     }
 
     #region Insert
@@ -66,15 +114,15 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
 
     protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
     {
-        var dbItem = GetAsync(item.Id);
-
+        var dbItem = GetAsync(item.Id, token);
+        
         if (dbItem == null)
         {
-            await InsertAsync(item);
+            await InsertAsync(item, token);
         }
         else
         {
-            await UpdateAsync(item);
+            await UpdateAsync(item, token);
         }
 
         return item;
@@ -84,10 +132,10 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
     {
         foreach (var item in items)
         {
-            await InsertOrUpdateAsync(item);
+            await InsertOrUpdateAsync(item, token);
         }
 
-        return items.ToList().Count();
+        return items.Count();
     }
 
     #endregion
@@ -119,7 +167,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
         var item = new TItem { Id = id };
 
         _context.Entry(item).State = EntityState.Deleted;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return true;
     }
@@ -127,7 +175,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
     protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
     {
         _context.Entry(item).State = EntityState.Deleted;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return true;
     }
@@ -141,7 +189,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
             _context.Entry(item).State = EntityState.Deleted;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return itemsToDelete.Count();
     }
@@ -153,7 +201,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
             _context.Entry(item).State = EntityState.Deleted;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return itemsToDelete.Count();
     }
@@ -168,7 +216,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
             _context.Entry(item).State = EntityState.Deleted;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return count;
     }
@@ -180,7 +228,7 @@ public class EFRepository<TId, TItem, TContext> : EFBaseRepository<TId, TItem, T
             _context.Entry(item).State = EntityState.Deleted;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return true;
     }

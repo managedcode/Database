@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Common;
 using SQLite;
 
 namespace ManagedCode.Database.SQLite;
@@ -41,4 +42,14 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
     }
 
     public SQLiteConnection DataBase { get; }
+    
+    public SQLiteDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>, new()
+    {
+        if (!IsInitialized)
+        {
+            throw new DatabaseNotInitializedException(GetType());
+        }
+        
+        return new SQLiteDBCollection<TId, TItem>(DataBase);
+    }
 }

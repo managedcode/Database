@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Benchmark.DB;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;

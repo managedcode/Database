@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -6,26 +6,22 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Humanizer;
 using ManagedCode.Database.Core;
-using ManagedCode.Database.Core.Common;
+using ManagedCode.Repository.MongoDB;
 using MongoDB.Bson;
-using MongoDB.Driver;
 
-namespace ManagedCode.Database.MongoDB;
+namespace ManagedCode.Repository.Realm;
 
-public class MongoDbDataBase : BaseDatabase, IDatabase<IMongoDatabase>
+public class RealmRepository<TItem> : BaseDBCollection<ObjectId, TItem>
+    where TItem : class, IItem<ObjectId>
 {
-    private readonly MongoDbRepositoryOptions _options;
+    private readonly IMongoCollection<TItem> _collection;
 
-    public MongoDbDataBase([NotNull] MongoDbRepositoryOptions options)
+    public RealmRepository([NotNull] RealmDbRepositoryOptions options)
     {
-        _options = options;
-        var client = new MongoClient(options.ConnectionString);
-        DataBase = client.GetDatabase(options.DataBaseName);
-        IsInitialized = true;
+
     }
-    
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
@@ -38,54 +34,6 @@ public class MongoDbDataBase : BaseDatabase, IDatabase<IMongoDatabase>
 
     protected override void DisposeInternal()
     {
-    }
-    
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>() where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        var collectionName = string.IsNullOrEmpty(_options.CollectionName) ? typeof(TItem).Name.Pluralize() : _options.CollectionName;
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
-    }
-    
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(name, new MongoCollectionSettings()));
-    }
-
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IMongoDatabase DataBase { get; }
-}
-
-public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
-    where TItem : class, IItem<ObjectId>
-{
-    private readonly IMongoCollection<TItem> _collection;
-
-    public MongoDbCollection(IMongoCollection<TItem> collection)
-    {
-        _collection = collection;
-    }
-
-    public override void Dispose()
-    {
-    }
-
-    public override ValueTask DisposeAsync()
-    {
-        return new ValueTask(Task.CompletedTask);
     }
 
     #region Insert
@@ -431,12 +379,12 @@ public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
 
     #region Count
 
-    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
     {
         return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), token));
     }
 
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         IQueryable<TItem> query = _collection.AsQueryable();
 

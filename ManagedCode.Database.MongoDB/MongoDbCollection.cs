@@ -1,100 +1,33 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Humanizer;
 using ManagedCode.Database.Core;
-using ManagedCode.Database.Core.Common;
-using ManagedCode.Repository.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Realms;
-using Realms.Sync;
 
-namespace ManagedCode.Repository.Realm;
+namespace ManagedCode.Database.MongoDB;
 
-public class RealmDataBase : BaseDatabase, IDatabase<IMongoDatabase>
-{
-    private readonly MongoDbRepositoryOptions _options;
-
-    public RealmDataBase([NotNull] MongoDbRepositoryOptions options)
-    {
-        var client = Realms.Realm.GetInstance();// new MongoClient(options.ConnectionString);
-        var database = client.GetDatabase(options.DataBaseName);
-        var collectionName = string.IsNullOrEmpty(options.CollectionName) ? typeof(TItem).Name.Pluralize() : options.CollectionName;
-        _collection = database.GetCollection<TItem>(collectionName, new MongoCollectionSettings());
-        IsInitialized = true;
-    }
-    
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override ValueTask DisposeAsyncInternal()
-    {
-        return new ValueTask(Task.CompletedTask);
-    }
-
-    protected override void DisposeInternal()
-    {
-    }
-    
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>() where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        var collectionName = string.IsNullOrEmpty(_options.CollectionName) ? typeof(TItem).Name.Pluralize() : _options.CollectionName;
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
-    }
-    
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-        
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(name, new MongoCollectionSettings()));
-    }
-
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IMongoDatabase DataBase { get; }
-}
-
-public class RealmRepository<TItem> : BaseDBCollection<ObjectId, TItem>
+public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
     where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
 
-    public RealmRepository([NotNull] RealmDbRepositoryOptions options)
+    public MongoDbCollection(IMongoCollection<TItem> collection)
     {
-
+        _collection = collection;
     }
 
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
+    public override void Dispose()
     {
-        return Task.CompletedTask;
     }
 
-    protected override ValueTask DisposeAsyncInternal()
+    public override ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
-    }
-
-    protected override void DisposeInternal()
-    {
     }
 
     #region Insert
@@ -440,12 +373,12 @@ public class RealmRepository<TItem> : BaseDBCollection<ObjectId, TItem>
 
     #region Count
 
-    protected override async Task<int> CountAsyncInternal(CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), token));
     }
 
-    protected override async Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
+    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
     {
         IQueryable<TItem> query = _collection.AsQueryable();
 

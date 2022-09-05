@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ManagedCode.Database.EntityFramework;
 
-public abstract class EFBaseRepository<TId, TItem, TContext> :
-    BaseRepository<TId, TItem>,
+public abstract class EFBaseDBCollection<TId, TItem, TContext> :
+    BaseDBCollection<TId, TItem>,
     IEFRepository<TId, TItem, TContext>
     where TItem : class, IEFItem<TId>, new()
     where TContext : DbContext

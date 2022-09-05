@@ -3,6 +3,9 @@ name: nuget
 on:
   push:
     branches: [ main ]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   nuget-pack:
@@ -21,7 +24,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
       - name: Pack
-        run: dotnet pack --configuration Release
+        run: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg --configuration Release
 
       - name: publish nuget packages
         run: |
