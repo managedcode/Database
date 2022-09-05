@@ -182,25 +182,7 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
         return Task.FromResult(count);
     }
-
-    protected override Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        lock (_storage)
-        {
-            var count = 0;
-            var items = _storage.Values.Where(predicate.Compile());
-            foreach (var item in items)
-            {
-                if (_storage.Remove(item.Id))
-                {
-                    count++;
-                }
-            }
-
-            return Task.FromResult(count);
-        }
-    }
-
+    
     protected override Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         lock (_storage)

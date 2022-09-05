@@ -198,13 +198,11 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
         return totalCount;
     }
-
+    
     public async IAsyncEnumerable<T> Query<T>(
-        IEnumerable<Expression> whereExpressions,
-        Expression<Func<T, object>> orderByExpression = null,
-        Order orderType = Order.By,
-        Expression<Func<T, object>> thenByExpression = null,
-        Order thenType = Order.By,
+        List<Expression<Func<T, bool>>> WherePredicates,
+        List<Expression<Func<T, object>>> OrderByPredicates,
+        List<Expression<Func<T, object>> > OrderByDescendingPredicates,
         Expression<Func<T, object>> selectExpression = null,
         int? take = null,
         int? skip = null,
@@ -214,7 +212,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
         string filterString = null;
 
         var whereString = new List<string>();
-        foreach (var expression in whereExpressions)
+        foreach (var expression in WherePredicates)
         {
             whereString.Add(AzureTableQueryTranslator.TranslateExpression(expression));
         }
@@ -226,18 +224,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
         {
             selectedProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(selectExpression);
         }
-
-        List<string> orderByProperties = null;
-        if (selectExpression != null)
-        {
-            orderByProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(orderByExpression);
-        }
-
-        List<string> thenByProperties = null;
-        if (thenByExpression != null)
-        {
-            thenByProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(thenByExpression);
-        }
+        
 
         TableContinuationToken token = null;
         var table = GetTable();
@@ -262,36 +249,30 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
             query.Select(selectedProperties);
         }
 
-        if (orderByProperties != null)
+        if (OrderByPredicates.Count > 0)
         {
-            foreach (var item in orderByProperties)
+            foreach (var item in OrderByPredicates)
             {
-                if (orderType == Order.By)
+                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
+                foreach (var name in names)
                 {
-                    query.OrderBy(item);
-                }
-                else
-                {
-                    query.OrderByDesc(item);
+                    query.OrderBy(name);
                 }
             }
         }
-
-        if (thenByProperties != null)
+        
+        if (OrderByDescendingPredicates.Count > 0)
         {
-            foreach (var item in thenByProperties)
+            foreach (var item in OrderByDescendingPredicates)
             {
-                if (thenType == Order.By)
+                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
+                foreach (var name in names)
                 {
-                    query.OrderBy(item);
-                }
-                else
-                {
-                    query.OrderByDesc(item);
+                    query.OrderByDesc(name);
                 }
             }
         }
-
+        
         long count = 0;
         long skipCount = 0;
 

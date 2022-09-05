@@ -109,17 +109,7 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
 
         return DeleteAsyncInternal(items, token);
     }
-
-    public Task<int> DeleteAsync(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        if (predicate == null)
-        {
-            throw new ArgumentNullException(nameof(predicate));
-        }
-
-        return DeleteAsyncInternal(predicate, token);
-    }
-
+    
     public Task<bool> DeleteAllAsync(CancellationToken token = default)
     {
         return DeleteAllAsyncInternal(token);
@@ -132,9 +122,7 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
     protected abstract Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default);
 
     protected abstract Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default);
-
-    protected abstract Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default);
-
+    
     protected abstract Task<bool> DeleteAllAsyncInternal(CancellationToken token = default);
 
     #endregion

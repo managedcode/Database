@@ -122,35 +122,11 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
         })), token);
     }
 
-    protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var count = 0;
-        var totalCount = 0;
-
-        do
-        {
-            token.ThrowIfCancellationRequested();
-            var ids = await _tableAdapter
-                .Query<DynamicTableEntity>(new[] { predicate }, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                    take: _tableAdapter.BatchSize, cancellationToken: token)
-                .ToListAsync(token);
-
-            count = ids.Count;
-
-            token.ThrowIfCancellationRequested();
-            totalCount += await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
-            {
-                ETag = "*"
-            })), token);
-        } while (count > 0);
-
-        return totalCount;
-    }
-
+    
     protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         //return _tableAdapter.DropTable(token);
-        return await DeleteAsyncInternal(item => true, token) > 0;
+        return await Query().DeleteAsync(token) > 0;
     }
 
     #endregion
@@ -161,64 +137,11 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
     {
         return _tableAdapter.ExecuteAsync<TItem>(TableOperation.Retrieve<TItem>(id.PartitionKey, id.RowKey), token);
     }
-
-    protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var item = await _tableAdapter.Query<TItem>(new[] { predicate }, take: 1, cancellationToken: token).ToListAsync(token);
-        return item.FirstOrDefault();
-    }
-
-    protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
-    {
-        return _tableAdapter.Query<TItem>(null, take: take, skip: skip, cancellationToken: token);
-    }
-
-    protected override IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        return _tableAdapter.Query(null, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
-    }
-
+    
     #endregion
-
-    #region Find
-
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        return _tableAdapter.Query<TItem>(predicates, take: take, skip: skip, cancellationToken: token);
-    }
-
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        return _tableAdapter.Query(predicates, orderBy, orderType, take: take, skip: skip, cancellationToken: token);
-    }
-
-    protected override IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        return _tableAdapter.Query(predicates, orderBy, orderType, thenBy, thenType, take: take, skip: skip);
-    }
-
-    #endregion
-
+    
     #region Count
+    
 
     protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
@@ -227,7 +150,8 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
         Expression<Func<TItem, bool>> predicate = item => true;
 
         await foreach (var item in _tableAdapter
-                           .Query<DynamicTableEntity>(new[] { predicate }, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                           .Query<DynamicTableEntity>(null, null, null, 
+                               selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
                                cancellationToken: token))
         {
             count++;
@@ -235,20 +159,68 @@ public class AzureTableDBCollection<TItem> : BaseDBCollection<TableId, TItem>
 
         return count;
     }
-
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        var count = 0;
-
-        await foreach (var item in _tableAdapter
-                           .Query<DynamicTableEntity>(predicates, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                               cancellationToken: token))
-        {
-            count++;
-        }
-
-        return count;
-    }
+    
 
     #endregion
+    
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        return new AzureTableDBCollectionQueryable<TItem>(_tableAdapter);
+    }
+}
+
+public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem> where TItem : ITableEntity, new()
+{
+    private readonly AzureTableAdapter<TItem> _tableAdapter;
+
+    public AzureTableDBCollectionQueryable(AzureTableAdapter<TItem> azureTableAdapter)
+    {
+        _tableAdapter = azureTableAdapter;
+    }
+    
+
+    public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
+    {
+        return _tableAdapter.Query<TItem>(WherePredicates, OrderByPredicates, OrderByDescendingPredicates, null, TakeValue, 
+            SkipValue, cancellationToken: cancellationToken);
+    }
+
+    public override async Task<long> LongCountAsync(CancellationToken cancellationToken = default)
+    {
+        long count = 0;
+
+        await foreach (var item in _tableAdapter.Query<TItem>(WherePredicates, OrderByPredicates, OrderByDescendingPredicates, 
+                selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey), 
+                TakeValue, SkipValue, cancellationToken: cancellationToken))
+        {
+            count++;
+        }
+
+        return count;
+    }
+
+    public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        var count = 0;
+        var totalCount = 0;
+
+        do
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var ids = await _tableAdapter
+                .Query<TItem>(WherePredicates, null, null, selectExpression: item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
+                    take: _tableAdapter.BatchSize, cancellationToken: cancellationToken)
+                .ToListAsync(cancellationToken);
+
+            count = ids.Count;
+
+            cancellationToken.ThrowIfCancellationRequested();
+            totalCount += await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
+            {
+                ETag = "*"
+            })), cancellationToken);
+        } while (count > 0);
+
+        return totalCount;
+    }
 }
