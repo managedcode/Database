@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCode.Database.Core.Queries;
 
 namespace ManagedCode.Database.Core.InMemory;
 
@@ -227,217 +228,19 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
             return Task.FromResult<TItem>(default);
         }
     }
-
-    protected override Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        lock (_storage)
-        {
-            var item = _storage.Values.FirstOrDefault(predicate.Compile());
-            return Task.FromResult(item);
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        lock (_storage)
-        {
-            var enumerable = _storage.Values.Skip(skip);
-
-            if (take.HasValue)
-            {
-                enumerable = enumerable.Take(take.Value);
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        lock (_storage)
-        {
-            IEnumerable<TItem> enumerable;
-            if (orderType == Order.By)
-            {
-                enumerable = _storage.Values.OrderBy(orderBy.Compile());
-            }
-            else
-            {
-                enumerable = _storage.Values.OrderByDescending(orderBy.Compile());
-            }
-
-            enumerable = enumerable.Skip(0);
-
-            if (take.HasValue)
-            {
-                enumerable = enumerable.Take(take.Value);
-            }
-
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-        }
-    }
-
+    
     #endregion
-
-    #region Find
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        List<TItem> list;
-        lock (_storage)
-        {
-            IEnumerable<TItem> items = null;
-
-            foreach (var predicate in predicates)
-            {
-                if (items == null)
-                {
-                    items = _storage.Values.Where(predicate.Compile());
-                }
-                else
-                {
-                    items = items.Where(predicate.Compile());
-                }
-            }
-
-            if (skip != 0)
-            {
-                items = items.Skip(skip);
-            }
-
-            if (take.HasValue)
-            {
-                items = items.Take(take.Value);
-            }
-
-            list = items.ToList();
-        }
-
-        await Task.Yield();
-        foreach (var item in list)
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        List<TItem> list;
-        lock (_storage)
-        {
-            IEnumerable<TItem> items = null;
-
-            foreach (var predicate in predicates)
-            {
-                if (items == null)
-                {
-                    items = _storage.Values.Where(predicate.Compile());
-                }
-                else
-                {
-                    items = items.Where(predicate.Compile());
-                }
-            }
-
-            items = orderType == Order.By ? items.OrderBy(orderBy.Compile()) : items.OrderByDescending(orderBy.Compile());
-
-            if (skip != 0)
-            {
-                items = items.Skip(skip);
-            }
-
-            if (take.HasValue)
-            {
-                items = items.Take(take.Value);
-            }
-
-            list = items.ToList();
-        }
-
-        await Task.Yield();
-        foreach (var item in list)
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        List<TItem> list;
-        lock (_storage)
-        {
-            IEnumerable<TItem> items = null;
-
-            foreach (var predicate in predicates)
-            {
-                if (items == null)
-                {
-                    items = _storage.Values.Where(predicate.Compile());
-                }
-                else
-                {
-                    items = items.Where(predicate.Compile());
-                }
-            }
-
-            var orderedItems = orderType == Order.By ? items.OrderBy(orderBy.Compile()) : items.OrderByDescending(orderBy.Compile());
-            items = thenType == Order.By ? orderedItems.ThenBy(thenBy.Compile()) : orderedItems.ThenByDescending(thenBy.Compile());
-
-            if (skip != 0)
-            {
-                items = items.Skip(skip);
-            }
-
-            if (take.HasValue)
-            {
-                items = items.Take(take.Value);
-            }
-
-            list = items.ToList();
-        }
-
-        await Task.Yield();
-        foreach (var item in list)
-        {
-            yield return item;
-        }
-    }
-
-    #endregion
+    
 
     #region Count
+
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        lock (_storage)
+        {
+            return new InMemoryDBCollectionQueryable<TId,TItem>(_storage);
+        }
+    }
 
     protected override Task<long> CountAsyncInternal(CancellationToken token = default)
     {
@@ -446,29 +249,7 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
             return Task.FromResult((long)_storage.Count);
         }
     }
-
-    protected override Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        lock (_storage)
-        {
-            IEnumerable<TItem> items = null;
-
-            foreach (var predicate in predicates)
-            {
-                if (items == null)
-                {
-                    items = _storage.Values.Where(predicate.Compile());
-                }
-                else
-                {
-                    items = items.Where(predicate.Compile());
-                }
-            }
-
-            var count = (long)items.Count();
-            return Task.FromResult(count);
-        }
-    }
-
+    
     #endregion
 }
+
