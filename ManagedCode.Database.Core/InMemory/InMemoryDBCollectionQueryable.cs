@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ManagedCode.Database.Core.Queries;
+namespace ManagedCode.Database.Core.InMemory;
 
 public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem>
 {

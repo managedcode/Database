@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Database.Core;
+namespace ManagedCode.Database.Core.Extensions;
 
 public class ServiceCollectionHolder
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace ManagedCode.Database.Core.Queries;
+namespace ManagedCode.Database.Core;
 
 public interface IDBCollectionQueryable<TSource> : IDBCollectionQueryableResultAsync<TSource>
 {

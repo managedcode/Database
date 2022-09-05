@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ManagedCode.Database.Core.Queries;
+namespace ManagedCode.Database.Core;
 
 public interface IDBCollectionQueryableResultAsync<T>
 {
