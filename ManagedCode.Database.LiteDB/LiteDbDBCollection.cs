@@ -135,12 +135,6 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         return count;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        await Task.Yield();
-        return GetDatabase().DeleteMany(predicate);
-    }
-
     protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         await Task.Yield();
@@ -156,205 +150,12 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         await Task.Yield();
         return GetDatabase().FindById(new BsonValue(id));
     }
+    
 
-    protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        await Task.Yield();
-        return GetDatabase().FindOne(predicate);
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query().Skip(skip).Limit(take ?? 2147483647);
-        foreach (var item in query.ToEnumerable())
-        {
-            if (token.IsCancellationRequested)
-            {
-                break;
-            }
-
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query();
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in query.Limit(take.Value).ToEnumerable())
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.ToEnumerable())
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
+    
 
     #endregion
-
-    #region Find
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        ;
-        foreach (var item in query.Skip(skip).Limit(take ?? 2147483647).ToEnumerable())
-        {
-            if (token.IsCancellationRequested)
-            {
-                break;
-            }
-
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in query.Skip(skip).Limit(take.Value).ToEnumerable())
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.Skip(skip).ToEnumerable())
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        if (thenType == Order.By)
-        {
-            query = query.OrderBy(thenBy);
-        }
-        else
-        {
-            query.OrderByDescending(thenBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in query.Skip(skip).Limit(take.Value).ToEnumerable())
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.Skip(skip).ToEnumerable())
-            {
-                yield return item;
-            }
-        }
-    }
-
-    #endregion
+    
 
     #region Count
 
@@ -363,19 +164,11 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         await Task.Yield();
         return GetDatabase().Count();
     }
-
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = GetDatabase().Query();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        return query.Count();
-    }
-
+    
     #endregion
+    
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        return new LiteDbDBCollectionQueryable<TId, TItem>(GetDatabase());
+    }
 }
