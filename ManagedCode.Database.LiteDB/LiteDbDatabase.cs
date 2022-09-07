@@ -15,7 +15,14 @@ public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
         DataBase = options.Database ?? new LiteDatabase(options.ConnectionString);
         IsInitialized = true;
     }
-    
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public LiteDatabase DataBase { get; }
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
@@ -31,21 +38,14 @@ public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
     {
         DataBase.Dispose();
     }
-    
+
     public LiteDbDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDbItem<TId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
+
         return new LiteDbDBCollection<TId, TItem>(DataBase.GetCollection<TItem>());
     }
-
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public LiteDatabase DataBase { get; }
 }

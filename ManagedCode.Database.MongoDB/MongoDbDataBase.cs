@@ -21,7 +21,14 @@ public class MongoDbDataBase : BaseDatabase, IDatabase<IMongoDatabase>
         DataBase = client.GetDatabase(options.DataBaseName);
         IsInitialized = true;
     }
-    
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IMongoDatabase DataBase { get; }
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
@@ -35,32 +42,25 @@ public class MongoDbDataBase : BaseDatabase, IDatabase<IMongoDatabase>
     protected override void DisposeInternal()
     {
     }
-    
+
     public MongoDbCollection<TItem> GetCollection<TId, TItem>() where TItem : class, IItem<ObjectId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
+
         var collectionName = string.IsNullOrEmpty(_options.CollectionName) ? typeof(TItem).Name.Pluralize() : _options.CollectionName;
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
+        return new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
     }
-    
+
     public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
-        return  new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(name, new MongoCollectionSettings()));
-    }
 
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
+        return new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(name, new MongoCollectionSettings()));
     }
-
-    public IMongoDatabase DataBase { get; }
 }

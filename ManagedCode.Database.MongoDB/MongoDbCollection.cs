@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -29,6 +27,16 @@ public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
     {
         return new ValueTask(Task.CompletedTask);
     }
+
+    #region Get
+
+    protected override async Task<TItem> GetAsyncInternal(ObjectId id, CancellationToken token = default)
+    {
+        var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: token);
+        return cursor.FirstOrDefault();
+    }
+
+    #endregion
 
     #region Insert
 
@@ -136,12 +144,6 @@ public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
         return count;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var result = await _collection.DeleteManyAsync<TItem>(predicate, token);
-        return Convert.ToInt32(result.DeletedCount);
-    }
-
     protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         var result = await _collection.DeleteManyAsync(w => true, token);
@@ -150,244 +152,16 @@ public class MongoDbCollection<TItem> : BaseDBCollection<ObjectId, TItem>
 
     #endregion
 
-    #region Get
-
-    protected override async Task<TItem> GetAsyncInternal(ObjectId id, CancellationToken token = default)
-    {
-        var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: token);
-        return cursor.FirstOrDefault();
-    }
-
-    protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var cursor = await _collection.FindAsync(predicate, cancellationToken: token);
-        return cursor.FirstOrDefault();
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var query = _collection.AsQueryable().Skip(skip);
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        foreach (var item in await Task.Run(() => query.ToArray(), token))
-        {
-            if (token.IsCancellationRequested)
-            {
-                break;
-            }
-
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        IQueryable<TItem> query = _collection.AsQueryable();
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(orderBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in await Task.Run(() => query.Take(take.Value).ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    #endregion
-
-    #region Find
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        IQueryable<TItem> query = _collection.AsQueryable();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).Take(take.Value).ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        IQueryable<TItem> query = _collection.AsQueryable();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(orderBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).Take(take.Value).ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        IQueryable<TItem> query = _collection.AsQueryable();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(orderBy);
-        }
-
-        if (thenType == Order.By)
-        {
-            query = query.OrderBy(thenBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(thenBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).Take(take.Value).ToArray(), token))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
-            {
-                yield return item;
-            }
-        }
-    }
-
-    #endregion
-
     #region Count
+
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        return new MongoDbDBCollectionQueryable<TItem>(_collection);
+    }
 
     protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), token));
-    }
-
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        IQueryable<TItem> query = _collection.AsQueryable();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        return await Task.Run(() => query.Count(), token);
     }
 
     #endregion
