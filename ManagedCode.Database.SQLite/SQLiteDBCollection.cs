@@ -1,8 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -26,6 +22,31 @@ public class SQLiteDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where
 
     public override void Dispose()
     {
+    }
+
+    #region Get
+
+    protected override async Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
+    {
+        await Task.Yield();
+        return _database.Find<TItem>(id);
+    }
+
+    #endregion
+
+    #region Count
+
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
+    {
+        await Task.Yield();
+        return _database.Table<TItem>().Count();
+    }
+
+    #endregion
+
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        return new SQLiteDBCollectionQueryable<TId, TItem>(_database);
     }
 
     #region Insert
@@ -129,260 +150,10 @@ public class SQLiteDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where
         return count;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        await Task.Yield();
-        var ids = _database.Table<TItem>().Where(predicate).Select(s => s.Id);
-        return await DeleteAsyncInternal(ids, token);
-    }
-
     protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         await Task.Yield();
         return _database.DeleteAll<TItem>() != 0;
-    }
-
-    #endregion
-
-    #region Get
-
-    protected override async Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
-    {
-        await Task.Yield();
-        return _database.Find<TItem>(id);
-    }
-
-    protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        await Task.Yield();
-        return _database.Table<TItem>().Where(predicate).FirstOrDefault();
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>().Skip(skip);
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        foreach (var item in query)
-        {
-            if (token.IsCancellationRequested)
-            {
-                break;
-            }
-
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>();
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in query.Take(take.Value))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    #endregion
-
-    #region Find
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        query = query.Skip(skip);
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        foreach (var item in query)
-        {
-            if (token.IsCancellationRequested)
-            {
-                break;
-            }
-
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        query = query.Skip(skip);
-
-        if (take != null)
-        {
-            foreach (var item in query.Take(take.Value))
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                yield return item;
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query.OrderByDescending(orderBy);
-        }
-
-        if (thenType == Order.By)
-        {
-            query = query.OrderBy(thenBy);
-        }
-        else
-        {
-            query.OrderByDescending(thenBy);
-        }
-
-        if (take != null)
-        {
-            foreach (var item in query.Skip(skip).Take(take.Value))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.Skip(skip))
-            {
-                yield return item;
-            }
-        }
-    }
-
-    #endregion
-
-    #region Count
-
-    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
-    {
-        await Task.Yield();
-        return _database.Table<TItem>().Count();
-    }
-
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        await Task.Yield();
-        var query = _database.Table<TItem>();
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        return query.Count();
     }
 
     #endregion

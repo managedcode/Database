@@ -5,6 +5,84 @@ using Tenray.ZoneTree.Options;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
+public class ZoneTreeDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TItem : IItem<TId>
+{
+    private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
+
+    public ZoneTreeDBCollectionQueryable(ZoneTreeWrapper<TId, TItem> zoneTree)
+    {
+        _zoneTree = zoneTree;
+    }
+    public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
+    {
+        var query = _zoneTree.Enumerate();
+
+        foreach (var predicate in WherePredicates)
+        {
+            query = query.Where(predicate.Compile());
+        }
+
+        if (OrderByPredicates.Count > 0)
+        {
+            foreach (var predicate in OrderByPredicates)
+            {
+                query = query.OrderBy(predicate.Compile());
+            }
+        }
+
+        if (OrderByDescendingPredicates.Count > 0)
+        {
+            foreach (var predicate in OrderByDescendingPredicates)
+            {
+                query = query.OrderByDescending(predicate.Compile());
+            }
+        }
+
+        SkipValue ??= 0;
+
+        if (TakeValue.HasValue)
+        {
+            foreach (var item in query.Skip(SkipValue.Value).Take(TakeValue.Value))
+            {
+                yield return item;
+            }
+        }
+        else
+        {
+            foreach (var item in query.Skip(SkipValue.Value))
+            {
+                yield return item;
+            }
+        }
+        
+    }
+
+    public override Task<long> LongCountAsync(CancellationToken cancellationToken = default)
+    {
+        var conditions = WherePredicates.Select(s => s.Compile()).ToArray();
+        return Task.FromResult(_zoneTree.Enumerate().Where(w => conditions.All(a => a.Invoke(w))).LongCount());
+    }
+
+    public override Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        var i = 0;
+        var query = _zoneTree.Enumerate();
+        
+        foreach (var predicate in WherePredicates)
+        {
+            query = query.Where(predicate.Compile());
+        }
+        
+        foreach (var item in query)
+        {
+            _zoneTree.Delete(item.Id);
+            i++;
+        }
+        
+        return Task.FromResult(i);
+    }
+}
+
 public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where TItem : IItem<TId>
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
@@ -104,19 +182,6 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
         return Task.FromResult(i);
     }
 
-    protected override Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var i = 0;
-        var compiled = predicate.Compile();
-        foreach (var item in  _zoneTree.Enumerate().Where(compiled))
-        {
-            _zoneTree.Delete(item.Id);
-            i++;
-        }
-        
-        return Task.FromResult(i);
-    }
-
     protected override Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         _zoneTree.DeleteAll();
@@ -146,83 +211,13 @@ public class ZoneTreeDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
         return Task.FromResult(_zoneTree.Get(id));
     }
 
-    protected override Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
+    public override IDBCollectionQueryable<TItem> Query()
     {
-        var compiled = predicate.Compile();
-        return Task.FromResult(_zoneTree.Enumerate().FirstOrDefault(compiled));
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null, int skip = 0, CancellationToken token = default)
-    {
-        foreach (var item in _zoneTree.Enumerate().Skip(skip).Take(take ?? int.MaxValue))
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy, Order orderType, int? take = null, int skip = 0, CancellationToken token = default)
-    {
-        var compiled = orderBy.Compile();
-        foreach (var item in _zoneTree.Enumerate().OrderBy(compiled).Skip(skip).Take(take ?? int.MaxValue))
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, int? take = null, int skip = 0, CancellationToken token = default)
-    {
-        var conditions = predicates.Select(s => s.Compile()).ToArray();
-        
-        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).Skip(skip).Take(take ?? int.MaxValue))
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        var conditions = predicates.Select(s => s.Compile()).ToArray();
-        var order = orderBy.Compile();
-        
-        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).OrderBy(order).Skip(skip).Take(take ?? int.MaxValue))
-        {
-            yield return item;
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        CancellationToken token = default)
-    {
-        var conditions = predicates.Select(s => s.Compile()).ToArray();
-        var order = orderBy.Compile();
-        var then = thenBy.Compile();
-        
-        foreach (var item in _zoneTree.Enumerate().Where(w => conditions.All(a=>a.Invoke(w))).OrderBy(order).ThenBy(then)
-                     .Skip(skip).Take(take ?? int.MaxValue))
-        {
-            yield return item;
-        }
+        return new ZoneTreeDBCollectionQueryable<TId, TItem>(_zoneTree);
     }
 
     protected override Task<long> CountAsyncInternal(CancellationToken token = default)
     {
         return Task.FromResult(_zoneTree.Count());
-    }
-
-    protected override Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        var conditions = predicates.Select(s => s.Compile()).ToArray();
-        return Task.FromResult(_zoneTree.Enumerate().Where(w => conditions.All(a => a.Invoke(w))).LongCount());
     }
 }

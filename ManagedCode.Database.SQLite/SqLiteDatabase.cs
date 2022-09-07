@@ -17,7 +17,13 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
         IsInitialized = true;
     }
 
-    
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public SQLiteConnection DataBase { get; }
+
     protected override ValueTask DisposeAsyncInternal()
     {
         DataBase.Close();
@@ -30,26 +36,19 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
         DataBase.Close();
         DataBase.Dispose();
     }
-    
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
     }
-    
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
 
-    public SQLiteConnection DataBase { get; }
-    
     public SQLiteDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
+
         return new SQLiteDBCollection<TId, TItem>(DataBase);
     }
 }
