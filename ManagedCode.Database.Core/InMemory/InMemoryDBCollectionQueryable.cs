@@ -51,13 +51,13 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     }
                 }
 
-                bool firstOrderByDescending = false;
+                bool firstOrderByDescending = true;
                 foreach (var predicate in OrderByDescendingPredicates)
                 {
-                    if (firstOrderBy)
+                    if (firstOrderByDescending)
                     {
                         orderedItems = items.OrderByDescending(x=>predicate.Compile().Invoke(x.Value));
-                        firstOrderBy = false;
+                        firstOrderByDescending = false;
                     }
                     else
                     {

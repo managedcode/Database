@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
-using ManagedCode.Database.Core;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 
@@ -198,11 +197,11 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
         return totalCount;
     }
-    
+
     public async IAsyncEnumerable<T> Query<T>(
         List<Expression<Func<T, bool>>> WherePredicates,
         List<Expression<Func<T, object>>> OrderByPredicates,
-        List<Expression<Func<T, object>> > OrderByDescendingPredicates,
+        List<Expression<Func<T, object>>> OrderByDescendingPredicates,
         Expression<Func<T, object>> selectExpression = null,
         int? take = null,
         int? skip = null,
@@ -224,7 +223,6 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
         {
             selectedProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(selectExpression);
         }
-        
 
         TableContinuationToken token = null;
         var table = GetTable();
@@ -260,7 +258,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                 }
             }
         }
-        
+
         if (OrderByDescendingPredicates.Count > 0)
         {
             foreach (var item in OrderByDescendingPredicates)
@@ -272,7 +270,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                 }
             }
         }
-        
+
         long count = 0;
         long skipCount = 0;
 

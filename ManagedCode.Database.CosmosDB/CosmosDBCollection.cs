@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -15,9 +14,9 @@ namespace ManagedCode.Database.CosmosDB;
 public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
     where TItem : CosmosDbItem, IItem<string>, new()
 {
+    private readonly int _capacity = 50;
     private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
     private readonly bool _splitByType;
-    private readonly int _capacity = 50;
     private readonly bool _useItemIdAsPartitionKey;
 
     public CosmosDBCollection([NotNull] CosmosDbRepositoryOptions options)
@@ -36,7 +35,49 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
 
         return w => true;
     }
-    
+
+    #region Get
+
+    protected override async Task<TItem> GetAsyncInternal(string id, CancellationToken token = default)
+    {
+        var container = await _cosmosDbAdapter.GetContainer();
+        var feedIterator = container.GetItemLinqQueryable<TItem>()
+            .Where(w => w.Id == id)
+            .ToFeedIterator();
+        using (var iterator = feedIterator)
+        {
+            if (iterator.HasMoreResults)
+            {
+                token.ThrowIfCancellationRequested();
+
+                foreach (var item in await iterator.ReadNextAsync(token))
+                {
+                    return item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    #endregion
+
+    #region Count
+
+    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
+    {
+        var container = await _cosmosDbAdapter.GetContainer();
+        return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
+    }
+
+    #endregion
+
+    public override IDBCollectionQueryable<TItem> Query()
+    {
+        var container = _cosmosDbAdapter.GetContainer().Result;
+        var queryable = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+        return new CosmosDBCollectionQueryable<TItem>(queryable);
+    }
 
     #region Insert
 
@@ -199,8 +240,8 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
             var deleteItemResult = await container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: token);
             return deleteItemResult != null;
         }
-        
-        var item = await GetAsync(g => g.Id == id, token);
+
+        var item = await GetAsync(id, token);
         if (item == null)
         {
             return false;
@@ -287,360 +328,17 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
         return count;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var count = 0;
-        var container = await _cosmosDbAdapter.GetContainer();
-        var feedIterator = container.GetItemLinqQueryable<TItem>()
-            .Where(SplitByType())
-            .Where(predicate)
-            .ToFeedIterator();
-
-        var batch = new List<Task>(_capacity);
-        using var iterator = feedIterator;
-        while (iterator.HasMoreResults)
-        {
-            token.ThrowIfCancellationRequested();
-
-            foreach (var item in await iterator.ReadNextAsync(token))
-            {
-                token.ThrowIfCancellationRequested();
-                batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
-                    .ContinueWith(task =>
-                    {
-                        if (task.Result != null)
-                        {
-                            Interlocked.Increment(ref count);
-                        }
-                    }, token));
-
-                if (count == batch.Capacity)
-                {
-                    await Task.WhenAll(batch);
-                    batch.Clear();
-                }
-            }
-
-            if (batch.Count > 0)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        return count;
-    }
-
     protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
     {
         if (_splitByType)
         {
-            return await DeleteAsyncInternal(item => true, token) > 0;
+            var delete = await Query().Where(item => true).DeleteAsync(token);
+            return delete > 0;
         }
 
         var container = await _cosmosDbAdapter.GetContainer();
         var result = await container.DeleteContainerAsync(cancellationToken: token);
         return result != null;
-    }
-
-    #endregion
-
-    #region Get
-
-    protected override async Task<TItem> GetAsyncInternal(string id, CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var feedIterator = container.GetItemLinqQueryable<TItem>()
-            .Where(w => w.Id == id)
-            .ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            if (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    return item;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    protected override async Task<TItem> GetAsyncInternal(Expression<Func<TItem, bool>> predicate, CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var feedIterator = container.GetItemLinqQueryable<TItem>()
-            .Where(SplitByType())
-            .Where(predicate)
-            .ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            if (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    return item;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        var feedIterator = query.ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            while (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    yield return item;
-                }
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> GetAllAsyncInternal(Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(orderBy);
-        }
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        var feedIterator = query.ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            while (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    yield return item;
-                }
-            }
-        }
-    }
-
-    #endregion
-
-    #region Find
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        var feedIterator = query.ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            while (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    yield return item;
-                }
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (orderType == Order.By)
-        {
-            query = query.OrderBy(orderBy);
-        }
-        else
-        {
-            query = query.OrderByDescending(orderBy);
-        }
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        var feedIterator = query.ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            while (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    yield return item;
-                }
-            }
-        }
-    }
-
-    protected override async IAsyncEnumerable<TItem> FindAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates,
-        Expression<Func<TItem, object>> orderBy,
-        Order orderType,
-        Expression<Func<TItem, object>> thenBy,
-        Order thenType,
-        int? take = null,
-        int skip = 0,
-        [EnumeratorCancellation] CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        IOrderedQueryable<TItem> ordered;
-        if (orderType == Order.By)
-        {
-            ordered = query.OrderBy(orderBy);
-        }
-        else
-        {
-            ordered = query.OrderByDescending(orderBy);
-        }
-
-        if (thenType == Order.By)
-        {
-            query = ordered.ThenBy(thenBy);
-        }
-        else
-        {
-            query = ordered.ThenByDescending(thenBy);
-        }
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        var feedIterator = query.ToFeedIterator();
-        using (var iterator = feedIterator)
-        {
-            while (iterator.HasMoreResults)
-            {
-                token.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(token))
-                {
-                    yield return item;
-                }
-            }
-        }
-    }
-
-    #endregion
-
-    #region Count
-
-    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
-    }
-
-    protected override async Task<long> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default)
-    {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var query = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-
-        foreach (var predicate in predicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        return await query.CountAsync(token);
     }
 
     #endregion

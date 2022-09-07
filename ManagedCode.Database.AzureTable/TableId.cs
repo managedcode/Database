@@ -15,19 +15,19 @@ public class TableId
     {
         _internalEntity = new TableEntity(partitionKey, rowKey);
     }
-    
+
     public string PartitionKey
     {
         get => _internalEntity.PartitionKey;
         set => _internalEntity.PartitionKey = value;
     }
-    
+
     public string RowKey
     {
         get => _internalEntity.RowKey;
         set => _internalEntity.RowKey = value;
     }
-    
+
     public void SetEntity(ITableEntity entity)
     {
         entity.PartitionKey = PartitionKey;
@@ -39,15 +39,15 @@ public class TableId
     {
         return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
     }
-    
-    public override bool Equals(object obj) 
-    { 
-        return Equals(obj as TableId); 
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as TableId);
     }
 
     public bool Equals(TableId obj)
-    { 
-        return obj != null && obj.PartitionKey == this.PartitionKey && obj.RowKey == this.RowKey;  
+    {
+        return obj != null && obj.PartitionKey == PartitionKey && obj.RowKey == RowKey;
     }
 
     public override int GetHashCode()

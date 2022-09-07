@@ -23,6 +23,6 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="$(SolutionDir)\logo.png" Pack="true" Visible="false" PackagePath="" />
+        <None Include="$(SolutionDir)\logo.png" Pack="true" Visible="false" PackagePath=""/>
     </ItemGroup>
 </Project>

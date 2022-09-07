@@ -6,11 +6,12 @@ namespace ManagedCode.Database.AzureTable;
 public class AzureTableItem : TableEntity, IItem<TableId>
 {
     private TableId _id;
+
     public AzureTableItem()
     {
         _id = new TableId(this);
     }
-    
+
     [IgnoreProperty]
     public TableId Id
     {

@@ -16,11 +16,19 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
     {
         _options = options;
     }
+
+    public override Task Delete(CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public CosmosClient DataBase { get; }
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
     }
-    
+
     protected override ValueTask DisposeAsyncInternal()
     {
         DisposeInternal();
@@ -30,21 +38,14 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
     protected override void DisposeInternal()
     {
     }
-    
+
     public CosmosDBCollection<TItem> GetCollection<TItem>() where TItem : CosmosDbItem, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
+
         return new CosmosDBCollection<TItem>(_options);
     }
-    
-    public override Task Delete(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public CosmosClient DataBase { get; }
 }
