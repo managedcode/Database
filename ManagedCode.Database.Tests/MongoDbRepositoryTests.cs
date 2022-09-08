@@ -21,6 +21,7 @@ namespace ManagedCode.Database.Tests
                 ConnectionString = ConnectionString,
                 DataBaseName = "db"
             });
+            _databaseb.InitializeAsync().Wait();
             
         }
 

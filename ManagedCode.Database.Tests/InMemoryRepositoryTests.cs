@@ -25,14 +25,6 @@ public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
         _count++;
         return _count;
     }
-
-    [Fact]
-    public virtual async Task InitializeAsync()
-    {
-        await _databaseb.InitializeAsync();
-        await _databaseb.InitializeAsync();
-        await _databaseb.InitializeAsync();
-        await _databaseb.InitializeAsync();
-    }
+    
 }
 

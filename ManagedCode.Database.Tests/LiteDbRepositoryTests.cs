@@ -21,6 +21,7 @@ namespace ManagedCode.Database.Tests
             {
                 ConnectionString = ConnectionString
             });
+            _databaseb.InitializeAsync().Wait();
         }
 
         protected override IDBCollection<string, TestLiteDbItem> Collection => _databaseb.GetCollection<string, TestLiteDbItem>();

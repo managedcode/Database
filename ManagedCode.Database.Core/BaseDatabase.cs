@@ -13,7 +13,7 @@ public abstract class BaseDatabase : IDatabase
 
     private bool _disposed;
 
-    public bool IsInitialized { get; protected set; }
+    public bool IsInitialized { get; protected set; } = true;
 
     public async Task InitializeAsync(CancellationToken token = default)
     {

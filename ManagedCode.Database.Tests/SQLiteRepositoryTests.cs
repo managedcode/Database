@@ -23,6 +23,7 @@ namespace ManagedCode.Database.Tests
             {
                 ConnectionString = GetTempDbName()
             });
+            _databaseb.InitializeAsync().Wait();
         }
 
         private static string GetTempDbName()

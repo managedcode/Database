@@ -8,12 +8,12 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureDatabase : BaseDatabase, IDatabase<CloudTableClient>
+public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
 {
     private readonly AzureTableRepositoryOptions _options;
     private readonly Dictionary<string, object> tableAdapters = new();
 
-    public AzureDatabase(AzureTableRepositoryOptions options)
+    public AzureTableDatabase(AzureTableRepositoryOptions options)
     {
         _options = options;
         IsInitialized = true;
