@@ -60,4 +60,5 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
 
         return totalCount;
     }
+    
 }

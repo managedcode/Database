@@ -11,14 +11,14 @@ namespace ManagedCode.Database.Tests;
 public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
 {
     private static volatile int _count;
-    private InMemoryDataBase _db;
+    private InMemoryDataBase _databaseb;
 
     public InMemoryDataBaseTests() 
     {
-        _db = new InMemoryDataBase();
+        _databaseb = new InMemoryDataBase();
     }
 
-    protected override IDBCollection<int, InMemoryItem> Repository => _db.GetCollection<int, InMemoryItem>();
+    protected override IDBCollection<int, InMemoryItem> Collection => _databaseb.GetCollection<int, InMemoryItem>();
 
     protected override int GenerateId()
     {
@@ -29,10 +29,10 @@ public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
     [Fact]
     public virtual async Task InitializeAsync()
     {
-        await _db.InitializeAsync();
-        await _db.InitializeAsync();
-        await _db.InitializeAsync();
-        await _db.InitializeAsync();
+        await _databaseb.InitializeAsync();
+        await _databaseb.InitializeAsync();
+        await _databaseb.InitializeAsync();
+        await _databaseb.InitializeAsync();
     }
 }
 

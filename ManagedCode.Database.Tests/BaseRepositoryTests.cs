@@ -12,7 +12,7 @@ namespace ManagedCode.Database.Tests;
 
 public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TId>, new()
 {
-    protected abstract IDBCollection<TId, TItem> Repository { get; }
+    protected abstract IDBCollection<TId, TItem> Collection { get; }
     
     protected abstract TId GenerateId();
 
@@ -47,8 +47,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         var firstItem = CreateNewItem(id);
         var secondItem = CreateNewItem(id);
 
-        var insertFirstItem = await Repository.InsertAsync(firstItem);
-        var insertSecondItem = await Repository.InsertAsync(secondItem);
+        var insertFirstItem = await Collection.InsertAsync(firstItem);
+        var insertSecondItem = await Collection.InsertAsync(secondItem);
 
         insertFirstItem.Should().NotBeNull();
         insertSecondItem.Should().BeNull();
@@ -64,7 +64,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
+        var items = await Collection.InsertAsync(list);
 
         list.Count.Should().Be(100);
         items.Should().Be(100);
@@ -75,7 +75,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     {
         var id = GenerateId();
 
-        await Repository.InsertAsync(CreateNewItem(id));
+        await Collection.InsertAsync(CreateNewItem(id));
 
         List<TItem> list = new();
 
@@ -85,7 +85,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
+        var items = await Collection.InsertAsync(list);
 
         list.Count.Should().Be(100);
         items.Should().Be(99);
@@ -97,7 +97,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         var id = GenerateId();
         for (var i = 0; i < 100; i++)
         {
-            var insertOneItem = await Repository.InsertOrUpdateAsync(CreateNewItem(id));
+            var insertOneItem = await Collection.InsertOrUpdateAsync(CreateNewItem(id));
             insertOneItem.Should().NotBeNull();
         }
     }
@@ -112,7 +112,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var itemsInsert = await Repository.InsertOrUpdateAsync(list);
+        var itemsInsert = await Collection.InsertOrUpdateAsync(list);
         itemsInsert.Should().Be(100);
 
         foreach (var item in list)
@@ -120,7 +120,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             item.DateTimeData = DateTime.Now.AddDays(-1);
         }
 
-        var itemsUpdate = await Repository.InsertOrUpdateAsync(list);
+        var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
         itemsUpdate.Should().Be(100);
 
         list.Count.Should().Be(100);
@@ -135,9 +135,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     {
         var id = GenerateId();
 
-        var insertOneItem = await Repository.InsertAsync(CreateNewItem(id));
-        var updateFirstItem = await Repository.UpdateAsync(CreateNewItem(id));
-        var updateSecondItem = await Repository.UpdateAsync(CreateNewItem());
+        var insertOneItem = await Collection.InsertAsync(CreateNewItem(id));
+        var updateFirstItem = await Collection.UpdateAsync(CreateNewItem(id));
+        var updateSecondItem = await Collection.UpdateAsync(CreateNewItem());
 
         insertOneItem.Should().NotBeNull();
         updateFirstItem.Should().NotBeNull();
@@ -154,8 +154,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
-        var updatedItems = await Repository.UpdateAsync(list.ToArray());
+        var items = await Collection.InsertAsync(list);
+        var updatedItems = await Collection.UpdateAsync(list.ToArray());
 
         items.Should().Be(100);
         updatedItems.Should().Be(100);
@@ -174,7 +174,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
+        var items = await Collection.InsertAsync(list);
         list.Clear();
 
         list.Add(CreateNewItem(id));
@@ -183,7 +183,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var updatedItems = await Repository.UpdateAsync(list);
+        var updatedItems = await Collection.UpdateAsync(list);
 
         list.Count.Should().Be(10);
         items.Should().Be(10);
@@ -198,8 +198,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     public virtual async Task DeleteOneItemById()
     {
         var item = CreateNewItem();
-        await Repository.InsertAsync(item);
-        var deleted = await Repository.DeleteAsync(item.Id);
+        await Collection.InsertAsync(item);
+        var deleted = await Collection.DeleteAsync(item.Id);
         item.Should().NotBeNull();
         deleted.Should().BeTrue();
     }
@@ -208,8 +208,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     public virtual async Task DeleteOneItem()
     {
         var item = CreateNewItem();
-        await Repository.InsertAsync(item);
-        var deleted = await Repository.DeleteAsync(item);
+        await Collection.InsertAsync(item);
+        var deleted = await Collection.DeleteAsync(item);
         item.Should().NotBeNull();
         deleted.Should().BeTrue();
     }
@@ -224,8 +224,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
-        var deletedItems = await Repository.DeleteAsync(list);
+        var items = await Collection.InsertAsync(list);
+        var deletedItems = await Collection.DeleteAsync(list);
 
         deletedItems.Should().Be(100);
         items.Should().Be(100);
@@ -241,9 +241,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
+        var items = await Collection.InsertAsync(list);
         var ids = list.Select(s => s.Id);
-        var deletedItems = await Repository.DeleteAsync(ids);
+        var deletedItems = await Collection.DeleteAsync(ids);
 
         deletedItems.Should().Be(100);
         items.Should().Be(100);
@@ -259,14 +259,14 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        await Repository.InsertOrUpdateAsync(list);
+        await Collection.InsertOrUpdateAsync(list);
 
         var q1 = list[0].StringData;
         var q2 = list[1].StringData;
         var q3 = list[2].StringData;
 
-        var equals = await Repository.DeleteAsync(w => w.StringData == q1);
-        var or = await Repository.DeleteAsync(w => w.StringData == q2 || w.StringData == q3);
+        var equals = await Collection.Query.Where(w => w.StringData == q1).DeleteAsync();
+        var or = await Collection.Query.Where(w => w.StringData == q2 || w.StringData == q3).DeleteAsync();
 
         equals.Should().Be(1);
         or.Should().Be(2);
@@ -282,9 +282,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             list.Add(CreateNewItem());
         }
 
-        var items = await Repository.InsertAsync(list);
-        var deletedItems = await Repository.DeleteAllAsync();
-        var count = await Repository.CountAsync();
+        var items = await Collection.InsertAsync(list);
+        var deletedItems = await Collection.DeleteAllAsync();
+        var count = await Collection.CountAsync();
 
         deletedItems.Should().BeTrue();
         items.Should().Be(100);
@@ -298,11 +298,11 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task Count()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
-        var insertOneItem = await Repository.InsertAsync(CreateNewItem());
+        var insertOneItem = await Collection.InsertAsync(CreateNewItem());
 
-        var count = await Repository.CountAsync();
+        var count = await Collection.CountAsync();
         insertOneItem.Should().NotBeNull();
         count.Should().Be(1);
     }
@@ -321,10 +321,10 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
                 count++;
             }
 
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var deletedCount = await Repository.CountAsync(w => w.StringData == guid);
+        var deletedCount = await Collection.Query.Where(w => w.StringData == guid).LongCountAsync();
         deletedCount.Should().Be(count);
     }
 
@@ -338,9 +338,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         var id1 = GenerateId();
         var id2 = GenerateId();
 
-        var insertOneItem = await Repository.InsertAsync(CreateNewItem(id1));
+        var insertOneItem = await Collection.InsertAsync(CreateNewItem(id1));
 
-        var item = await Repository.GetAsync(id2);
+        var item = await Collection.GetAsync(id2);
         insertOneItem.Should().NotBeNull();
         item.Should().BeNull();
     }
@@ -349,9 +349,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     public virtual async Task GetById()
     {
         var id = GenerateId();
-        var insertOneItem = await Repository.InsertAsync(CreateNewItem(id));
+        var insertOneItem = await Collection.InsertAsync(CreateNewItem(id));
 
-        var item = await Repository.GetAsync(id);
+        var item = await Collection.GetAsync(id);
         insertOneItem.Should().NotBeNull();
         item.Should().NotBeNull();
     }
@@ -362,10 +362,11 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         var item1 = CreateNewItem();
         var item2 = CreateNewItem();
 
-        await Repository.InsertAsync(item1);
-        await Repository.InsertAsync(item2);
+        await Collection.InsertAsync(item1);
+        await Collection.InsertAsync(item2);
 
-        var item = await Repository.GetAsync(w => w.StringData == item1.StringData || w.StringData == item2.StringData);
+        var item = await Collection.Query.Where(w => w.StringData == item1.StringData || w.StringData == item2.StringData)
+            .ToAsyncEnumerable().FirstOrDefaultAsync();
         item.Should().NotBeNull();
     }
 
@@ -375,20 +376,22 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         var item1 = CreateNewItem();
         var item2 = CreateNewItem();
 
-        await Repository.InsertAsync(item1);
-        await Repository.InsertAsync(item2);
+        await Collection.InsertAsync(item1);
+        await Collection.InsertAsync(item2);
 
-        var item = await Repository.GetAsync(w => w.StringData == item1.StringData);
+        var item = await Collection.Query.Where(w => w.StringData == item1.StringData)
+            .ToAsyncEnumerable().FirstOrDefaultAsync();
         item.Should().NotBeNull();
     }
 
     [Fact]
     public virtual async Task GetByWrongQuery()
     {
-        await Repository.InsertAsync(CreateNewItem());
-        await Repository.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
 
-        var item = await Repository.GetAsync(w => w.StringData == "non existing value");
+        var item = await  Collection.Query.Where(w => w.StringData == "non existing value")
+            .ToAsyncEnumerable().FirstOrDefaultAsync();
         item.Should().BeNull();
     }
 
@@ -399,18 +402,17 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task FindByCondition()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         var item1 = CreateNewItem();
-        await Repository.InsertAsync(item1);
+        await Collection.InsertAsync(item1);
         for (var i = 0; i < 10; i++)
         {
-            await Repository.InsertAsync(CreateNewItem());
+            await Collection.InsertAsync(CreateNewItem());
         }
 
-        var items = await Repository
-            .FindAsync(Repository
-                .CreateCondition(x => x.StringData == item1.StringData, x => x.IntData == item1.IntData))
+        var items = await Collection.Query
+            .Where(x => x.StringData == item1.StringData).Where(x => x.IntData == item1.IntData).ToAsyncEnumerable()
             .ToListAsync();
 
         items.Count.Should().Be(1);
@@ -419,32 +421,32 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task Find()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData >= 50).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData >= 50).ToListAsync();
         items.Count.Should().Be(50);
     }
 
     [Fact]
     public virtual async Task FindTakeSkip()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData > 10, 15, 10).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData > 10).Skip(15).Take(10).ToListAsync();
         items.Count.Should().Be(15);
         items.First().IntData.Should().Be(21);
         items.Last().IntData.Should().Be(35);
@@ -453,16 +455,16 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task FindTake()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData >= 50, 10).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData >= 50).Take(10).ToListAsync();
         items.Count.Should().Be(10);
         items.First().IntData.Should().Be(50);
     }
@@ -470,16 +472,16 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task FindSkip()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData >= 50, skip: 10).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData >= 50).Skip(10).ToListAsync();
         items.Count.Should().Be(40);
         items.First().IntData.Should().Be(60);
     }
@@ -487,21 +489,19 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task FindOrder()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData >= 50,
-                o => o.IntData, 10, 1)
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Skip(10).Take(1)
             .ToListAsync();
 
-        var itemsByDescending = await Repository.FindAsync(w => w.IntData >= 50,
-                o => o.IntData, Order.ByDescending, 10)
+        var itemsByDescending = await Collection.Query.Where(w => w.IntData >= 50).OrderByDescending(o => o.IntData).Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(10);
@@ -516,25 +516,25 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     [Fact]
     public virtual async Task FindOrderThen()
     {
-        await Repository.DeleteAllAsync();
+        await Collection.DeleteAllAsync();
 
         for (var i = 0; i < 100; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
-            await Repository.InsertAsync(item);
+            await Collection.InsertAsync(item);
         }
 
-        var items = await Repository.FindAsync(w => w.IntData >= 50,
-                o => o.IntData, t => t.DateTimeData, 10, 1)
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(
+                o => o.IntData).OrderBy(t => t.DateTimeData).Skip(10).Take(1)
             .ToListAsync();
 
-        var itemsBy = await Repository.FindAsync(w => w.IntData >= 50,
-                o => o.IntData, Order.ByDescending, 10)
+        var itemsBy = await Collection.Query.Where(w => w.IntData >= 50)
+            .OrderByDescending(o => o.IntData).Take(10)
             .ToListAsync();
 
-        var itemsThenByDescending = await Repository.FindAsync(w => w.IntData >= 50,
-                o => o.IntData, Order.ByDescending, t => t.DateTimeData, Order.ByDescending, 10)
+        var itemsThenByDescending = await Collection.Query.Where(w => w.IntData >= 50)
+            .OrderByDescending(o => o.IntData).OrderByDescending(t => t.DateTimeData).Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(10);

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ManagedCode.Database.Core;
 using ManagedCode.Database.SQLite;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
@@ -13,19 +14,23 @@ namespace ManagedCode.Database.Tests
         public const string ConnectionString = "sqlite_test.db";
 
         private static int _count;
+        
+        private SqLiteDatabase _databaseb;
 
-        public SQLiteRepositoryTests() : base(new SQLiteRepository<int, SQLiteDbItem>(new SQLiteRepositoryOptions
+        public SQLiteRepositoryTests()
         {
-            ConnectionString = GetTempDbName()
-        }))
-        {
-            Repository.InitializeAsync().Wait();
+            _databaseb = new SqLiteDatabase(new SQLiteRepositoryOptions
+            {
+                ConnectionString = GetTempDbName()
+            });
         }
 
         private static string GetTempDbName()
         {
             return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
         }
+
+        protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
 
         protected override int GenerateId()
         {

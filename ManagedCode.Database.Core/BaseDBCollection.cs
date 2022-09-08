@@ -8,6 +8,7 @@ namespace ManagedCode.Database.Core;
 
 public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TItem : IItem<TId>
 {
+    private IDBCollectionQueryable<TItem> _query;
     public abstract void Dispose();
     public abstract ValueTask DisposeAsync();
 
@@ -178,6 +179,8 @@ public abstract class BaseDBCollection<TId, TItem> : IDBCollection<TId, TItem> w
     {
         return CountAsyncInternal(token);
     }
+
+    IDBCollectionQueryable<TItem> IDBCollection<TId, TItem>.Query => Query();
 
     public abstract IDBCollectionQueryable<TItem> Query();
 

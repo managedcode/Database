@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ManagedCode.Database.Core;
 using ManagedCode.Database.LiteDB;
 using ManagedCode.Database.Tests.Common;
 using SQLite;
@@ -12,19 +13,17 @@ namespace ManagedCode.Database.Tests
     public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
     {
         public const string ConnectionString = "litedb_test.db";
+        private LiteDbDatabase _databaseb;
 
-        public LiteDbRepositoryTests() : base(new LiteDbRepository<string, TestLiteDbItem>(new LiteDbRepositoryOptions
+        public LiteDbRepositoryTests()
         {
-            ConnectionString = GetTempDbName()
-        }))
-        {
-            Repository.InitializeAsync().Wait();
+            _databaseb = new LiteDbDatabase(new LiteDbRepositoryOptions
+            {
+                ConnectionString = ConnectionString
+            });
         }
 
-        private static string GetTempDbName()
-        {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
-        }
+        protected override IDBCollection<string, TestLiteDbItem> Collection => _databaseb.GetCollection<string, TestLiteDbItem>();
 
         protected override string GenerateId()
         {

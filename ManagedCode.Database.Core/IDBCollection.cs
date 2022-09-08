@@ -29,5 +29,5 @@ public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable wh
     
     Task<long> CountAsync(CancellationToken token = default);
     
-    IDBCollectionQueryable<TItem> Query();
+    IDBCollectionQueryable<TItem> Query { get; }
 }

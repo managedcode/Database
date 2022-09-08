@@ -6,8 +6,8 @@ namespace ManagedCode.Database.Core;
 public interface IDBCollectionQueryable<TSource> : IDBCollectionQueryableResultAsync<TSource>
 {
     IDBCollectionQueryable<TSource> Where(Expression<Func<TSource, bool>> predicate);
-    IDBCollectionQueryable<TSource> OrderBy<TKey>(Expression<Func<TSource, object>> keySelector);
-    IDBCollectionQueryable<TSource> OrderByDescending<TKey>(Expression<Func<TSource, object>> keySelector);
+    IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector);
+    IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector);
     IDBCollectionQueryable<TSource> Take(int count);
     IDBCollectionQueryable<TSource> Skip(int count);
 }

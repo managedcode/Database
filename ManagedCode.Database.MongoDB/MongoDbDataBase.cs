@@ -10,11 +10,11 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDataBase : BaseDatabase, IDatabase<IMongoDatabase>
+public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
 {
     private readonly MongoDbRepositoryOptions _options;
 
-    public MongoDbDataBase([NotNull] MongoDbRepositoryOptions options)
+    public MongoDbDatabase([NotNull] MongoDbRepositoryOptions options)
     {
         _options = options;
         var client = new MongoClient(options.ConnectionString);

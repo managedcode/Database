@@ -1,3 +1,4 @@
+using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
@@ -9,15 +10,21 @@ namespace ManagedCode.Database.Tests
     {
         public const string ConnectionString =
             "mongodb://localhost:27017";
+        
+        private MongoDbDatabase _databaseb;
 
-        public MongoDbRepositoryTests() : base(new MongoDbRepository<TestMongoDbItem>(new MongoDbRepositoryOptions
+        public MongoDbRepositoryTests()
         {
-            ConnectionString = ConnectionString,
-            DataBaseName = "db"
-        }))
-        {
-            Repository.InitializeAsync().Wait();
+
+            _databaseb = new MongoDbDatabase(new MongoDbRepositoryOptions()
+            {
+                ConnectionString = ConnectionString,
+                DataBaseName = "db"
+            });
+            
         }
+
+        protected override IDBCollection<ObjectId, TestMongoDbItem> Collection => _databaseb.GetCollection<ObjectId, TestMongoDbItem>();
 
         protected override ObjectId GenerateId()
         {

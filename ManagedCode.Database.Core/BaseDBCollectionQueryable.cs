@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,13 +21,13 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         WherePredicates.Add(predicate);
         return this;
     }
-    public IDBCollectionQueryable<TSource> OrderBy<TKey>(Expression<Func<TSource, object>> keySelector)
+    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
     {
         OrderByPredicates.Add(keySelector);
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderByDescending<TKey>(Expression<Func<TSource, object>> keySelector)
+    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
     {
         OrderByDescendingPredicates.Add(keySelector);
         return this;
@@ -50,4 +51,9 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
     public abstract Task<long> LongCountAsync(CancellationToken cancellationToken = default);
 
     public abstract Task<int> DeleteAsync(CancellationToken cancellationToken = default);
+    
+    public async Task<List<TSource>> ToListAsync(CancellationToken cancellationToken = default)
+    {
+        return new List<TSource>(await ToAsyncEnumerable(cancellationToken).ToListAsync(cancellationToken));
+    }
 }

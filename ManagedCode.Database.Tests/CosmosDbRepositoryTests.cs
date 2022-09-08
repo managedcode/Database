@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ManagedCode.Database.Core;
 using ManagedCode.Database.CosmosDB;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
@@ -12,16 +13,18 @@ namespace ManagedCode.Database.Tests
         public const string ConnectionString =
             "AccountEndpoint=http://localhost:3000/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
-        public CosmosDbRepositoryTests() : base(new CosmosDbRepository<TestCosmosDbItem>(
-            new CosmosDbRepositoryOptions
+        private CosmosDatabase _databaseb;
+        public CosmosDbRepositoryTests()
+        {
+            _databaseb = new CosmosDatabase(new CosmosDbRepositoryOptions
             {
                 ConnectionString = ConnectionString,
                 DatabaseName = "database",
                 CollectionName = "container",
-            }))
-        {
-            Repository.InitializeAsync().Wait();
+            });
         }
+
+        protected override IDBCollection<string, TestCosmosDbItem> Collection => _databaseb.GetCollection<TestCosmosDbItem>();
 
         protected override string GenerateId()
         {
