@@ -28,12 +28,7 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
 
     private Expression<Func<TItem, bool>> SplitByType()
     {
-        if (_splitByType)
-        {
-            return w => w.Type == typeof(TItem).Name;
-        }
-
-        return w => true;
+        return w => w.Type == typeof(TItem).Name;
     }
 
     #region Get
@@ -75,6 +70,11 @@ public class CosmosDBCollection<TItem> : BaseDBCollection<string, TItem>
     public override IDBCollectionQueryable<TItem> Query()
     {
         var container = _cosmosDbAdapter.GetContainer().Result;
+        if (!_splitByType)
+        {
+            return new CosmosDBCollectionQueryable<TItem>(container.GetItemLinqQueryable<TItem>());
+        }
+
         var queryable = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
         return new CosmosDBCollectionQueryable<TItem>(queryable);
     }

@@ -89,7 +89,6 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        await Task.Yield();
         foreach (var item in GetItemsInternal())
         {
             yield return item.Value;

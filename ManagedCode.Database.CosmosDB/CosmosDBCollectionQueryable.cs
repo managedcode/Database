@@ -47,7 +47,7 @@ public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIte
         if (OrderByDescendingPredicates.Count > 0)
         {
             IOrderedQueryable<TItem> ordered = null;
-            var firstOrderByDescending = false;
+            var firstOrderByDescending = true;
             foreach (var predicate in OrderByDescendingPredicates)
             {
                 if (firstOrderByDescending)
