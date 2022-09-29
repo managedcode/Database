@@ -13,7 +13,7 @@ namespace ManagedCode.Database.Tests;
 public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
-    
+
     protected abstract TId GenerateId();
 
     protected TItem CreateNewItem()
@@ -24,7 +24,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             Id = GenerateId(),
             StringData = Guid.NewGuid().ToString(),
             IntData = rnd.Next(),
-            LongData =  rnd.Next(),
+            LongData = rnd.Next(),
             FloatData = Convert.ToSingle(rnd.NextDouble()),
             DoubleData = rnd.NextDouble(),
             DateTimeData = DateTime.Now,
@@ -37,7 +37,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         item.Id = id;
         return item;
     }
-    
+
     #region Insert
 
     [Fact]
@@ -66,8 +66,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
 
         var items = await Collection.InsertAsync(list);
 
-        list.Count.Should().Be(100);
-        items.Should().Be(100);
+        items.Should().Be(list.Count);
     }
 
     [Fact]
@@ -80,15 +79,15 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         List<TItem> list = new();
 
         list.Add(CreateNewItem(id));
-        for (var i = 0; i < 99; i++)
+        for (var i = 0; i < 9; i++)
         {
             list.Add(CreateNewItem());
         }
 
         var items = await Collection.InsertAsync(list);
 
-        list.Count.Should().Be(100);
-        items.Should().Be(99);
+        list.Count.Should().Be(10);
+        items.Should().Be(9);
     }
 
     [Fact]
@@ -390,7 +389,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         await Collection.InsertAsync(CreateNewItem());
         await Collection.InsertAsync(CreateNewItem());
 
-        var item = await  Collection.Query.Where(w => w.StringData == "non existing value")
+        var item = await Collection.Query.Where(w => w.StringData == "non existing value")
             .ToAsyncEnumerable().FirstOrDefaultAsync();
         item.Should().BeNull();
     }
@@ -447,8 +446,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         }
 
         var items = await Collection.Query.Where(w => w.IntData > 10).Skip(15).Take(10).ToListAsync();
-        items.Count.Should().Be(15);
-        items.First().IntData.Should().Be(21);
+        items.Count.Should().Be(10);
+        items.First().IntData.Should().Be(26);
         items.Last().IntData.Should().Be(35);
     }
 
@@ -498,15 +497,15 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Skip(10).Take(1)
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Skip(10).Take(2)
             .ToListAsync();
 
         var itemsByDescending = await Collection.Query.Where(w => w.IntData >= 50).OrderByDescending(o => o.IntData).Take(10)
             .ToListAsync();
 
-        items.Count.Should().Be(10);
-        items[0].IntData.Should().Be(51);
-        items[1].IntData.Should().Be(52);
+        items.Count.Should().Be(2);
+        items[0].IntData.Should().Be(60);
+        items[1].IntData.Should().Be(61);
 
         itemsByDescending.Count.Should().Be(10);
         itemsByDescending[0].IntData.Should().Be(99);
@@ -526,7 +525,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         }
 
         var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(
-                o => o.IntData).OrderBy(t => t.DateTimeData).Skip(10).Take(1)
+                o => o.IntData).OrderBy(t => t.DateTimeData).Skip(10).Take(2)
             .ToListAsync();
 
         var itemsBy = await Collection.Query.Where(w => w.IntData >= 50)
@@ -537,9 +536,9 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             .OrderByDescending(o => o.IntData).OrderByDescending(t => t.DateTimeData).Take(10)
             .ToListAsync();
 
-        items.Count.Should().Be(10);
-        items[0].IntData.Should().Be(51);
-        items[1].IntData.Should().Be(52);
+        items.Count.Should().Be(2);
+        items[0].IntData.Should().Be(60);
+        items[1].IntData.Should().Be(61);
 
         itemsBy.Count.Should().Be(10);
         itemsBy[0].IntData.Should().Be(99);

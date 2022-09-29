@@ -48,7 +48,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
-        
+
     }
 }
 
