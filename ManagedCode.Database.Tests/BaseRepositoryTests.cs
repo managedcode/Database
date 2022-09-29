@@ -65,9 +65,8 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         }
 
         var items = await Collection.InsertAsync(list);
-
-        list.Count.Should().Be(100);
-        items.Should().Be(100);
+        
+        items.Should().Be(list.Count);
     }
 
     [Fact]
