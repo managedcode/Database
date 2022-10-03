@@ -56,6 +56,11 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 

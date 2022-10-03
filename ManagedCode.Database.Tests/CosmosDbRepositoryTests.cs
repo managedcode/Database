@@ -75,6 +75,11 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource Not Found*");
         }
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 

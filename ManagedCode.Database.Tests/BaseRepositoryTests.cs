@@ -10,11 +10,13 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests;
 
-public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TId>, new()
+public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
 
     protected abstract TId GenerateId();
+
+    public abstract void Dispose();
 
     protected TItem CreateNewItem()
     {
@@ -79,15 +81,15 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
         List<TItem> list = new();
 
         list.Add(CreateNewItem(id));
-        for (var i = 0; i < 9; i++)
+        for (var i = 0; i < 99; i++)
         {
             list.Add(CreateNewItem());
         }
 
         var items = await Collection.InsertAsync(list);
 
-        list.Count.Should().Be(10);
-        items.Should().Be(9);
+        list.Count.Should().Be(100);
+        items.Should().Be(99);
     }
 
     [Fact]
@@ -119,7 +121,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             item.DateTimeData = DateTime.Now.AddDays(-1);
         }
 
-        var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
+        var itemsUpdate = await Collection.InsertOrUpdateAsync(list); //TO DO LiteDB must be 100, but result 0
         itemsUpdate.Should().Be(100);
 
         list.Count.Should().Be(100);
@@ -445,7 +447,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData > 10).Skip(15).Take(10).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData > 10).OrderBy(o => o.IntData).Skip(15).Take(10).ToListAsync();
         items.Count.Should().Be(10);
         items.First().IntData.Should().Be(26);
         items.Last().IntData.Should().Be(35);
@@ -463,9 +465,13 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData >= 50).Take(10).ToListAsync();
+
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Take(10).ToListAsync();
+
         items.Count.Should().Be(10);
         items.First().IntData.Should().Be(50);
+
+
     }
 
     [Fact]
@@ -480,7 +486,7 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData >= 50).Skip(10).ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Skip(10).ToListAsync();
         items.Count.Should().Be(40);
         items.First().IntData.Should().Be(60);
     }
@@ -524,16 +530,16 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(
-                o => o.IntData).OrderBy(t => t.DateTimeData).Skip(10).Take(2)
-            .ToListAsync();
+        var items = await Collection.Query.Where(w => w.IntData >= 50)
+            .OrderBy(o => o.IntData, t => t.DateTimeData)
+            .Skip(10).Take(2).ToListAsync();
 
         var itemsBy = await Collection.Query.Where(w => w.IntData >= 50)
             .OrderByDescending(o => o.IntData).Take(10)
             .ToListAsync();
 
         var itemsThenByDescending = await Collection.Query.Where(w => w.IntData >= 50)
-            .OrderByDescending(o => o.IntData).OrderByDescending(t => t.DateTimeData).Take(10)
+            .OrderByDescending(o => o.IntData, t => t.DateTimeData).Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(2);
