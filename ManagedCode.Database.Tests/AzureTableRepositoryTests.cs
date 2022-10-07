@@ -26,6 +26,11 @@ namespace ManagedCode.Database.Tests
         {
             return new(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
         }
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
@@ -10,7 +11,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
+    public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>, IDisposable
     {
         public const string ConnectionString = "litedb_test.db";
         private LiteDbDatabase _databaseb;
@@ -23,6 +24,8 @@ namespace ManagedCode.Database.Tests
             });
             _databaseb.InitializeAsync().Wait();
         }
+
+
 
         protected override IDBCollection<string, TestLiteDbItem> Collection => _databaseb.GetCollection<string, TestLiteDbItem>();
 
@@ -48,7 +51,11 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
-        
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 
