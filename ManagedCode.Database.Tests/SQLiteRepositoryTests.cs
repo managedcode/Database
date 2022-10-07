@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>
+    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>, IDisposable
     {
         public const string ConnectionString = "sqlite_test.db";
 
@@ -24,11 +24,13 @@ namespace ManagedCode.Database.Tests
                 ConnectionString = GetTempDbName()
             });
             _databaseb.InitializeAsync().Wait();
+            _databaseb.DataBase.CreateTable<SQLiteDbItem>();
         }
 
         private static string GetTempDbName()
         {
             return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
+            //return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyDb.db");
         }
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
@@ -42,6 +44,7 @@ namespace ManagedCode.Database.Tests
         [Fact]
         public override async Task InsertOneItem()
         {
+            //  ᓚᘏᗢ  Fix note: creating a table was necessary
             Func<Task> act = () => base.InsertOneItem();
 
             await act.Should().ThrowAsync<Exception>()
@@ -55,6 +58,12 @@ namespace ManagedCode.Database.Tests
 
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+        }
+
+        public void Dispose()
+        {
+            //  ᓚᘏᗢ Ask if it's normal
+            _databaseb.DataBase.Execute("VACUUM");
         }
     }
 }

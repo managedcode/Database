@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,5 +59,6 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
         return Task.CompletedTask;
     }
 
+    //  ᓚᘏᗢ This dictionary is collection of repositories
     public Dictionary<string, IDisposable> DataBase { get; } = new();
 }
