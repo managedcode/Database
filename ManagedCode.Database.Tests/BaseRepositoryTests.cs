@@ -81,15 +81,15 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
         List<TItem> list = new();
 
         list.Add(CreateNewItem(id));
-        for (var i = 0; i < 99; i++)
+        for (var i = 0; i < 9; i++)
         {
             list.Add(CreateNewItem());
         }
 
         var items = await Collection.InsertAsync(list);
 
-        list.Count.Should().Be(100);
-        items.Should().Be(99);
+        list.Count.Should().Be(10);
+        items.Should().Be(9);
     }
 
     [Fact]
@@ -447,7 +447,8 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData > 10).OrderBy(o => o.IntData).Skip(15).Take(10).ToListAsync();
+
+        var items = await Collection.Query.Where(w => w.IntData > 10).Skip(15).Take(10).ToListAsync();
         items.Count.Should().Be(10);
         items.First().IntData.Should().Be(26);
         items.Last().IntData.Should().Be(35);
@@ -530,9 +531,10 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Where(w => w.IntData >= 50)
-            .OrderBy(o => o.IntData, t => t.DateTimeData)
-            .Skip(10).Take(2).ToListAsync();
+
+        var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(
+                o => o.IntData).OrderBy(t => t.DateTimeData).Skip(10).Take(2)
+            .ToListAsync();
 
         var itemsBy = await Collection.Query.Where(w => w.IntData >= 50)
             .OrderByDescending(o => o.IntData).Take(10)
