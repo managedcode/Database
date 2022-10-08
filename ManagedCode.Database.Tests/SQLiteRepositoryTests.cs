@@ -58,9 +58,14 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
 
-        public void Dispose()
+        protected async override ValueTask DeleteAllData()
         {
             _databaseb.DataBase.Execute("VACUUM");
+        }
+
+        public void Dispose()
+        {
+            DeleteAllData();
             _databaseb.DataBase.Dispose();
         }
     }
