@@ -30,7 +30,6 @@ namespace ManagedCode.Database.Tests
         private static string GetTempDbName()
         {
             return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
-            //return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyDb.db");
         }
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
