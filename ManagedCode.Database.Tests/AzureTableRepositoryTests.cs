@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ManagedCode.Database.AzureTable;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
@@ -25,6 +26,10 @@ namespace ManagedCode.Database.Tests
         protected override TableId GenerateId()
         {
             return new(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        }
+
+        protected override async ValueTask DeleteAllData()
+        {
         }
     }
 }
