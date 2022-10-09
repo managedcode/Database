@@ -59,6 +59,5 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
         return Task.CompletedTask;
     }
 
-    //  ᓚᘏᗢ This dictionary is collection of repositories
     public Dictionary<string, IDisposable> DataBase { get; } = new();
 }

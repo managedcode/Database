@@ -75,6 +75,11 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource Not Found*");
         }
+
+        protected override ValueTask DeleteAllData()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

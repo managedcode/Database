@@ -29,7 +29,7 @@ namespace ManagedCode.Database.Tests
 
         private static string GetTempDbName()
         {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
+            return Path.Combine(Environment.CurrentDirectory, ConnectionString);
         }
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
@@ -43,7 +43,6 @@ namespace ManagedCode.Database.Tests
         [Fact]
         public override async Task InsertOneItem()
         {
-            //  ᓚᘏᗢ  Fix note: creating a table was necessary
             Func<Task> act = () => base.InsertOneItem();
 
             await act.Should().ThrowAsync<Exception>()
@@ -59,10 +58,15 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
 
+        protected async override ValueTask DeleteAllData()
+        {
+            _databaseb.DataBase.Execute("VACUUM");
+        }
+
         public void Dispose()
         {
-            //  ᓚᘏᗢ Ask if it's normal
-            _databaseb.DataBase.Execute("VACUUM");
+            DeleteAllData();
+            _databaseb.DataBase.Dispose();
         }
     }
 }

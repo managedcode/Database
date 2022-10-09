@@ -10,7 +10,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests;
 
-public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TId>, new()
+public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
 
@@ -550,4 +550,12 @@ public abstract class BaseRepositoryTests<TId, TItem> where TItem : IBaseItem<TI
     }
 
     #endregion
+
+    protected abstract ValueTask DeleteAllData(); 
+
+    public virtual void Dispose()
+    {
+        DeleteAllData();
+        Collection.Dispose();
+    }
 }

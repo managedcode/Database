@@ -2,6 +2,7 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
+using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests
 {
@@ -26,6 +27,11 @@ namespace ManagedCode.Database.Tests
         }
 
         protected override IDBCollection<ObjectId, TestMongoDbItem> Collection => _databaseb.GetCollection<ObjectId, TestMongoDbItem>();
+
+        protected override ValueTask DeleteAllData()
+        {
+            throw new System.NotImplementedException();
+        }
 
         protected override ObjectId GenerateId()
         {
