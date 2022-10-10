@@ -63,7 +63,7 @@ namespace ManagedCode.Database.Tests
             _databaseb.DataBase.Execute("VACUUM");
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             DeleteAllData();
             _databaseb.DataBase.Dispose();
