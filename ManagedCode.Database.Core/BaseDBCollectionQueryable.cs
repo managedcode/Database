@@ -10,9 +10,9 @@ namespace ManagedCode.Database.Core;
 
 public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
 {
-    protected List<Expression<Func<TSource, bool>>> WherePredicates = new ();
-    protected List<Expression<Func<TSource, object>>> OrderByPredicates = new ();
-    protected List<Expression<Func<TSource, object>> > OrderByDescendingPredicates = new ();
+    protected List<Expression<Func<TSource, bool>>> WherePredicates = new();
+    protected List<Expression<Func<TSource, object>>> OrderByPredicates = new();
+    protected List<Expression<Func<TSource, object>>> OrderByDescendingPredicates = new();
     protected int? TakeValue;
     protected int? SkipValue;
 
@@ -27,12 +27,25 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         return this;
     }
 
+    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelectorF, Expression<Func<TSource, object>> keySelectorS)
+    {
+        OrderByPredicates.Add(keySelectorF);
+        OrderByPredicates.Add(keySelectorS);
+        return this;
+    }
+
     public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
     {
         OrderByDescendingPredicates.Add(keySelector);
         return this;
     }
-    
+
+    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelectorF, Expression<Func<TSource, object>> keySelectorS)
+    {
+        OrderByDescendingPredicates.Add(keySelectorF);
+        OrderByDescendingPredicates.Add(keySelectorS);
+        return this;
+    }
 
     public IDBCollectionQueryable<TSource> Take(int count)
     {
@@ -51,7 +64,7 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
     public abstract Task<long> LongCountAsync(CancellationToken cancellationToken = default);
 
     public abstract Task<int> DeleteAsync(CancellationToken cancellationToken = default);
-    
+
     public async Task<List<TSource>> ToListAsync(CancellationToken cancellationToken = default)
     {
         return new List<TSource>(await ToAsyncEnumerable(cancellationToken).ToListAsync(cancellationToken));

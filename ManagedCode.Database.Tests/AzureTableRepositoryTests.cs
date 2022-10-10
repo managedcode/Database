@@ -31,6 +31,11 @@ namespace ManagedCode.Database.Tests
         protected override async ValueTask DeleteAllData()
         {
         }
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 

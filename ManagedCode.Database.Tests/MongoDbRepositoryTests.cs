@@ -37,6 +37,11 @@ namespace ManagedCode.Database.Tests
         {
             return ObjectId.GenerateNewId();
         }
+
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
     }
 }
 

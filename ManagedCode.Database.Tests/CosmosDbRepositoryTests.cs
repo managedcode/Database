@@ -76,6 +76,11 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("*Resource Not Found*");
         }
 
+        public override void Dispose()
+        {
+            _databaseb.Dispose();
+        }
+
         protected override ValueTask DeleteAllData()
         {
             throw new NotImplementedException();

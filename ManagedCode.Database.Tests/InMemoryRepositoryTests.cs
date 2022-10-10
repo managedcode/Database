@@ -30,6 +30,11 @@ public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
         _count++;
         return _count;
     }
-    
+
+    public override void Dispose()
+    {
+        _databaseb.Dispose();
+    }
+
 }
 
