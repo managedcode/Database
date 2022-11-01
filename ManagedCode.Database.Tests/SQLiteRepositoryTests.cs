@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>
+    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>, IDisposable
     {
         public const string ConnectionString = "sqlite_test.db";
 
@@ -24,11 +24,12 @@ namespace ManagedCode.Database.Tests
                 ConnectionString = GetTempDbName()
             });
             _databaseb.InitializeAsync().Wait();
+            _databaseb.DataBase.CreateTable<SQLiteDbItem>();
         }
 
         private static string GetTempDbName()
         {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
+            return Path.Combine(Environment.CurrentDirectory, ConnectionString);
         }
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
@@ -57,9 +58,15 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
 
+        protected async override ValueTask DeleteAllData()
+        {
+            _databaseb.DataBase.Execute("VACUUM");
+        }
+
         public override void Dispose()
         {
-            _databaseb.Dispose();
+            DeleteAllData();
+            _databaseb.DataBase.Dispose();
         }
     }
 }

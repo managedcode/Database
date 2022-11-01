@@ -80,6 +80,11 @@ namespace ManagedCode.Database.Tests
         {
             _databaseb.Dispose();
         }
+
+        protected override ValueTask DeleteAllData()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
