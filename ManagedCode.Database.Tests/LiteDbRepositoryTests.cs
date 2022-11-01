@@ -52,6 +52,11 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
 
+        protected override ValueTask DeleteAllData()
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Dispose()
         {
             _databaseb.Dispose();

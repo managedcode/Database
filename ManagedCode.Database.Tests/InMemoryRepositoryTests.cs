@@ -20,6 +20,11 @@ public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
 
     protected override IDBCollection<int, InMemoryItem> Collection => _databaseb.GetCollection<int, InMemoryItem>();
 
+    protected override ValueTask DeleteAllData()
+    {
+        throw new System.NotImplementedException();
+    }
+
     protected override int GenerateId()
     {
         _count++;
