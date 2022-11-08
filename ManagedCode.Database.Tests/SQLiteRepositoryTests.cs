@@ -9,12 +9,12 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>, IDisposable
+    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>
     {
         public const string ConnectionString = "sqlite_test.db";
 
         private static int _count;
-        
+
         private SqLiteDatabase _databaseb;
 
         public SQLiteRepositoryTests()
@@ -24,12 +24,11 @@ namespace ManagedCode.Database.Tests
                 ConnectionString = GetTempDbName()
             });
             _databaseb.InitializeAsync().Wait();
-            _databaseb.DataBase.CreateTable<SQLiteDbItem>();
         }
 
         private static string GetTempDbName()
         {
-            return Path.Combine(Environment.CurrentDirectory, ConnectionString);
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
         }
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
@@ -39,7 +38,7 @@ namespace ManagedCode.Database.Tests
             _count++;
             return _count;
         }
-        
+
         [Fact]
         public override async Task InsertOneItem()
         {
@@ -48,7 +47,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
-        
+
         [Fact]
         public override async Task Insert99Items()
         {
@@ -58,15 +57,9 @@ namespace ManagedCode.Database.Tests
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
 
-        protected async override ValueTask DeleteAllData()
-        {
-            _databaseb.DataBase.Execute("VACUUM");
-        }
-
         public override void Dispose()
         {
-            DeleteAllData();
-            _databaseb.DataBase.Dispose();
+            _databaseb.Dispose();
         }
     }
 }
