@@ -6,7 +6,7 @@ using ManagedCode.Database.Core;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
+public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
     where TItem : LiteDbItem<TId>, IItem<TId>, new()
 {
     private readonly ILiteCollection<TItem> _collection;
@@ -16,23 +16,25 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         _collection = collection;
     }
 
+    public IDBCollectionQueryable<TItem> Query => new LiteDbDBCollectionQueryable<TId, TItem>(GetDatabase());
+
     private ILiteCollection<TItem> GetDatabase()
     {
         return _collection;
     }
 
-    public override ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
     }
 
     #region Get
 
-    protected override async Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
+    public async Task<TItem> GetAsync(TId id, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().FindById(new BsonValue(id));
@@ -42,7 +44,7 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region Count
 
-    protected override async Task<long> CountAsyncInternal(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Count();
@@ -50,21 +52,16 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #endregion
 
-    public override IDBCollectionQueryable<TItem> Query()
-    {
-        return new LiteDbDBCollectionQueryable<TId, TItem>(GetDatabase());
-    }
-
     #region Insert
 
-    protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
     {
         await Task.Yield();
         var v = GetDatabase().Insert(item);
         return GetDatabase().FindById(v);
     }
 
-    protected override async Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().InsertBulk(items);
@@ -74,14 +71,14 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region InsertOrUpdate
 
-    protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
     {
         await Task.Yield();
         GetDatabase().Upsert(item);
         return GetDatabase().FindById(new BsonValue(item.Id));
     }
 
-    protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Upsert(items);
@@ -91,7 +88,7 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region Update
 
-    protected override async Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
+    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
     {
         await Task.Yield();
         if (GetDatabase().Update(item))
@@ -102,7 +99,7 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         return default;
     }
 
-    protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Update(items);
@@ -112,19 +109,19 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
 
     #region Delete
 
-    protected override async Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TId id, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Delete(new BsonValue(id));
     }
 
-    protected override async Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().Delete(new BsonValue(item.Id));
     }
 
-    protected override async Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
     {
         await Task.Yield();
         var count = 0;
@@ -140,7 +137,7 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         return count;
     }
 
-    protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         await Task.Yield();
         var count = 0;
@@ -156,7 +153,7 @@ public class LiteDbDBCollection<TId, TItem> : BaseDBCollection<TId, TItem>
         return count;
     }
 
-    protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
+    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().DeleteAll() > 0;

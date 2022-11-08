@@ -6,6 +6,7 @@
         <LangVersion>10</LangVersion>
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <!--NuGet-->
