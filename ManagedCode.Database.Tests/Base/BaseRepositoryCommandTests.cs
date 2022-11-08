@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
-using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -323,6 +322,22 @@ namespace ManagedCode.Database.Tests.Base
             count.Should().Be(0);
         }
 
+        #endregion
+
+        #region Count
+
+        [Fact]
+        public virtual async Task Count()
+        {
+            var countBeforeInsert = await Collection.CountAsync();
+            var insertOneItem = await Collection.InsertAsync(CreateNewItem());
+
+            var count = await Collection.CountAsync();
+
+            countBeforeInsert.Should().Be(0);
+            insertOneItem.Should().NotBeNull();
+            count.Should().Be(1);
+        }
         #endregion
     }
 }
