@@ -13,7 +13,7 @@ namespace ManagedCode.Database.CosmosDB;
 public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem>
     where TItem : CosmosDbItem, IItem<string>, new()
 {
-    private IQueryable<TItem> _query;
+    private readonly IQueryable<TItem> _query;
 
     public CosmosDBCollectionQueryable(IQueryable<TItem> query)
     {
@@ -23,12 +23,8 @@ public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIte
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (var predicate in WherePredicates)
-        {
-            _query = _query.Where(predicate);
-        }
-
         var feedIterator = _query
+            .Where(WherePredicates)
             .OrderBy(OrderByPredicates)
             .OrderByDescending(OrderByDescendingPredicates)
             .Take(TakeValue)
@@ -53,17 +49,16 @@ public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIte
     {
         await Task.Yield();
 
-        return _query.FirstOrDefault();
+        return _query
+            .Where(WherePredicates)
+            .FirstOrDefault();
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var predicate in WherePredicates)
-        {
-            _query = _query.Where(predicate);
-        }
-
-        return await _query.CountAsync(cancellationToken);
+        return await _query
+            .Where(WherePredicates)
+            .CountAsync(cancellationToken);
     }
 
     public override Task<int> DeleteAsync(CancellationToken cancellationToken = default)

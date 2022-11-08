@@ -66,4 +66,15 @@ public static class QueryableExtensions
 
         return query;
     }
+
+    public static IQueryable<TItem> Where<TItem>(this IQueryable<TItem> query,
+        List<Expression<Func<TItem, bool>>> predicates)
+    {
+        foreach (var predicate in predicates)
+        {
+            query = query.Where(predicate);
+        }
+
+        return query;
+    }
 }
