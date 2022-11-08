@@ -324,7 +324,7 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
             await Collection.InsertAsync(item);
         }
 
-        var deletedCount = await Collection.Query.Where(w => w.StringData == guid).LongCountAsync();
+        var deletedCount = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
         deletedCount.Should().Be(count);
     }
 

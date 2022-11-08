@@ -49,7 +49,7 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> Take(int count)
+    public IDBCollectionQueryable<TSource> Take(int? count)
     {
         TakeValue = count;
         return this;
@@ -62,8 +62,9 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
     }
 
     public abstract IAsyncEnumerable<TSource> ToAsyncEnumerable(CancellationToken cancellationToken = default);
+    public abstract Task<TSource> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
 
-    public abstract Task<long> LongCountAsync(CancellationToken cancellationToken = default);
+    public abstract Task<long> CountAsync(CancellationToken cancellationToken = default);
 
     public abstract Task<int> DeleteAsync(CancellationToken cancellationToken = default);
 

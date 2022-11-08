@@ -96,7 +96,12 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
         }
     }
 
-    public override Task<long> LongCountAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult((long)GetItemsInternal().Count());
     }

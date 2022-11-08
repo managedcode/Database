@@ -60,7 +60,12 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
         }
     }
 
-    public override async Task<long> LongCountAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var query = _collection.Query();

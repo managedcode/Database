@@ -54,7 +54,12 @@ public class ZoneTreeDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
         }
     }
 
-    public override Task<long> LongCountAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         var conditions = WherePredicates.Select(s => s.Compile()).ToArray();
         return Task.FromResult(_zoneTree.Enumerate().Where(w => conditions.All(a => a.Invoke(w))).LongCount());
