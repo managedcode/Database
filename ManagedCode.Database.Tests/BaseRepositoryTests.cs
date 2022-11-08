@@ -558,12 +558,4 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
     }
 
     #endregion
-
-    protected abstract ValueTask DeleteAllData(); 
-
-    public virtual void Dispose()
-    {
-        DeleteAllData();
-        Collection.Dispose();
-    }
 }

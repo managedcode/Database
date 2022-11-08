@@ -39,7 +39,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*The order by query does not have a corresponding composite index that it can be served from*");
         }
-        
+
         [Fact]
         public override async Task Insert99Items()
         {
@@ -48,7 +48,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource with specified id or name already exists*");
         }
-        
+
         [Fact]
         public override async Task UpdateOneItem()
         {
@@ -57,7 +57,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource Not Found*");
         }
-        
+
         [Fact]
         public override async Task InsertOneItem()
         {
@@ -66,7 +66,7 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("*Resource with specified id or name already exists*");
         }
-        
+
         [Fact]
         public override async Task Update5Items()
         {
@@ -79,11 +79,6 @@ namespace ManagedCode.Database.Tests
         public override void Dispose()
         {
             _databaseb.Dispose();
-        }
-
-        protected override ValueTask DeleteAllData()
-        {
-            throw new NotImplementedException();
         }
     }
 }
