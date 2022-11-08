@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
 using Microsoft.Azure.Cosmos.Table;
+using ManagedCode.Database.AzureTable.Extensions;
+
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -18,20 +20,40 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
 
     public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        return _tableAdapter.Query(WherePredicates, OrderByPredicates, OrderByDescendingPredicates, null, TakeValue,
-            SkipValue, cancellationToken);
+        var query = new TableQuery<TItem>();
+
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
+            .OrderBy(OrderByPredicates)
+            .OrderByDescending(OrderByDescendingPredicates)
+            .Take(TakeValue)
+            .Skip(SkipValue);
+
+        return _tableAdapter.ExecuteQuery(query, cancellationToken);
     }
 
-    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        var query = new TableQuery<TItem>();
+
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
+
+        return await _tableAdapter.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
+        var query = new TableQuery<TItem>();
+
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
+
         return await _tableAdapter
-            .Query(WherePredicates, OrderByPredicates, OrderByDescendingPredicates,
-                item => new DynamicTableEntity(item.PartitionKey, item.RowKey), TakeValue, SkipValue, cancellationToken)
+            .ExecuteQuery(query, cancellationToken)
             .LongCountAsync(cancellationToken: cancellationToken);
     }
 
@@ -42,15 +64,22 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         do
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var ids = await _tableAdapter
-                .Query(WherePredicates, null, null, item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                    _tableAdapter.BatchSize, cancellationToken: cancellationToken)
-                .ToListAsync(cancellationToken);
 
-            count = ids.Count;
+            var query = new TableQuery<TItem>();
+
+            query = query
+                .Where(WherePredicates)
+                .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
+                .Take(_tableAdapter.BatchSize);
+
+            var items = await _tableAdapter
+                .ExecuteQuery(query, cancellationToken)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            count = items.Count;
 
             cancellationToken.ThrowIfCancellationRequested();
-            totalCount += await _tableAdapter.ExecuteBatchAsync(ids.Select(s =>
+            totalCount += await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
                 TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
                 {
                     ETag = "*"

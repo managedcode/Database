@@ -9,13 +9,13 @@ public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable wh
 {
     IDBCollectionQueryable<TItem> Query { get; }
 
-    Task<TItem> InsertAsync(TItem item, CancellationToken token = default);
+    Task<TItem?> InsertAsync(TItem item, CancellationToken token = default);
     Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
-    Task<TItem> UpdateAsync(TItem item, CancellationToken token = default);
+    Task<TItem?> UpdateAsync(TItem item, CancellationToken token = default);
     Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
-    Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default);
+    Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken token = default);
     Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
     Task<bool> DeleteAsync(TId id, CancellationToken token = default);

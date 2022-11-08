@@ -15,8 +15,11 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
 
     public static List<string> TranslateExpressionToMemberNames(Expression e)
     {
-        var translator = new AzureTableQueryPropertyTranslator();
-        translator._options = new EntityPropertyConverterOptions();
+        var translator = new AzureTableQueryPropertyTranslator
+        {
+            _options = new EntityPropertyConverterOptions()
+        };
+
         translator.Visit(e);
         return translator._memberNames;
     }
@@ -63,6 +66,6 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
             return node;
         }
 
-        throw new NotSupportedException("Expression not supported");
+        throw new NotSupportedException($"Expression {node.Expression?.NodeType.ToString()}  not supported");
     }
 }

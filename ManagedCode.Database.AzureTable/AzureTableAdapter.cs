@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -75,7 +74,7 @@ public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
         }
     }
 
-    public async Task<T> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
+    public async Task<T?> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
     {
         var table = GetTable();
         var retryCount = RetryCount;
@@ -101,7 +100,7 @@ public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
         throw new Exception(nameof(HttpStatusCode.TooManyRequests));
     }
 
-    public async Task<object> ExecuteAsync(TableOperation operation, CancellationToken token = default)
+    public async Task<object?> ExecuteAsync(TableOperation operation, CancellationToken token = default)
     {
         var table = GetTable();
         var retryCount = RetryCount;
@@ -196,73 +195,12 @@ public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
         return totalCount;
     }
 
-    public async IAsyncEnumerable<T> Query<T>(
-        List<Expression<Func<T, bool>>> wherePredicates,
-        List<Expression<Func<T, object>>>? orderByPredicates,
-        List<Expression<Func<T, object>>>? orderByDescendingPredicates,
-        Expression<Func<T, object>>? selectExpression = null,
-        int? take = null,
-        int? skip = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where T : ITableEntity, new()
+
+    public async IAsyncEnumerable<T> ExecuteQuery<T>(TableQuery<T> query,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : ITableEntity, new()
     {
-        var whereString = wherePredicates.Select(AzureTableQueryTranslator.TranslateExpression).ToList();
-        var filterString = string.Join(" and ", whereString);
-
-        List<string>? selectedProperties = null;
-
-        if (selectExpression is not null)
-        {
-            selectedProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(selectExpression);
-        }
-
         TableContinuationToken? token = null;
         var table = GetTable();
-
-        var takeCount = take ?? 1000;
-
-        if (skip.HasValue)
-        {
-            takeCount += skip.Value;
-        }
-
-        var query = new TableQuery<T>
-        {
-            FilterString = filterString,
-            TakeCount = takeCount > 1000 ? 1000 : takeCount
-        };
-
-        if (selectedProperties is not null)
-        {
-            query.Select(selectedProperties);
-        }
-
-        if (orderByPredicates?.Count > 0)
-        {
-            foreach (var item in orderByPredicates)
-            {
-                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
-                foreach (var name in names)
-                {
-                    query.OrderBy(name);
-                }
-            }
-        }
-
-        if (orderByDescendingPredicates?.Count > 0)
-        {
-            foreach (var item in orderByDescendingPredicates)
-            {
-                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
-                foreach (var name in names)
-                {
-                    query.OrderByDesc(name);
-                }
-            }
-        }
-
-        long count = 0;
-        long skipCount = 0;
 
         do
         {
@@ -272,7 +210,8 @@ public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
             {
                 try
                 {
-                    results = await table.ExecuteQuerySegmentedAsync(query, token, cancellationToken)
+                    results = await table
+                        .ExecuteQuerySegmentedAsync(query, token, cancellationToken)
                         .ConfigureAwait(false);
                     break;
                 }
@@ -290,30 +229,13 @@ public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
             } while (retryCount > 0);
 
             token = results.ContinuationToken;
-
             cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var item in results.Results)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (skip > 0 && skipCount < skip)
-                {
-                    skipCount++;
-                    continue;
-                }
-
-                count++;
                 yield return item;
-
-                if (take > 0 && count >= take)
-                {
-                    break;
-                }
-            }
-
-            if (take > 0 && count >= take)
-            {
-                break;
             }
         } while (token is not null);
     }
