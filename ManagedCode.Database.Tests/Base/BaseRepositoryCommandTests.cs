@@ -40,6 +40,8 @@ namespace ManagedCode.Database.Tests.Base
             return item;
         }
 
+        #region Insert
+        
         [Fact]
         public virtual async Task InsertOneItem()
         {
@@ -52,7 +54,7 @@ namespace ManagedCode.Database.Tests.Base
         }
 
         [Fact]
-        public virtual async Task InsertItemDublicate()
+        public virtual async Task InsertItemDuplicate()
         {
             var id = GenerateId();
             var firstItem = CreateNewItem(id);
@@ -79,5 +81,107 @@ namespace ManagedCode.Database.Tests.Base
 
             items.Should().Be(list.Count);
         }
+
+        [Fact]
+        public virtual async Task Insert99Items()
+        {
+            var id = GenerateId();
+
+            await Collection.InsertAsync(CreateNewItem(id));
+
+            List<TItem> list = new();
+
+            list.Add(CreateNewItem(id));
+            for (var i = 0; i < 9; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var items = await Collection.InsertAsync(list);
+
+            list.Count.Should().Be(10);
+            items.Should().Be(9);
+        }
+
+        [Fact]
+        public virtual async Task InsertOrUpdateOneItem()
+        {
+            var id = GenerateId();
+            for (var i = 0; i < 100; i++)
+            {
+                var insertOneItem = await Collection.InsertOrUpdateAsync(CreateNewItem(id));
+                insertOneItem.Should().NotBeNull();
+            }
+        }
+        
+        [Fact]
+        public virtual async Task InsertOrUpdateListOfItems()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var itemsInsert = await Collection.InsertOrUpdateAsync(list);
+
+            foreach (var item in list)
+            {
+                item.DateTimeData = DateTime.Now.AddDays(-1);
+            }
+
+            var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
+            //TODO: LiteDB must be 100, but result 0
+            
+            itemsUpdate.Should().Be(100);
+            itemsInsert.Should().Be(100);
+            list.Count.Should().Be(100);
+        }
+        
+        #endregion
+
+        #region Update
+
+        [Fact]
+        public virtual async Task UpdateOneItem()
+        {
+            var id = GenerateId();
+            
+            var insertItem = await Collection.InsertAsync(CreateNewItem(id));
+            var updateItem = await Collection.UpdateAsync(CreateNewItem(id));
+
+            insertItem.Should().NotBeNull();
+            updateItem.Should().NotBeNull();
+        }
+
+        [Fact]
+        public virtual async Task UpdateItem_WhenItem_DoesntExists()
+        {
+            var id = GenerateId();
+            
+            var updateItem = await Collection.UpdateAsync(CreateNewItem(id));
+
+            updateItem.Should().BeNull();
+        }
+
+        [Fact]
+        public virtual async Task UpdateListOfItems()
+        {
+            List<TItem> list = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var items = await Collection.InsertAsync(list);
+            var updatedItems = await Collection.UpdateAsync(list.ToArray());
+
+            items.Should().Be(100);
+            updatedItems.Should().Be(100);
+        }
+
+        #endregion
     }
 }
