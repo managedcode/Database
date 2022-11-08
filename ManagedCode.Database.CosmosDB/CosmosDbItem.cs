@@ -9,7 +9,7 @@ public class CosmosDbItem : IItem<string>
 {
     public CosmosDbItem()
     {
-        Id = Guid.NewGuid().ToString("N");
+        Id = $"{Guid.NewGuid():N}";
         Type = GetType().Name;
     }
 
@@ -19,11 +19,9 @@ public class CosmosDbItem : IItem<string>
         Type = GetType().Name;
     }
 
-    [JsonProperty("type")]
-    public string Type { get; set; }
+    [JsonProperty("type")] public string Type { get; set; }
 
     public virtual PartitionKey PartitionKey => new(Id);
 
-    [JsonProperty("id")]
-    public string Id { get; set; }
+    [JsonProperty("id")] public string Id { get; set; }
 }

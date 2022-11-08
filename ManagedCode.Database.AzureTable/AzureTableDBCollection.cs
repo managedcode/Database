@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCode.Database.AzureTable.Extensions;
 using ManagedCode.Database.Core;
 using Microsoft.Azure.Cosmos.Table;
 
@@ -21,18 +20,9 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public IDBCollectionQueryable<TItem> Query => new AzureTableDBCollectionQueryable<TItem>(_tableAdapter);
 
-    public void Dispose()
-    {
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        return new ValueTask(Task.CompletedTask);
-    }
-
     #region Get
 
-    public Task<TItem> GetAsync(TableId id, CancellationToken token = default)
+    public Task<TItem?> GetAsync(TableId id, CancellationToken token = default)
     {
         return _tableAdapter.ExecuteAsync<TItem>(TableOperation.Retrieve<TItem>(id.PartitionKey, id.RowKey), token);
     }
@@ -43,28 +33,17 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<long> CountAsync(CancellationToken token = default)
     {
-        var count = 0;
+        var query = new TableQuery<DynamicTableEntity>();
+        query = query.CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
 
-        Expression<Func<TItem, bool>> predicate = item => true;
-
-        await foreach (var item in _tableAdapter
-                           .Query<DynamicTableEntity>(null, null, null,
-                               item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                               cancellationToken: token))
-        {
-            count++;
-        }
-
-        return count;
+        return await _tableAdapter.ExecuteQuery(query, cancellationToken: token).CountAsync(token);
     }
-
-    IDBCollectionQueryable<TItem> IDBCollection<TableId, TItem>.Query { get; }
 
     #endregion
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> InsertAsync(TItem item, CancellationToken token = default)
     {
         var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
         return result as TItem;
@@ -79,7 +58,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
     {
         var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.InsertOrReplace(item), token);
         return result;
@@ -95,7 +74,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> UpdateAsync(TItem item, CancellationToken token = default)
     {
         if (string.IsNullOrEmpty(item.ETag))
         {
@@ -130,7 +109,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
             {
                 ETag = "*"
             }), token);
-        return result != null;
+        return result is not null;
     }
 
     public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
@@ -140,7 +119,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
             {
                 ETag = "*"
             }), token);
-        return result != null;
+        return result is not null;
     }
 
     public async Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken token = default)
@@ -168,4 +147,13 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     }
 
     #endregion
+
+    public void Dispose()
+    {
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
+    }
 }

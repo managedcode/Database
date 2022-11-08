@@ -1,22 +1,20 @@
 using Tenray.ZoneTree;
 using Tenray.ZoneTree.AbstractFileStream;
 using Tenray.ZoneTree.Options;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
 public class ZoneTreeWrapper<TKey, TValue> : IDisposable
 {
-    private readonly ILogger _logger;
     private readonly string _path;
     private IZoneTree<TKey, TValue?> _zoneTree;
     private IMaintainer _maintainer;
 
-    public ZoneTreeWrapper(ILogger logger, string path)
+    public ZoneTreeWrapper(string path)
     {
-        _logger = logger;
         _path = path;
     }
+
     public void Open(ZoneTreeOptions<TKey, TValue?> options)
     {
         /*IFileStreamProvider streamProvider = options.StorageType switch
@@ -27,21 +25,16 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
         };*/
 
         var factory = new ZoneTreeFactory<TKey, TValue?>(new LocalFileStreamProvider())
-            .SetLogger(new WrapperLogger(_logger))
-            
             //.SetKeySerializer(options.KeySerializer)
             .SetValueSerializer(options.ValueSerializer)
             //.SetComparer(options.Comparer) //StringOrdinalComparerAscending()
-            
             .SetDataDirectory(_path)
             .SetWriteAheadLogDirectory(_path)
-            
             .SetIsValueDeletedDelegate((in TValue? value) => value == null)
             .SetMarkValueDeletedDelegate((ref TValue? value) => value = default)
-            
+
             //.SetIsValueDeletedDelegate((in Deletable<TValue> x) => x.IsDeleted)
             //.SetMarkValueDeletedDelegate((ref Deletable<TValue> x) => x.IsDeleted = true)
-            
             .ConfigureWriteAheadLogOptions(x =>
             {
                 // x.CompressionBlockSize = 1024 * 1024 * 20;
@@ -51,61 +44,62 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
             .Configure(x =>
             {
                 x.DiskSegmentOptions.CompressionMethod = CompressionMethod.Brotli;
-                x.DiskSegmentOptions.CompressionBlockSize= 1024 * 1024 * 30;
+                x.DiskSegmentOptions.CompressionBlockSize = 1024 * 1024 * 30;
                 x.DiskSegmentOptions.DiskSegmentMode = options.DiskSegmentMode;
                 x.DiskSegmentOptions.BlockCacheLimit = 2;
                 x.MutableSegmentMaxItemCount = 10_000; // number of data im memory  
             });
-        
-    
+
+
         _zoneTree = factory.OpenOrCreate();
-        _maintainer =  _zoneTree.CreateMaintainer();
+        _maintainer = _zoneTree.CreateMaintainer();
     }
 
-    
+
     public void Maintenance()
     {
         _maintainer.CompleteRunningTasks();
         _zoneTree.Maintenance.MoveSegmentZeroForward();
         _zoneTree.Maintenance.StartMergeOperation()?.Join();
     }
+
     public void Dispose()
     {
         _maintainer?.CompleteRunningTasks();
         _maintainer?.Dispose();
         _zoneTree?.Dispose();
     }
-    
+
     public bool Insert(TKey key, TValue value)
     {
         return _zoneTree.TryAtomicAdd(key, value);
     }
-    
+
     public void Update(TKey key, TValue value)
     {
         _zoneTree.TryAtomicUpdate(key, value);
     }
-    
+
     public void InsertOrUpdate(TKey key, TValue value)
     {
         _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? val) => true);
     }
-    
+
     public void Upsert(TKey key, TValue value)
     {
         _zoneTree.Upsert(key, value);
     }
-    
+
     public TValue Get(TKey key)
     {
-        if(_zoneTree.TryGet(in key, out var value))
+        if (_zoneTree.TryGet(in key, out var value))
         {
             return value;
         }
-        
+
         return default;
     }
-    
+
     public bool Contains(TKey key)
     {
         return _zoneTree.ContainsKey(key);
@@ -120,7 +114,7 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
     {
         _zoneTree.Maintenance.DestroyTree();
     }
-    
+
     public long Count()
     {
         //add more cache logic
@@ -135,7 +129,7 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
             yield return iterator.CurrentValue;
         }
     }
-    
+
     public IEnumerable<TValue?> EnumerateReverse()
     {
         using var iterator = _zoneTree.CreateReverseIterator();
@@ -144,5 +138,4 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
             yield return iterator.CurrentValue;
         }
     }
-
 }

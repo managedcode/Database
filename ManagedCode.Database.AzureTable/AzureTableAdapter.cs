@@ -1,36 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableAdapter<T> // where T : IItem<TableId>
+public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
 {
     private readonly bool _allowTableCreation = true;
     private readonly CloudStorageAccount _cloudStorageAccount;
-    private readonly ILogger _logger;
-    private readonly int _retryCount = 25;
+    private const int RetryCount = 25;
     private readonly object _sync = new();
     private CloudTableClient _cloudTableClient;
     private bool _tableClientInitialized;
 
-    public AzureTableAdapter(ILogger logger, string connectionString)
+    public AzureTableAdapter(string connectionString)
     {
-        _logger = logger;
         _cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
     }
 
-    public AzureTableAdapter(ILogger logger, StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
+    public AzureTableAdapter(StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
     {
-        _logger = logger;
         var cloudStorageAccount = new CloudStorageAccount(tableStorageCredentials, tableStorageUri);
         _cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
     }
@@ -39,7 +34,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
     private string GetTableName()
     {
-        return typeof(T).Name.Pluralize();
+        return typeof(TItem).Name.Pluralize();
     }
 
     public Task<bool> DropTable(CancellationToken token)
@@ -53,36 +48,36 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
     {
         lock (_sync)
         {
-            if (!_tableClientInitialized)
+            if (_tableClientInitialized)
             {
-                _cloudTableClient = _cloudStorageAccount.CreateCloudTableClient();
-                var table = _cloudTableClient.GetTableReference(GetTableName());
-
-                if (_allowTableCreation)
-                {
-                    table.CreateIfNotExists();
-                }
-                else
-                {
-                    var exists = table.Exists();
-                    if (!exists)
-                    {
-                        throw new Exception($"Table '{GetTableName()}' does not exist");
-                    }
-                }
-
-                _tableClientInitialized = true;
-                return table;
+                return _cloudTableClient.GetTableReference(GetTableName());
             }
-        }
 
-        return _cloudTableClient.GetTableReference(GetTableName());
+            _cloudTableClient = _cloudStorageAccount.CreateCloudTableClient();
+            var table = _cloudTableClient.GetTableReference(GetTableName());
+
+            if (_allowTableCreation)
+            {
+                table.CreateIfNotExists();
+            }
+            else
+            {
+                var exists = table.Exists();
+                if (!exists)
+                {
+                    throw new InvalidOperationException($"Table '{GetTableName()}' does not exist");
+                }
+            }
+
+            _tableClientInitialized = true;
+            return table;
+        }
     }
 
-    public async Task<T> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
+    public async Task<T?> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
     {
         var table = GetTable();
-        var retryCount = _retryCount;
+        var retryCount = RetryCount;
         do
         {
             try
@@ -105,10 +100,10 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
         throw new Exception(nameof(HttpStatusCode.TooManyRequests));
     }
 
-    public async Task<object> ExecuteAsync(TableOperation operation, CancellationToken token = default)
+    public async Task<object?> ExecuteAsync(TableOperation operation, CancellationToken token = default)
     {
         var table = GetTable();
-        var retryCount = _retryCount;
+        var retryCount = RetryCount;
         do
         {
             try
@@ -144,7 +139,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                 batchOperation.Add(item);
                 if (batchOperation.Count == BatchSize)
                 {
-                    var retryCount = _retryCount;
+                    var retryCount = RetryCount;
                     do
                     {
                         try
@@ -154,7 +149,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                             batchOperation = new TableBatchOperation();
                             break;
                         }
-                        catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                        catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                         (int)HttpStatusCode.TooManyRequests)
                         {
                             retryCount--;
                             if (retryCount == 0)
@@ -172,7 +168,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
             if (batchOperation.Count > 0)
             {
-                var retryCount = _retryCount;
+                var retryCount = RetryCount;
                 do
                 {
                     try
@@ -181,7 +177,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                         totalCount += result.Count;
                         break;
                     }
-                    catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                    catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                     (int)HttpStatusCode.TooManyRequests)
                     {
                         retryCount--;
                         if (retryCount == 0)
@@ -198,95 +195,28 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
         return totalCount;
     }
 
-    public async IAsyncEnumerable<T> Query<T>(
-        List<Expression<Func<T, bool>>> WherePredicates,
-        List<Expression<Func<T, object>>> OrderByPredicates,
-        List<Expression<Func<T, object>>> OrderByDescendingPredicates,
-        Expression<Func<T, object>> selectExpression = null,
-        int? take = null,
-        int? skip = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where T : ITableEntity, new()
+
+    public async IAsyncEnumerable<T> ExecuteQuery<T>(TableQuery<T> query,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : ITableEntity, new()
     {
-        string filterString = null;
-
-        var whereString = new List<string>();
-        foreach (var expression in WherePredicates)
-        {
-            whereString.Add(AzureTableQueryTranslator.TranslateExpression(expression));
-        }
-
-        filterString = string.Join(" and ", whereString);
-
-        List<string> selectedProperties = null;
-        if (selectExpression != null)
-        {
-            selectedProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(selectExpression);
-        }
-
-        TableContinuationToken token = null;
+        TableContinuationToken? token = null;
         var table = GetTable();
-
-        var takeCount = 0;
-
-        takeCount = take ?? 1000;
-
-        if (skip.HasValue)
-        {
-            takeCount += skip.Value;
-        }
-
-        var query = new TableQuery<T>
-        {
-            FilterString = filterString,
-            TakeCount = takeCount > 1000 ? 1000 : takeCount
-        };
-
-        if (selectedProperties != null)
-        {
-            query.Select(selectedProperties);
-        }
-
-        if (OrderByPredicates.Count > 0)
-        {
-            foreach (var item in OrderByPredicates)
-            {
-                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
-                foreach (var name in names)
-                {
-                    query.OrderBy(name);
-                }
-            }
-        }
-
-        if (OrderByDescendingPredicates.Count > 0)
-        {
-            foreach (var item in OrderByDescendingPredicates)
-            {
-                var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
-                foreach (var name in names)
-                {
-                    query.OrderByDesc(name);
-                }
-            }
-        }
-
-        long count = 0;
-        long skipCount = 0;
 
         do
         {
-            TableQuerySegment<T> results = null;
-            var retryCount = _retryCount;
+            TableQuerySegment<T>? results = null;
+            var retryCount = RetryCount;
             do
             {
                 try
                 {
-                    results = await table.ExecuteQuerySegmentedAsync(query, token, cancellationToken)
+                    results = await table
+                        .ExecuteQuerySegmentedAsync(query, token, cancellationToken)
                         .ConfigureAwait(false);
                     break;
                 }
-                catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                 (int)HttpStatusCode.TooManyRequests)
                 {
                     retryCount--;
                     if (retryCount == 0)
@@ -299,32 +229,15 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
             } while (retryCount > 0);
 
             token = results.ContinuationToken;
-
             cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var item in results.Results)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (skip > 0 && skipCount < skip)
-                {
-                    skipCount++;
-                    continue;
-                }
-
-                count++;
                 yield return item;
-
-                if (take > 0 && count >= take)
-                {
-                    break;
-                }
             }
-
-            if (take > 0 && count >= take)
-            {
-                break;
-            }
-        } while (token != null);
+        } while (token is not null);
     }
 
     private Task WaitRandom(CancellationToken token)

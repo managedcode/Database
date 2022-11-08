@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
 using Microsoft.Azure.Cosmos.Table;
+using ManagedCode.Database.AzureTable.Extensions;
+
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -18,52 +20,72 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
 
     public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        return _tableAdapter.Query(WherePredicates, OrderByPredicates, OrderByDescendingPredicates, null, TakeValue,
-            SkipValue, cancellationToken);
+        var query = new TableQuery<TItem>();
+
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
+            .OrderBy(OrderByPredicates)
+            .OrderByDescending(OrderByDescendingPredicates)
+            .Take(TakeValue)
+            .Skip(SkipValue);
+
+        return _tableAdapter.ExecuteQuery(query, cancellationToken);
     }
 
-    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        var query = new TableQuery<TItem>();
+
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
+
+        return await _tableAdapter.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        long count = 0;
+        var query = new TableQuery<TItem>();
 
-        await foreach (var item in _tableAdapter.Query(WherePredicates, OrderByPredicates, OrderByDescendingPredicates,
-                           item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                           TakeValue, SkipValue, cancellationToken))
-        {
-            count++;
-        }
+        query = query
+            .Where(WherePredicates)
+            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
 
-        return count;
+        return await _tableAdapter
+            .ExecuteQuery(query, cancellationToken)
+            .LongCountAsync(cancellationToken: cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var count = 0;
-        var totalCount = 0;
+        int count, totalCount = 0;
 
         do
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var ids = await _tableAdapter
-                .Query(WherePredicates, null, null, item => new DynamicTableEntity(item.PartitionKey, item.RowKey),
-                    _tableAdapter.BatchSize, cancellationToken: cancellationToken)
-                .ToListAsync(cancellationToken);
 
-            count = ids.Count;
+            var query = new TableQuery<TItem>();
+
+            query = query
+                .Where(WherePredicates)
+                .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
+                .Take(_tableAdapter.BatchSize);
+
+            var items = await _tableAdapter
+                .ExecuteQuery(query, cancellationToken)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            count = items.Count;
 
             cancellationToken.ThrowIfCancellationRequested();
-            totalCount += await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
-            {
-                ETag = "*"
-            })), cancellationToken);
+            totalCount += await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
+                TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
+                {
+                    ETag = "*"
+                })), cancellationToken);
         } while (count > 0);
 
         return totalCount;
     }
-    
 }

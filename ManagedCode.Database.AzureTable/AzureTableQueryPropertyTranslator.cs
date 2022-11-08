@@ -15,8 +15,11 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
 
     public static List<string> TranslateExpressionToMemberNames(Expression e)
     {
-        var translator = new AzureTableQueryPropertyTranslator();
-        translator._options = new EntityPropertyConverterOptions();
+        var translator = new AzureTableQueryPropertyTranslator
+        {
+            _options = new EntityPropertyConverterOptions()
+        };
+
         translator.Visit(e);
         return translator._memberNames;
     }
@@ -33,7 +36,7 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
 
     protected override Expression VisitMember(MemberExpression node)
     {
-        if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
+        if (node.Expression is { NodeType: ExpressionType.Parameter })
         {
             _currentMemberName += node.Member.Name;
             if (_memberDepth != 0)
@@ -47,11 +50,11 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
             return node;
         }
 
-        if (node.Expression != null && node.Expression.NodeType == ExpressionType.MemberAccess)
+        if (node.Expression is { NodeType: ExpressionType.MemberAccess })
         {
             var innerExpression = node.Expression as MemberExpression;
             _memberDepth++;
-            VisitMember(innerExpression);
+            VisitMember(innerExpression!);
             _currentMemberName += _options.PropertyNameDelimiter + node.Member.Name;
             _memberDepth--;
             if (_memberDepth == 0)
@@ -63,6 +66,6 @@ internal class AzureTableQueryPropertyTranslator : ExpressionVisitor
             return node;
         }
 
-        throw new NotSupportedException("Expression not supported");
+        throw new NotSupportedException($"Expression {node.Expression?.NodeType.ToString()}  not supported");
     }
 }

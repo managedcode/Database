@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -19,7 +18,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     private readonly bool _splitByType;
     private readonly bool _useItemIdAsPartitionKey;
 
-    public CosmosDBCollection([NotNull] CosmosDbRepositoryOptions options)
+    public CosmosDBCollection(CosmosDbRepositoryOptions options)
     {
         _splitByType = options.SplitByType;
         _useItemIdAsPartitionKey = options.UseItemIdAsPartitionKey;
@@ -49,12 +48,13 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region Get
 
-    public async Task<TItem> GetAsync(string id, CancellationToken token = default)
+    public async Task<TItem?> GetAsync(string id, CancellationToken token = default)
     {
         var container = await _cosmosDbAdapter.GetContainer();
         var feedIterator = container.GetItemLinqQueryable<TItem>()
             .Where(w => w.Id == id)
             .ToFeedIterator();
+
         using (var iterator = feedIterator)
         {
             if (iterator.HasMoreResults)
