@@ -1,26 +1,23 @@
-using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> where TItem : IItem<TId>
+public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TItem : IItem<TId> where TId : notnull
 {
-    private readonly Dictionary<TId, TItem> _storage = new ();
-    
-    public override void Dispose()
+    private readonly ConcurrentDictionary<TId, TItem> _storage = new();
+
+    public IDBCollectionQueryable<TItem> Query => new InMemoryDBCollectionQueryable<TId, TItem>(_storage);
+
+    public void Dispose()
     {
-        lock (_storage)
-        {
-            _storage.Clear();
-        }
+        _storage.Clear();
     }
 
-    public override ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         Dispose();
         return new ValueTask(Task.CompletedTask);
@@ -28,35 +25,31 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     #region Insert
 
-    protected override Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
     {
-        lock (_storage)
+        if (!_storage.TryGetValue(item.Id, out _))
         {
-            if (!_storage.TryGetValue(item.Id, out var _))
-            {
-                _storage.Add(item.Id, item);
-                return Task.FromResult(item);
-            }
+            _storage.TryAdd(item.Id, item);
+            return Task.FromResult(item);
         }
 
         return Task.FromResult<TItem>(default);
     }
 
-    protected override Task<int> InsertAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         var count = 0;
 
-        lock (_storage)
+
+        foreach (var item in items)
         {
-            foreach (var item in items)
+            if (!_storage.TryGetValue(item.Id, out var _))
             {
-                if (!_storage.TryGetValue(item.Id, out var _))
-                {
-                    _storage.Add(item.Id, item);
-                    count++;
-                }
+                _storage.TryAdd(item.Id, item);
+                count++;
             }
         }
+
 
         return Task.FromResult(count);
     }
@@ -65,22 +58,48 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     #region InsertOrUpdate
 
-    protected override Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
     {
-        lock (_storage)
+        _storage[item.Id] = item;
+        return Task.FromResult(item);
+    }
+
+    public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
+        CancellationToken token = default)
+    {
+        var count = 0;
+
+        foreach (var item in items)
+        {
+            _storage[item.Id] = item;
+            count++;
+        }
+
+        return Task.FromResult(count);
+    }
+
+    #endregion
+
+    #region Update
+
+    public Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    {
+        if (_storage.TryGetValue(item.Id, out _))
         {
             _storage[item.Id] = item;
             return Task.FromResult(item);
         }
+
+        return Task.FromResult<TItem>(default);
     }
 
-    protected override Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
         var count = 0;
 
-        lock (_storage)
+        foreach (var item in items)
         {
-            foreach (var item in items)
+            if (_storage.TryGetValue(item.Id, out var _))
             {
                 _storage[item.Id] = item;
                 count++;
@@ -92,145 +111,62 @@ public class InMemoryDBCollection<TId, TItem> : BaseDBCollection<TId, TItem> whe
 
     #endregion
 
-    #region Update
-
-    protected override Task<TItem> UpdateAsyncInternal(TItem item, CancellationToken token = default)
-    {
-        lock (_storage)
-        {
-            if (_storage.TryGetValue(item.Id, out var _))
-            {
-                _storage[item.Id] = item;
-                return Task.FromResult(item);
-            }
-
-            return Task.FromResult<TItem>(default);
-        }
-    }
-
-    protected override Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
-    {
-        var count = 0;
-
-        lock (_storage)
-        {
-            foreach (var item in items)
-            {
-                if (_storage.TryGetValue(item.Id, out var _))
-                {
-                    _storage[item.Id] = item;
-                    count++;
-                }
-            }
-        }
-
-        return Task.FromResult(count);
-    }
-
-    #endregion
-
     #region Delete
 
-    protected override Task<bool> DeleteAsyncInternal(TId id, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TId id, CancellationToken token = default)
     {
-        lock (_storage)
-        {
-            return Task.FromResult(_storage.Remove(id));
-        }
+        return Task.FromResult(_storage.TryRemove(id, out _));
     }
 
-    protected override Task<bool> DeleteAsyncInternal(TItem item, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
     {
-        lock (_storage)
-        {
-            return Task.FromResult(_storage.Remove(item.Id));
-        }
+        return Task.FromResult(_storage.TryRemove(item.Id, out _));
     }
 
-    protected override Task<int> DeleteAsyncInternal(IEnumerable<TId> ids, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
     {
-        var count = 0;
-
-        lock (_storage)
-        {
-            foreach (var id in ids)
-            {
-                if (_storage.Remove(id))
-                {
-                    count++;
-                }
-            }
-        }
+        var count = ids.Count(id => _storage.TryRemove(id, out _));
 
         return Task.FromResult(count);
     }
 
-    protected override Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var count = 0;
-
-        lock (_storage)
-        {
-            foreach (var item in items)
-            {
-                if (_storage.Remove(item.Id))
-                {
-                    count++;
-                }
-            }
-        }
+        var count = items.Count(item => _storage.TryRemove(item.Id, out _));
 
         return Task.FromResult(count);
     }
-    
-    protected override Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
+
+    public Task<bool> DeleteAllAsync(CancellationToken token = default)
     {
-        lock (_storage)
-        {
-            var count = _storage.Count;
-            _storage.Clear();
-            return Task.FromResult(true);
-        }
+        var count = _storage.Count;
+        _storage.Clear();
+        return Task.FromResult(true);
     }
 
     #endregion
 
     #region Get
 
-    protected override Task<TItem> GetAsyncInternal(TId id, CancellationToken token = default)
+    public Task<TItem> GetAsync(TId id, CancellationToken token = default)
     {
-        lock (_storage)
+        if (_storage.TryGetValue(id, out var item))
         {
-            if (_storage.TryGetValue(id, out var item))
-            {
-                return Task.FromResult(item);
-            }
-
-            return Task.FromResult<TItem>(default);
+            return Task.FromResult(item);
         }
+
+        return Task.FromResult<TItem>(default);
     }
-    
+
     #endregion
-    
+
 
     #region Count
 
-    public override IDBCollectionQueryable<TItem> Query()
+    public Task<long> CountAsync(CancellationToken token = default)
     {
-        lock (_storage)
-        {
-            return new InMemoryDBCollectionQueryable<TId,TItem>(_storage);
-        }
+        return Task.FromResult((long)_storage.Count);
     }
 
-    protected override Task<long> CountAsyncInternal(CancellationToken token = default)
-    {
-        lock (_storage)
-        {
-            return Task.FromResult((long)_storage.Count);
-        }
-    }
-    
     #endregion
 }
-

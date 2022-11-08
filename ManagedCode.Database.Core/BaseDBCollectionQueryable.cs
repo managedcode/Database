@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core;
 
-
 public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
 {
-    protected List<Expression<Func<TSource, bool>>> WherePredicates = new();
-    protected List<Expression<Func<TSource, object>>> OrderByPredicates = new();
-    protected List<Expression<Func<TSource, object>>> OrderByDescendingPredicates = new();
+    protected readonly List<Expression<Func<TSource, bool>>> WherePredicates = new();
+    protected readonly List<Expression<Func<TSource, object>>> OrderByPredicates = new();
+    protected readonly List<Expression<Func<TSource, object>>> OrderByDescendingPredicates = new();
     protected int? TakeValue;
     protected int? SkipValue;
 
@@ -21,13 +20,15 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         WherePredicates.Add(predicate);
         return this;
     }
+
     public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
     {
         OrderByPredicates.Add(keySelector);
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelectorF, Expression<Func<TSource, object>> keySelectorS)
+    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelectorF,
+        Expression<Func<TSource, object>> keySelectorS)
     {
         OrderByPredicates.Add(keySelectorF);
         OrderByPredicates.Add(keySelectorS);
@@ -40,7 +41,8 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelectorF, Expression<Func<TSource, object>> keySelectorS)
+    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelectorF,
+        Expression<Func<TSource, object>> keySelectorS)
     {
         OrderByDescendingPredicates.Add(keySelectorF);
         OrderByDescendingPredicates.Add(keySelectorS);
