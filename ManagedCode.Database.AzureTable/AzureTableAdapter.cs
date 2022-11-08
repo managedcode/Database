@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -16,21 +15,18 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 {
     private readonly bool _allowTableCreation = true;
     private readonly CloudStorageAccount _cloudStorageAccount;
-    private readonly ILogger _logger;
     private readonly int _retryCount = 25;
     private readonly object _sync = new();
     private CloudTableClient _cloudTableClient;
     private bool _tableClientInitialized;
 
-    public AzureTableAdapter(ILogger logger, string connectionString)
+    public AzureTableAdapter(string connectionString)
     {
-        _logger = logger;
         _cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
     }
 
-    public AzureTableAdapter(ILogger logger, StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
+    public AzureTableAdapter(StorageCredentials tableStorageCredentials, StorageUri tableStorageUri)
     {
-        _logger = logger;
         var cloudStorageAccount = new CloudStorageAccount(tableStorageCredentials, tableStorageUri);
         _cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
     }
@@ -154,7 +150,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                             batchOperation = new TableBatchOperation();
                             break;
                         }
-                        catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                        catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                         (int)HttpStatusCode.TooManyRequests)
                         {
                             retryCount--;
                             if (retryCount == 0)
@@ -181,7 +178,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                         totalCount += result.Count;
                         break;
                     }
-                    catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                    catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                     (int)HttpStatusCode.TooManyRequests)
                     {
                         retryCount--;
                         if (retryCount == 0)
@@ -286,7 +284,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                         .ConfigureAwait(false);
                     break;
                 }
-                catch (StorageException e) when (e.RequestInformation.HttpStatusCode == (int)HttpStatusCode.TooManyRequests)
+                catch (StorageException e) when (e.RequestInformation.HttpStatusCode ==
+                                                 (int)HttpStatusCode.TooManyRequests)
                 {
                     retryCount--;
                     if (retryCount == 0)

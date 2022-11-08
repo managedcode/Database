@@ -1,14 +1,10 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ManagedCode.Database.Core;
 
 public abstract class BaseDatabase : IDatabase
 {
-    protected readonly ILogger Logger = NullLogger.Instance;
-
     private bool _disposed;
 
     public bool IsInitialized { get; protected set; } = true;
@@ -27,7 +23,7 @@ public abstract class BaseDatabase : IDatabase
         {
             return;
         }
-        
+
         _disposed = true;
         DisposeInternal();
     }
@@ -48,5 +44,4 @@ public abstract class BaseDatabase : IDatabase
     protected abstract ValueTask DisposeAsyncInternal();
     protected abstract void DisposeInternal();
     public abstract Task Delete(CancellationToken token = default);
-    
 }

@@ -47,7 +47,8 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
         return GetCollection<TId, TItem>(typeof(TItem).FullName);
     }
 
-    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : AzureTableItem, IItem<TId>, new()
+    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name)
+        where TItem : AzureTableItem, IItem<TId>, new()
     {
         if (!IsInitialized)
         {
@@ -64,11 +65,11 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
             AzureTableAdapter<TItem> tableAdapter;
             if (string.IsNullOrEmpty(_options.ConnectionString))
             {
-                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.TableStorageCredentials, _options.TableStorageUri);
+                tableAdapter = new AzureTableAdapter<TItem>(_options.TableStorageCredentials, _options.TableStorageUri);
             }
             else
             {
-                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.ConnectionString);
+                tableAdapter = new AzureTableAdapter<TItem>(_options.ConnectionString);
             }
 
             var collection = new AzureTableDBCollection<TItem>(tableAdapter);
