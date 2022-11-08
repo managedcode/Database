@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Logging;
 using LogLevel = Tenray.ZoneTree.Logger.LogLevel;
 

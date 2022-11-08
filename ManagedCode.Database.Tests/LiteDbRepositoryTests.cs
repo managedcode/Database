@@ -1,12 +1,9 @@
 using System;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.LiteDB;
 using ManagedCode.Database.Tests.Common;
-using SQLite;
 using Xunit;
 
 namespace ManagedCode.Database.Tests

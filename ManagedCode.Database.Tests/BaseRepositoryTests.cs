@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
-using ManagedCode.Database.Core.Extensions;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 

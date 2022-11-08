@@ -1,7 +1,5 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ManagedCode.Database.Core.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

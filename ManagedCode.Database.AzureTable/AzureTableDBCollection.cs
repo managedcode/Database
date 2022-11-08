@@ -88,7 +88,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
         CancellationToken token = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.InsertOrReplace(s)), token);
+        return await _tableAdapter.ExecuteBatchAsync(items.Select(TableOperation.InsertOrReplace), token);
     }
 
     #endregion
