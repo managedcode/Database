@@ -40,16 +40,16 @@ public class TableId
         return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        return Equals(obj as TableId);
-    }
+        if (obj is TableId tableId)
+        {
+            return tableId.PartitionKey == PartitionKey && tableId.RowKey == RowKey;
+        }
 
-    public bool Equals(TableId obj)
-    {
-        return obj != null && obj.PartitionKey == PartitionKey && obj.RowKey == RowKey;
+        return false;
     }
-
+    
     public override int GetHashCode()
     {
         return PartitionKey.GetHashCode() ^ RowKey.GetHashCode();

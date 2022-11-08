@@ -21,15 +21,6 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public IDBCollectionQueryable<TItem> Query => new AzureTableDBCollectionQueryable<TItem>(_tableAdapter);
 
-    public void Dispose()
-    {
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        return new ValueTask(Task.CompletedTask);
-    }
-
     #region Get
 
     public Task<TItem> GetAsync(TableId id, CancellationToken token = default)
@@ -57,8 +48,6 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
         return count;
     }
-
-    IDBCollectionQueryable<TItem> IDBCollection<TableId, TItem>.Query { get; }
 
     #endregion
 
@@ -168,4 +157,13 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     }
 
     #endregion
+
+    public void Dispose()
+    {
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
+    }
 }

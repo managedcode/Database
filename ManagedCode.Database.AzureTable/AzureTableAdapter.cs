@@ -11,11 +11,11 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableAdapter<T> // where T : IItem<TableId>
+public class AzureTableAdapter<TItem> where TItem : ITableEntity, new()
 {
     private readonly bool _allowTableCreation = true;
     private readonly CloudStorageAccount _cloudStorageAccount;
-    private readonly int _retryCount = 25;
+    private const int RetryCount = 25;
     private readonly object _sync = new();
     private CloudTableClient _cloudTableClient;
     private bool _tableClientInitialized;
@@ -35,7 +35,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
     private string GetTableName()
     {
-        return typeof(T).Name.Pluralize();
+        return typeof(TItem).Name.Pluralize();
     }
 
     public Task<bool> DropTable(CancellationToken token)
@@ -49,36 +49,36 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
     {
         lock (_sync)
         {
-            if (!_tableClientInitialized)
+            if (_tableClientInitialized)
             {
-                _cloudTableClient = _cloudStorageAccount.CreateCloudTableClient();
-                var table = _cloudTableClient.GetTableReference(GetTableName());
-
-                if (_allowTableCreation)
-                {
-                    table.CreateIfNotExists();
-                }
-                else
-                {
-                    var exists = table.Exists();
-                    if (!exists)
-                    {
-                        throw new Exception($"Table '{GetTableName()}' does not exist");
-                    }
-                }
-
-                _tableClientInitialized = true;
-                return table;
+                return _cloudTableClient.GetTableReference(GetTableName());
             }
-        }
 
-        return _cloudTableClient.GetTableReference(GetTableName());
+            _cloudTableClient = _cloudStorageAccount.CreateCloudTableClient();
+            var table = _cloudTableClient.GetTableReference(GetTableName());
+
+            if (_allowTableCreation)
+            {
+                table.CreateIfNotExists();
+            }
+            else
+            {
+                var exists = table.Exists();
+                if (!exists)
+                {
+                    throw new InvalidOperationException($"Table '{GetTableName()}' does not exist");
+                }
+            }
+
+            _tableClientInitialized = true;
+            return table;
+        }
     }
 
     public async Task<T> ExecuteAsync<T>(TableOperation operation, CancellationToken token = default) where T : class
     {
         var table = GetTable();
-        var retryCount = _retryCount;
+        var retryCount = RetryCount;
         do
         {
             try
@@ -104,7 +104,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
     public async Task<object> ExecuteAsync(TableOperation operation, CancellationToken token = default)
     {
         var table = GetTable();
-        var retryCount = _retryCount;
+        var retryCount = RetryCount;
         do
         {
             try
@@ -140,7 +140,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
                 batchOperation.Add(item);
                 if (batchOperation.Count == BatchSize)
                 {
-                    var retryCount = _retryCount;
+                    var retryCount = RetryCount;
                     do
                     {
                         try
@@ -169,7 +169,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
             if (batchOperation.Count > 0)
             {
-                var retryCount = _retryCount;
+                var retryCount = RetryCount;
                 do
                 {
                     try
@@ -197,37 +197,29 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
     }
 
     public async IAsyncEnumerable<T> Query<T>(
-        List<Expression<Func<T, bool>>> WherePredicates,
-        List<Expression<Func<T, object>>> OrderByPredicates,
-        List<Expression<Func<T, object>>> OrderByDescendingPredicates,
-        Expression<Func<T, object>> selectExpression = null,
+        List<Expression<Func<T, bool>>> wherePredicates,
+        List<Expression<Func<T, object>>>? orderByPredicates,
+        List<Expression<Func<T, object>>>? orderByDescendingPredicates,
+        Expression<Func<T, object>>? selectExpression = null,
         int? take = null,
         int? skip = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where T : ITableEntity, new()
     {
-        string filterString = null;
+        var whereString = wherePredicates.Select(AzureTableQueryTranslator.TranslateExpression).ToList();
+        var filterString = string.Join(" and ", whereString);
 
-        var whereString = new List<string>();
-        foreach (var expression in WherePredicates)
-        {
-            whereString.Add(AzureTableQueryTranslator.TranslateExpression(expression));
-        }
+        List<string>? selectedProperties = null;
 
-        filterString = string.Join(" and ", whereString);
-
-        List<string> selectedProperties = null;
-        if (selectExpression != null)
+        if (selectExpression is not null)
         {
             selectedProperties = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(selectExpression);
         }
 
-        TableContinuationToken token = null;
+        TableContinuationToken? token = null;
         var table = GetTable();
 
-        var takeCount = 0;
-
-        takeCount = take ?? 1000;
+        var takeCount = take ?? 1000;
 
         if (skip.HasValue)
         {
@@ -240,14 +232,14 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
             TakeCount = takeCount > 1000 ? 1000 : takeCount
         };
 
-        if (selectedProperties != null)
+        if (selectedProperties is not null)
         {
             query.Select(selectedProperties);
         }
 
-        if (OrderByPredicates.Count > 0)
+        if (orderByPredicates?.Count > 0)
         {
-            foreach (var item in OrderByPredicates)
+            foreach (var item in orderByPredicates)
             {
                 var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
                 foreach (var name in names)
@@ -257,9 +249,9 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
             }
         }
 
-        if (OrderByDescendingPredicates.Count > 0)
+        if (orderByDescendingPredicates?.Count > 0)
         {
-            foreach (var item in OrderByDescendingPredicates)
+            foreach (var item in orderByDescendingPredicates)
             {
                 var names = AzureTableQueryPropertyTranslator.TranslateExpressionToMemberNames(item);
                 foreach (var name in names)
@@ -274,8 +266,8 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
 
         do
         {
-            TableQuerySegment<T> results = null;
-            var retryCount = _retryCount;
+            TableQuerySegment<T>? results = null;
+            var retryCount = RetryCount;
             do
             {
                 try
@@ -323,7 +315,7 @@ public class AzureTableAdapter<T> // where T : IItem<TableId>
             {
                 break;
             }
-        } while (token != null);
+        } while (token is not null);
     }
 
     private Task WaitRandom(CancellationToken token)
