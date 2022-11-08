@@ -10,17 +10,17 @@ public class CosmosDbAdapter<T> where T : class, new()
     private readonly string _collectionName;
     private readonly CosmosClient _cosmosClient;
     private readonly string _databaseName;
-    private readonly int _retryCount = 25;
-    private readonly object _sync = new();
+    private const int RetryCount = 25;
     private bool _tableClientInitialized;
 
-    public CosmosDbAdapter(string connectionString, CosmosClientOptions cosmosClientOptions, string databaseName, string collectionName)
+    public CosmosDbAdapter(string connectionString, CosmosClientOptions cosmosClientOptions, string databaseName,
+        string collectionName)
     {
         _databaseName = string.IsNullOrEmpty(databaseName) ? "database" : databaseName;
         _collectionName = string.IsNullOrEmpty(collectionName) ? "container" : collectionName;
 
         _cosmosClient = new CosmosClient(connectionString, cosmosClientOptions);
-        _cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = _retryCount;
+        _cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
         _cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
     }
 
@@ -32,7 +32,8 @@ public class CosmosDbAdapter<T> where T : class, new()
             {
                 var response = await _cosmosClient.CreateDatabaseIfNotExistsAsync(_databaseName);
                 var database = response.Database;
-                Container container = await database.CreateContainerIfNotExistsAsync(_collectionName, "/id").ConfigureAwait(false);
+                await database.CreateContainerIfNotExistsAsync(_collectionName, "/id")
+                    .ConfigureAwait(false);
             }
             else
             {
