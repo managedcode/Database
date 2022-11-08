@@ -5,9 +5,9 @@ using System.Linq.Expressions;
 
 namespace ManagedCode.Database.CosmosDB.Extensions;
 
-public static class QueryableExtensions
+internal static class QueryableExtensions
 {
-    public static IQueryable<TItem> OrderBy<TItem>(this IQueryable<TItem> query,
+    internal static IQueryable<TItem> OrderBy<TItem>(this IQueryable<TItem> query,
         List<Expression<Func<TItem, object>>> predicates)
     {
         IOrderedQueryable<TItem>? ordered = null;
@@ -27,7 +27,7 @@ public static class QueryableExtensions
         return ordered ?? query;
     }
 
-    public static IQueryable<TItem> OrderByDescending<TItem>(this IQueryable<TItem> query,
+    internal static IQueryable<TItem> OrderByDescending<TItem>(this IQueryable<TItem> query,
         List<Expression<Func<TItem, object>>> predicates)
     {
         IOrderedQueryable<TItem>? ordered = null;
@@ -47,7 +47,7 @@ public static class QueryableExtensions
         return ordered ?? query;
     }
 
-    public static IQueryable<TItem> Skip<TItem>(this IQueryable<TItem> query, int? skip)
+    internal static IQueryable<TItem> Skip<TItem>(this IQueryable<TItem> query, int? skip)
     {
         if (skip.HasValue)
         {
@@ -57,7 +57,7 @@ public static class QueryableExtensions
         return query;
     }
 
-    public static IQueryable<TItem> Take<TItem>(this IQueryable<TItem> query, int? take)
+    internal static IQueryable<TItem> Take<TItem>(this IQueryable<TItem> query, int? take)
     {
         if (take.HasValue)
         {
@@ -67,7 +67,7 @@ public static class QueryableExtensions
         return query;
     }
 
-    public static IQueryable<TItem> Where<TItem>(this IQueryable<TItem> query,
+    internal static IQueryable<TItem> Where<TItem>(this IQueryable<TItem> query,
         List<Expression<Func<TItem, bool>>> predicates)
     {
         foreach (var predicate in predicates)
