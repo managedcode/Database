@@ -259,6 +259,23 @@ namespace ManagedCode.Database.Tests.Base
         }
 
         [Fact]
+        public virtual async Task DeleteListOfItems_WhenItemsDontExist()
+        {
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var deletedItems = await Collection.DeleteAsync(list);
+
+            deletedItems.Should().Be(0);
+            list.Count.Should().Be(itemsCount);
+        }
+
+        [Fact]
         public virtual async Task DeleteListOfItemsById()
         {
             int itemsCount = 5;
@@ -276,6 +293,25 @@ namespace ManagedCode.Database.Tests.Base
 
             items.Should().Be(itemsCount);
             deletedItems.Should().Be(itemsCount);
+        }
+
+        [Fact]
+        public virtual async Task DeleteListOfItemsById_WhenItemsDontExist()
+        {
+
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var ids = list.Select(item => item.Id);
+
+            var deletedItems = await Collection.DeleteAsync(ids);
+
+            deletedItems.Should().Be(0);
         }
 
         [Fact]
@@ -303,7 +339,7 @@ namespace ManagedCode.Database.Tests.Base
         }
 
         [Fact]
-        public virtual async Task DeleteByQuery_WhenItemsDoesntExist()
+        public virtual async Task DeleteByQuery_WhenItemsDontExist()
         {
             int itemsCount = 5;
             List<TItem> list = new();
@@ -343,6 +379,17 @@ namespace ManagedCode.Database.Tests.Base
 
             deletedItems.Should().BeTrue();
             items.Should().Be(itemsCount);
+            count.Should().Be(0);
+        }
+
+        [Fact]
+        public virtual async Task DeleteAll_WhenNoItems()
+        {
+            var deletedItems = await Collection.DeleteAllAsync();
+            var count = await Collection.CountAsync();
+
+            // why here is true???
+            deletedItems.Should().BeFalse();
             count.Should().Be(0);
         }
 
