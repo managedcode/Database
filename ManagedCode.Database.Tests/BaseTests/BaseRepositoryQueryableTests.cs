@@ -56,9 +56,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
+        var countResult = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
 
-        ñountResult.Should().Be(count);
+        countResult.Should().Be(count);
     }
 
     [Fact]
@@ -79,9 +79,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid).CountAsync();
+        var countResult = await Collection.Query.Where(w => w.StringData == falseGuid).CountAsync();
 
-        ñountResult.Should().Be(0);
+        countResult.Should().Be(0);
     }
 
     [Fact]
@@ -99,10 +99,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             count++;
         }
 
-        var ñountResult = await Collection.Query.OrderBy(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(count);
-        ñountResult.First().IntData.Should().Be(10);
+        itemsResult.Count.Should().Be(count);
+        itemsResult.First().IntData.Should().Be(10);
     }
 
     [Fact]
@@ -120,10 +120,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             count++;
         }
 
-        var ñountResult = await Collection.Query.OrderByDescending(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(count);
-        ñountResult.First().IntData.Should().Be(10);
+        itemsResult.Count.Should().Be(count);
+        itemsResult.First().IntData.Should().Be(10);
     }
 
     [Fact]
@@ -138,10 +138,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Take(10).ToListAsync();
+        var itemsResult = await Collection.Query.Take(10).ToListAsync();
 
-        items.Count.Should().Be(10);
-        items.First().IntData.Should().Be(0);
+        itemsResult.Count.Should().Be(10);
+        itemsResult.First().IntData.Should().Be(0);
     }  
     
     [Fact]
@@ -156,10 +156,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var items = await Collection.Query.Skip(10).ToListAsync();
+        var itemsResult = await Collection.Query.Skip(10).ToListAsync();
 
-        items.Count.Should().Be(10);
-        items.First().IntData.Should().Be(10);
+        itemsResult.Count.Should().Be(10);
+        itemsResult.First().IntData.Should().Be(10);
     }
 
     [Fact]
@@ -183,10 +183,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(count);
-        ñountResult.First().IntData.Should().Be(0);
+        itemsResult.Count.Should().Be(count);
+        itemsResult.First().IntData.Should().Be(0);
     }
 
     [Fact]
@@ -209,9 +209,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid).OrderBy(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid).OrderBy(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -235,10 +235,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(count);
-        ñountResult.First().IntData.Should().Be(8);
+        itemsResult.Count.Should().Be(count);
+        itemsResult.First().IntData.Should().Be(8);
     }
 
     [Fact]
@@ -261,9 +261,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid).OrderByDescending(o => o.IntData).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid).OrderByDescending(o => o.IntData).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -285,10 +285,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(0);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(0);
     }
 
 
@@ -312,9 +312,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     public virtual async Task WhereSkipQuery_ReturnOk()
@@ -337,10 +337,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(count-2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(count-2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -363,9 +363,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -384,10 +384,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.OrderBy(o => o.IntData).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(0);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(0);
     }
 
     [Fact]
@@ -409,10 +409,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.OrderBy(o => o.IntData).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(count-2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(count-2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -431,10 +431,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(8);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(8);
     }
 
     [Fact]
@@ -456,10 +456,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(count - 2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(count - 2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -475,10 +475,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Take(4).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Take(4).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(3);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(3);
     }
 
     [Fact]
@@ -502,11 +502,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderBy(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(0);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(0);
     }
 
     [Fact]
@@ -529,10 +529,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderBy(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -556,11 +556,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(8);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(8);
     }
 
     [Fact]
@@ -583,10 +583,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -610,11 +610,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(count - 2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(count - 2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -637,10 +637,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -664,11 +664,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(count - 2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(count - 2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -691,10 +691,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -718,11 +718,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderBy(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -745,10 +745,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderBy(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -772,11 +772,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == guid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderByDescending(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(2);
-        ñountResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(2);
+        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -799,9 +799,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var ñountResult = await Collection.Query.Where(w => w.StringData == falseGuid)
+        var itemsResult = await Collection.Query.Where(w => w.StringData == falseGuid)
             .OrderByDescending(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
-        ñountResult.Count.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 }
