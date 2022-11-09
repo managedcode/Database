@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
@@ -10,7 +9,7 @@ namespace ManagedCode.Database.LiteDB;
 
 public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
 {
-    public LiteDbDatabase([NotNull] LiteDbRepositoryOptions options)
+    public LiteDbDatabase(LiteDbRepositoryOptions options)
     {
         DataBase = options.Database ?? new LiteDatabase(options.ConnectionString);
         IsInitialized = true;

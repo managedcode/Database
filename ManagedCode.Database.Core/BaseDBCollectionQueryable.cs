@@ -9,11 +9,16 @@ namespace ManagedCode.Database.Core;
 
 public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
 {
+    protected int? TakeValue;
+    protected int? SkipValue;
     protected readonly List<Expression<Func<TSource, bool>>> WherePredicates = new();
     protected readonly List<Expression<Func<TSource, object>>> OrderByPredicates = new();
     protected readonly List<Expression<Func<TSource, object>>> OrderByDescendingPredicates = new();
-    protected int? TakeValue;
-    protected int? SkipValue;
+
+    public abstract IAsyncEnumerable<TSource> ToAsyncEnumerable(CancellationToken cancellationToken = default);
+    public abstract Task<TSource?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    public abstract Task<long> CountAsync(CancellationToken cancellationToken = default);
+    public abstract Task<int> DeleteAsync(CancellationToken cancellationToken = default);
 
     public IDBCollectionQueryable<TSource> Where(Expression<Func<TSource, bool>> predicate)
     {
@@ -44,13 +49,6 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         SkipValue = count;
         return this;
     }
-
-    public abstract IAsyncEnumerable<TSource> ToAsyncEnumerable(CancellationToken cancellationToken = default);
-    public abstract Task<TSource> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
-
-    public abstract Task<long> CountAsync(CancellationToken cancellationToken = default);
-
-    public abstract Task<int> DeleteAsync(CancellationToken cancellationToken = default);
 
     public async Task<List<TSource>> ToListAsync(CancellationToken cancellationToken = default)
     {

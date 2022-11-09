@@ -11,7 +11,7 @@ namespace ManagedCode.Database.AzureTable;
 public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
 {
     private readonly AzureTableRepositoryOptions _options;
-    private readonly Dictionary<string, object> tableAdapters = new();
+    private readonly Dictionary<string, object> _tableAdapters = new();
 
     public AzureTableDatabase(AzureTableRepositoryOptions options)
     {
@@ -39,7 +39,7 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
 
     protected override void DisposeInternal()
     {
-        tableAdapters.Clear();
+        _tableAdapters.Clear();
     }
 
     public AzureTableDBCollection<TItem> GetCollection<TId, TItem>() where TItem : AzureTableItem, IItem<TId>, new()
@@ -47,33 +47,31 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
         return GetCollection<TId, TItem>(typeof(TItem).FullName);
     }
 
-    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : AzureTableItem, IItem<TId>, new()
+    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name)
+        where TItem : AzureTableItem, IItem<TId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        lock (tableAdapters)
+        lock (_tableAdapters)
         {
-            if (tableAdapters.TryGetValue(name, out var table))
+            if (_tableAdapters.TryGetValue(name, out var table))
             {
                 return (AzureTableDBCollection<TItem>)table;
             }
 
-            AzureTableAdapter<TItem> tableAdapter;
-            if (string.IsNullOrEmpty(_options.ConnectionString))
+            var tableAdapter = string.IsNullOrEmpty(_options.ConnectionString) switch
             {
-                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.TableStorageCredentials, _options.TableStorageUri);
-            }
-            else
-            {
-                tableAdapter = new AzureTableAdapter<TItem>(Logger, _options.ConnectionString);
-            }
+                true => new AzureTableAdapter<TItem>(_options.TableStorageCredentials, _options.TableStorageUri),
+                false => new AzureTableAdapter<TItem>(_options.ConnectionString),
+            };
+
 
             var collection = new AzureTableDBCollection<TItem>(tableAdapter);
 
-            tableAdapters[name] = collection;
+            _tableAdapters[name] = collection;
             return collection;
         }
     }

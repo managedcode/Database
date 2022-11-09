@@ -1,20 +1,18 @@
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
 public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
 {
-    private readonly ILogger<ZoneTreeDatabase> _logger;
     private readonly string _path;
-    private Dictionary<string, IDisposable> _collection = new ();
-    public ZoneTreeDatabase(ILogger<ZoneTreeDatabase> logger, string path)
+    private Dictionary<string, IDisposable> _collection = new();
+
+    public ZoneTreeDatabase(string path)
     {
-        _logger = logger;
         _path = path;
     }
-    
+
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
         return Task.CompletedTask;
@@ -39,34 +37,32 @@ public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
     }
 
     public ZoneTreeDatabase DataBase { get; }
-    
+
     public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
         return GetCollection<TId, TItem>(typeof(TItem).FullName);
     }
-    
+
     public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
+
         lock (DataBase)
         {
             var className = typeof(TItem).FullName;
-            if(_collection.TryGetValue(className, out var collection))
+            if (_collection.TryGetValue(className, out var collection))
             {
-                return (ZoneTreeDBCollection<TId, TItem> )collection;
+                return (ZoneTreeDBCollection<TId, TItem>)collection;
             }
             else
             {
-                var newCollection = new ZoneTreeDBCollection<TId, TItem> (_logger, Path.Combine(_path, className));
+                var newCollection = new ZoneTreeDBCollection<TId, TItem>(Path.Combine(_path, className));
                 _collection.Add(className, newCollection);
                 return newCollection;
             }
         }
     }
-    
-
 }

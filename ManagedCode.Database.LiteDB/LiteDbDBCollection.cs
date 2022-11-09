@@ -34,7 +34,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Get
 
-    public async Task<TItem> GetAsync(TId id, CancellationToken token = default)
+    public async Task<TItem?> GetAsync(TId id, CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().FindById(new BsonValue(id));

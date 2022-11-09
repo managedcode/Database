@@ -12,7 +12,7 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
 {
     private readonly CosmosDbRepositoryOptions _options;
 
-    public CosmosDatabase([NotNull] CosmosDbRepositoryOptions options)
+    public CosmosDatabase(CosmosDbRepositoryOptions options)
     {
         _options = options;
     }

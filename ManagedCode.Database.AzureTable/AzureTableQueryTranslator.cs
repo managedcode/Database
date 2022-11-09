@@ -30,16 +30,18 @@ internal class AzureTableQueryTranslator : ExpressionVisitor
 
     protected override Expression VisitMember(MemberExpression m)
     {
-        if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter && _binarySideStack.Peek() != BinarySide.Right)
+        if (m.Expression is { NodeType: ExpressionType.Parameter } &&
+            _binarySideStack.Peek() != BinarySide.Right)
         {
             _filter.Append(m.Member.Name);
             return m;
         }
 
-        if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberAccess && _binarySideStack.Peek() != BinarySide.Right)
+        if (m.Expression is { NodeType: ExpressionType.MemberAccess } &&
+            _binarySideStack.Peek() != BinarySide.Right)
         {
             var innerExpression = m.Expression as MemberExpression;
-            VisitMember(innerExpression);
+            VisitMember(innerExpression!);
             _filter.Append(_options.PropertyNameDelimiter + m.Member.Name);
             return m;
         }
@@ -54,50 +56,33 @@ internal class AzureTableQueryTranslator : ExpressionVisitor
         return m;
     }
 
-    private string ValueAsString(object value)
+    private static string ValueAsString(object? value)
     {
-        if (value == null)
+        if (value is null)
         {
             return "NULL";
         }
 
         var ic = CultureInfo.InvariantCulture;
-        switch (Type.GetTypeCode(value.GetType()))
+
+        return Type.GetTypeCode(value.GetType()) switch
         {
-            case TypeCode.DateTime:
-                return $"datetime'{(DateTime)value:o}'";
-            case TypeCode.String:
-                return $"'{value.ToString().Replace("'", "''")}'";
-            case TypeCode.Boolean:
-                return (bool)value ? "true" : "false";
-            case TypeCode.Decimal:
-                return ((decimal)value).ToString(ic);
-            case TypeCode.Double:
-                return ((double)value).ToString(ic);
-            case TypeCode.Single:
-                return ((float)value).ToString(ic);
-            case TypeCode.Int16:
-                return ((short)value).ToString(ic);
-            case TypeCode.Int32:
-                return ((int)value).ToString(ic);
-            case TypeCode.Int64:
-                return ((long)value).ToString(ic);
-            case TypeCode.UInt16:
-                return ((ushort)value).ToString(ic);
-            case TypeCode.UInt32:
-                return ((uint)value).ToString(ic);
-            case TypeCode.UInt64:
-                return ((ulong)value).ToString(ic);
-            case TypeCode.Object:
-                if (value is DateTimeOffset)
-                {
-                    return $"datetime'{(DateTimeOffset)value:o}'";
-                }
-
-                throw new NotSupportedException($"Unsupported type:{value.GetType()}");
-        }
-
-        return value.ToString();
+            TypeCode.DateTime => $"datetime'{(DateTime)value:o}'",
+            TypeCode.String => $"'{value.ToString()!.Replace("'", "''")}'",
+            TypeCode.Boolean => (bool)value ? "true" : "false",
+            TypeCode.Decimal => ((decimal)value).ToString(ic),
+            TypeCode.Double => ((double)value).ToString(ic),
+            TypeCode.Single => ((float)value).ToString(ic),
+            TypeCode.Int16 => ((short)value).ToString(ic),
+            TypeCode.Int32 => ((int)value).ToString(ic),
+            TypeCode.Int64 => ((long)value).ToString(ic),
+            TypeCode.UInt16 => ((ushort)value).ToString(ic),
+            TypeCode.UInt32 => ((uint)value).ToString(ic),
+            TypeCode.UInt64 => ((ulong)value).ToString(ic),
+            TypeCode.Object when value is DateTimeOffset offset => $"datetime'{offset:o}'",
+            TypeCode.Object => throw new NotSupportedException($"Unsupported type:{value.GetType()}"),
+            _ => value.ToString()!
+        };
     }
 
     protected override Expression VisitConstant(ConstantExpression c)
@@ -137,51 +122,21 @@ internal class AzureTableQueryTranslator : ExpressionVisitor
         Visit(node.Left);
         _binarySideStack.Pop();
 
-        var op = string.Empty;
-
-        switch (node.NodeType)
+        var op = node.NodeType switch
         {
-            case ExpressionType.And:
-            case ExpressionType.AndAlso:
-                op = "and";
-                break;
-
-            case ExpressionType.Or:
-            case ExpressionType.OrElse:
-                op = "or";
-                break;
-
-            case ExpressionType.Not:
-                op = "not";
-                break;
-
-            case ExpressionType.Equal:
-                op = QueryComparisons.Equal;
-                break;
-
-            case ExpressionType.NotEqual:
-                op = QueryComparisons.NotEqual;
-                break;
-
-            case ExpressionType.LessThan:
-                op = QueryComparisons.LessThan;
-                break;
-
-            case ExpressionType.LessThanOrEqual:
-                op = QueryComparisons.LessThanOrEqual;
-                break;
-
-            case ExpressionType.GreaterThan:
-                op = QueryComparisons.GreaterThan;
-                break;
-
-            case ExpressionType.GreaterThanOrEqual:
-                op = QueryComparisons.GreaterThanOrEqual;
-                break;
-
-            default:
-                throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
-        }
+            ExpressionType.And => "and",
+            ExpressionType.AndAlso => "and",
+            ExpressionType.Or => "or",
+            ExpressionType.OrElse => "or",
+            ExpressionType.Not => "not",
+            ExpressionType.Equal => QueryComparisons.Equal,
+            ExpressionType.NotEqual => QueryComparisons.NotEqual,
+            ExpressionType.LessThan => QueryComparisons.LessThan,
+            ExpressionType.LessThanOrEqual => QueryComparisons.LessThanOrEqual,
+            ExpressionType.GreaterThan => QueryComparisons.GreaterThan,
+            ExpressionType.GreaterThanOrEqual => QueryComparisons.GreaterThanOrEqual,
+            _ => throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported")
+        };
 
         _filter.Append($" {op} ");
 

@@ -1,7 +1,11 @@
 using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using ManagedCode.Database.AzureTable;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
+using Microsoft.Azure.Cosmos.Table;
+using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
@@ -25,6 +29,21 @@ namespace ManagedCode.Database.Tests
         protected override TableId GenerateId()
         {
             return new(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        }
+
+        [Fact]
+        public override async Task InsertOneItem()
+        {
+            var id = GenerateId();
+            var firstItem = CreateNewItem(id);
+            var secondItem = CreateNewItem(id);
+
+            //  SEPARATE TESTS IN TWO
+            var insertFirst = await Collection.InsertAsync(firstItem);
+            var insertSecond = async () => await Collection.InsertAsync(secondItem);
+
+            insertFirst.Should().NotBeNull();
+            await insertSecond.Should().ThrowAsync<StorageException>();
         }
 
         public override void Dispose()

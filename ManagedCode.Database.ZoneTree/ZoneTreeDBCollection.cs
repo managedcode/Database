@@ -1,5 +1,4 @@
 using ManagedCode.Database.Core;
-using Microsoft.Extensions.Logging;
 using Tenray.ZoneTree.Options;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
@@ -8,9 +7,9 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 
-    public ZoneTreeDBCollection(ILogger logger, string path)
+    public ZoneTreeDBCollection(string path)
     {
-        _zoneTree = new ZoneTreeWrapper<TId, TItem>(logger, path);
+        _zoneTree = new ZoneTreeWrapper<TId, TItem>(path);
         _zoneTree.Open(new ZoneTreeOptions<TId, TItem?>()
         {
             Path = path,
