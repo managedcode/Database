@@ -9,13 +9,14 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests;
 
-public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
+public abstract class BaseRepositoryTests<TId, TItem> : IAsyncLifetime where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
 
     protected abstract TId GenerateId();
 
-    public abstract void Dispose();
+    public abstract Task InitializeAsync();
+    public abstract Task DisposeAsync();
 
     protected TItem CreateNewItem()
     {
@@ -365,7 +366,8 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
         await Collection.InsertAsync(item1);
         await Collection.InsertAsync(item2);
 
-        var item = await Collection.Query.Where(w => w.StringData == item1.StringData || w.StringData == item2.StringData)
+        var item = await Collection.Query
+            .Where(w => w.StringData == item1.StringData || w.StringData == item2.StringData)
             .ToAsyncEnumerable().FirstOrDefaultAsync();
         item.Should().NotBeNull();
     }
@@ -470,8 +472,6 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
 
         items.Count.Should().Be(10);
         items.First().IntData.Should().Be(50);
-
-
     }
 
     [Fact]
@@ -506,7 +506,8 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
         var items = await Collection.Query.Where(w => w.IntData >= 50).OrderBy(o => o.IntData).Skip(10).Take(2)
             .ToListAsync();
 
-        var itemsByDescending = await Collection.Query.Where(w => w.IntData >= 50).OrderByDescending(o => o.IntData).Take(10)
+        var itemsByDescending = await Collection.Query.Where(w => w.IntData >= 50).OrderByDescending(o => o.IntData)
+            .Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(2);
@@ -540,7 +541,7 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
             .ToListAsync();
 
         var itemsThenByDescending = await Collection.Query.Where(w => w.IntData >= 50)
-            .OrderByDescending(o => o.IntData, t => t.DateTimeData).Take(10)
+            .OrderByDescending(o => o.IntData).OrderByDescending(t => t.DateTimeData).Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(2);

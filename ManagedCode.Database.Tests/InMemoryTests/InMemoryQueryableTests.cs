@@ -1,10 +1,11 @@
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.InMemory;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 
-namespace ManagedCode.Database.Tests;
+namespace ManagedCode.Database.Tests.InMemoryTests;
 
-public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
+public class InMemoryDataBaseTests : BaseRepositoryQueryableTests<int, InMemoryItem>
 {
     private static volatile int _count;
     private InMemoryDataBase _databaseb;

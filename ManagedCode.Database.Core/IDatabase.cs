@@ -15,5 +15,5 @@ public interface IDatabase : IDisposable, IAsyncDisposable
 
 public interface IDatabase<out T> : IDatabase
 {
-    T DataBase { get; }
+    T DBClient { get; }
 }

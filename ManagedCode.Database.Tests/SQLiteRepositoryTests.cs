@@ -11,27 +11,33 @@ namespace ManagedCode.Database.Tests
 {
     public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>
     {
-        public const string ConnectionString = "sqlite_test.db";
-
         private static int _count;
-
-        private SqLiteDatabase _databaseb;
+        private readonly SqLiteDatabase _database;
 
         public SQLiteRepositoryTests()
         {
-            _databaseb = new SqLiteDatabase(new SQLiteRepositoryOptions
+            _database = new SqLiteDatabase(new SQLiteRepositoryOptions
             {
-                ConnectionString = GetTempDbName()
+                ConnectionString = "sqlite_test.db"
             });
-            _databaseb.InitializeAsync().Wait();
+        }
+
+        public override async Task InitializeAsync()
+        {
+            await _database.InitializeAsync();
+        }
+
+        public override async Task DisposeAsync()
+        {
+            await _database.DisposeAsync();
         }
 
         private static string GetTempDbName()
         {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ConnectionString);
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + "sqlite_test.db");
         }
 
-        protected override IDBCollection<int, SQLiteDbItem> Collection => _databaseb.GetCollection<int, SQLiteDbItem>();
+        protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
 
         protected override int GenerateId()
         {
@@ -56,11 +62,5 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
         }
-
-        public override void Dispose()
-        {
-            _databaseb.Dispose();
-        }
     }
 }
-

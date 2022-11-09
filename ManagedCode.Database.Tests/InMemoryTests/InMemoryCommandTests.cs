@@ -1,9 +1,9 @@
 ﻿using ManagedCode.Database.Core.InMemory;
 using ManagedCode.Database.Core;
-using ManagedCode.Database.Tests.Base;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 
-namespace ManagedCode.Database.Tests.InMemory
+namespace ManagedCode.Database.Tests.InMemoryTests
 {
     public class InMemoryCommandTests : BaseCommandTests<int, InMemoryItem>
     {

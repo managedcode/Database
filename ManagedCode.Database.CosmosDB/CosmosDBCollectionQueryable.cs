@@ -11,7 +11,7 @@ using ManagedCode.Database.CosmosDB.Extensions;
 namespace ManagedCode.Database.CosmosDB;
 
 public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem>
-    where TItem : CosmosDbItem, IItem<string>, new()
+    where TItem : CosmosDBItem, IItem<string>, new()
 {
     private readonly IQueryable<TItem> _query;
 

@@ -36,7 +36,7 @@ public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
         throw new NotImplementedException();
     }
 
-    public ZoneTreeDatabase DataBase { get; }
+    public ZoneTreeDatabase DBClient { get; }
 
     public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
@@ -50,7 +50,7 @@ public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        lock (DataBase)
+        lock (DBClient)
         {
             var className = typeof(TItem).FullName;
             if (_collection.TryGetValue(className, out var collection))
