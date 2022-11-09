@@ -10,7 +10,6 @@ namespace ManagedCode.Database.SQLite;
 public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
 {
     public SqLiteDatabase(
-        [System.Diagnostics.CodeAnalysis.NotNull]
         SQLiteRepositoryOptions options)
     {
         DataBase = options.Connection ?? new SQLiteConnection(options.ConnectionString);

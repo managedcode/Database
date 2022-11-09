@@ -1,41 +1,52 @@
+using System.Threading.Tasks;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
+using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-
-    public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>
+    public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
     {
-        public const string ConnectionString =
-            "mongodb://localhost:27017";
-
-        private MongoDbDatabase _databaseb;
+        private readonly MongoDbDatabase _database;
+        private readonly TestcontainersContainer _mongoDBContainer;
 
         public MongoDbRepositoryTests()
         {
-
-            _databaseb = new MongoDbDatabase(new MongoDbRepositoryOptions()
+            _database = new MongoDbDatabase(new MongoDbRepositoryOptions()
             {
-                ConnectionString = ConnectionString,
+                ConnectionString = "mongodb://localhost:27017",
                 DataBaseName = "db"
             });
-            _databaseb.InitializeAsync().Wait();
 
+            _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
+                .WithImage("mongo")
+                .WithPortBinding(27017, 27017)
+                .Build();
         }
 
-        protected override IDBCollection<ObjectId, TestMongoDbItem> Collection => _databaseb.GetCollection<ObjectId, TestMongoDbItem>();
+        protected override IDBCollection<ObjectId, TestMongoDbItem> Collection =>
+            _database.GetCollection<ObjectId, TestMongoDbItem>();
 
         protected override ObjectId GenerateId()
         {
             return ObjectId.GenerateNewId();
         }
 
-        public override void Dispose()
+
+        public override async Task InitializeAsync()
         {
-            _databaseb.Dispose();
+            await _mongoDBContainer.StartAsync();
+            await _database.InitializeAsync();
+        }
+
+        public override async Task DisposeAsync()
+        {
+            await _database.DisposeAsync();
+            await _mongoDBContainer.StopAsync();
         }
     }
 }
-

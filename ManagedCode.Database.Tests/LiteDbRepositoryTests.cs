@@ -8,27 +8,34 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>, IDisposable
+    public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
     {
-        public const string ConnectionString = "litedb_test.db";
-        private LiteDbDatabase _databaseb;
+        private readonly LiteDbDatabase _database;
 
         public LiteDbRepositoryTests()
         {
-            _databaseb = new LiteDbDatabase(new LiteDbRepositoryOptions
+            _database = new LiteDbDatabase(new LiteDbRepositoryOptions
             {
-                ConnectionString = ConnectionString
+                ConnectionString = "litedb_test.db"
             });
-            _databaseb.InitializeAsync().Wait();
         }
 
-
-
-        protected override IDBCollection<string, TestLiteDbItem> Collection => _databaseb.GetCollection<string, TestLiteDbItem>();
+        protected override IDBCollection<string, TestLiteDbItem> Collection =>
+            _database.GetCollection<string, TestLiteDbItem>();
 
         protected override string GenerateId()
         {
             return Guid.NewGuid().ToString();
+        }
+
+        public override async Task InitializeAsync()
+        {
+            await _database.InitializeAsync();
+        }
+
+        public override async Task DisposeAsync()
+        {
+            await _database.DisposeAsync();
         }
 
         [Fact]
@@ -48,11 +55,5 @@ namespace ManagedCode.Database.Tests
             await act.Should().ThrowAsync<Exception>()
                 .WithMessage("Cannot insert duplicate key in unique index '_id'*");
         }
-
-        public override void Dispose()
-        {
-            _databaseb.Dispose();
-        }
     }
 }
-

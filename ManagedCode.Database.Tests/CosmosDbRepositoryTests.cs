@@ -1,85 +1,102 @@
 using System;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.CosmosDB;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests;
+
+public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbItem>
 {
-    public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbItem>
+    private readonly CosmosDatabase _database;
+    private readonly TestcontainersContainer _cosmosDBContainer;
+
+    public CosmosDbRepositoryTests()
     {
-        public const string ConnectionString =
-            "AccountEndpoint=http://localhost:3000/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+        _cosmosDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
+            .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
+            .WithPortBinding(8081, 8081)
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "30")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+            .WithWaitStrategy(Wait.ForUnixContainer())
+            .Build();
 
-        private CosmosDatabase _databaseb;
-        public CosmosDbRepositoryTests()
+        _database = new CosmosDatabase(new CosmosDbRepositoryOptions
         {
-            _databaseb = new CosmosDatabase(new CosmosDbRepositoryOptions
-            {
-                ConnectionString = ConnectionString,
-                DatabaseName = "database",
-                CollectionName = "container",
-            });
-        }
+            ConnectionString =
+                "AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+            DatabaseName = "database",
+            CollectionName = "container",
+        });
+    }
 
-        protected override IDBCollection<string, TestCosmosDbItem> Collection => _databaseb.GetCollection<TestCosmosDbItem>();
+    protected override IDBCollection<string, TestCosmosDbItem> Collection =>
+        _database.GetCollection<TestCosmosDbItem>();
 
-        protected override string GenerateId()
-        {
-            return Guid.NewGuid().ToString();
-        }
+    protected override string GenerateId()
+    {
+        return Guid.NewGuid().ToString();
+    }
 
-        [Fact]
-        public override async Task FindOrderThen()
-        {
-            Func<Task> act = () => base.FindOrderThen();
+    public override async Task InitializeAsync()
+    {
+        await _cosmosDBContainer.StartAsync();
+        await _database.InitializeAsync();
+    }
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("*The order by query does not have a corresponding composite index that it can be served from*");
-        }
+    public override async Task DisposeAsync()
+    {
+        await _database.DisposeAsync();
+        await _cosmosDBContainer.StopAsync();
+    }
 
-        [Fact]
-        public override async Task Insert99Items()
-        {
-            Func<Task> act = () => base.Insert99Items();
+    [Fact]
+    public override async Task FindOrderThen()
+    {
+        Func<Task> act = () => base.FindOrderThen();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("*Resource with specified id or name already exists*");
-        }
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage(
+                "*The order by query does not have a corresponding composite index that it can be served from*");
+    }
 
-        [Fact]
-        public override async Task UpdateOneItem()
-        {
-            Func<Task> act = () => base.UpdateOneItem();
+    [Fact]
+    public override async Task Insert99Items()
+    {
+        Func<Task> act = () => base.Insert99Items();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("*Resource Not Found*");
-        }
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("*Resource with specified id or name already exists*");
+    }
 
-        [Fact]
-        public override async Task InsertOneItem()
-        {
-            Func<Task> act = () => base.InsertOneItem();
+    [Fact]
+    public override async Task UpdateOneItem()
+    {
+        Func<Task> act = () => base.UpdateOneItem();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("*Resource with specified id or name already exists*");
-        }
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("*Resource Not Found*");
+    }
 
-        [Fact]
-        public override async Task Update5Items()
-        {
-            Func<Task> act = () => base.Update5Items();
+    [Fact]
+    public override async Task InsertOneItem()
+    {
+        Func<Task> act = () => base.InsertOneItem();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("*Resource Not Found*");
-        }
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("*Resource with specified id or name already exists*");
+    }
 
-        public override void Dispose()
-        {
-            _databaseb.Dispose();
-        }
+    [Fact]
+    public override async Task Update5Items()
+    {
+        Func<Task> act = () => base.Update5Items();
+
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("*Resource Not Found*");
     }
 }
-
