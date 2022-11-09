@@ -13,9 +13,11 @@ namespace ManagedCode.Database.Tests.InMemoryTests
         public InMemoryCommandTests()
         {
             _databaseb = new InMemoryDataBase();
+            _databaseb.InitializeAsync().Wait();
         }
 
-        protected override IDBCollection<int, InMemoryItem> Collection => _databaseb.GetCollection<int, InMemoryItem>();
+        protected override IDBCollection<int, InMemoryItem> Collection 
+            => _databaseb.GetCollection<int, InMemoryItem>();
 
         protected override int GenerateId()
         {
