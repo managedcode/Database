@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace ManagedCode.Database.Tests.Base
+namespace ManagedCode.Database.Tests.BaseTests
 {
     public abstract class BaseCommandTests<TId, TItem> : IDisposable
         where TItem : IBaseItem<TId>, new()

@@ -7,9 +7,9 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests;
+namespace ManagedCode.Database.Tests.BaseTests;
 
-public abstract class QueryableTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
+public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
 
