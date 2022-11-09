@@ -303,6 +303,30 @@ namespace ManagedCode.Database.Tests.Base
         }
 
         [Fact]
+        public virtual async Task DeleteByQuery_WhenItemsDoesntExist()
+        {
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            await Collection.InsertOrUpdateAsync(list);
+
+            var query1 = "test0";
+            var query2 = "test1";
+            var query3 = "test2";
+
+            var equals = await Collection.Query.Where(w => w.StringData == query1).DeleteAsync();
+            var or = await Collection.Query.Where(w => w.StringData == query2 || w.StringData == query3).DeleteAsync();
+
+            equals.Should().Be(0);
+            or.Should().Be(0);
+        }
+
+        [Fact]
         public virtual async Task DeleteAll()
         {
             int itemsCount = 5;
