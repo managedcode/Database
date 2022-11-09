@@ -4,7 +4,7 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests;
 
-public class InMemoryDataBaseTests : BaseRepositoryTests<int, InMemoryItem>
+public class InMemoryDataBaseTests : QueryableTests<int, InMemoryItem>
 {
     private static volatile int _count;
     private InMemoryDataBase _databaseb;

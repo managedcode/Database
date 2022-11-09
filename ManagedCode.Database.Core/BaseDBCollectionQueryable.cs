@@ -27,25 +27,9 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelectorF,
-        Expression<Func<TSource, object>> keySelectorS)
-    {
-        OrderByPredicates.Add(keySelectorF);
-        OrderByPredicates.Add(keySelectorS);
-        return this;
-    }
-
     public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
     {
         OrderByDescendingPredicates.Add(keySelector);
-        return this;
-    }
-
-    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelectorF,
-        Expression<Func<TSource, object>> keySelectorS)
-    {
-        OrderByDescendingPredicates.Add(keySelectorF);
-        OrderByDescendingPredicates.Add(keySelectorS);
         return this;
     }
 

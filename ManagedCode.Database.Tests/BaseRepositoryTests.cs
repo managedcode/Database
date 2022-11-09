@@ -540,7 +540,7 @@ public abstract class BaseRepositoryTests<TId, TItem> : IDisposable where TItem 
             .ToListAsync();
 
         var itemsThenByDescending = await Collection.Query.Where(w => w.IntData >= 50)
-            .OrderByDescending(o => o.IntData, t => t.DateTimeData).Take(10)
+            .OrderByDescending(o => o.IntData).OrderByDescending(t => t.DateTimeData).Take(10)
             .ToListAsync();
 
         items.Count.Should().Be(2);
