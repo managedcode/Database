@@ -3,7 +3,7 @@ using ManagedCode.Database.CosmosDB;
 
 namespace ManagedCode.Database.Tests.Common;
 
-public class TestCosmosDbItem : CosmosDbItem, IBaseItem<string>
+public class TestCosmosDbItem : CosmosDBItem, IBaseItem<string>
 {
     public string StringData { get; set; }
     public int IntData { get; set; }

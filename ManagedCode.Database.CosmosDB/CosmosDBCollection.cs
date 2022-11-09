@@ -11,32 +11,31 @@ using Microsoft.Azure.Cosmos.Linq;
 namespace ManagedCode.Database.CosmosDB;
 
 public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
-    where TItem : CosmosDbItem, IItem<string>, new()
+    where TItem : CosmosDBItem, IItem<string>, new()
 {
-    private readonly int _capacity = 50;
-    private readonly CosmosDbAdapter<TItem> _cosmosDbAdapter;
+    private const int Capacity = 50;
+
     private readonly bool _splitByType;
+    private readonly Container _container;
     private readonly bool _useItemIdAsPartitionKey;
 
-    public CosmosDBCollection(CosmosDbRepositoryOptions options)
+    public CosmosDBCollection(CosmosDBRepositoryOptions options, Container container)
     {
+        _container = container;
         _splitByType = options.SplitByType;
         _useItemIdAsPartitionKey = options.UseItemIdAsPartitionKey;
-        _cosmosDbAdapter = new CosmosDbAdapter<TItem>(options.ConnectionString, options.CosmosClientOptions,
-            options.DatabaseName, options.CollectionName);
     }
 
     public IDBCollectionQueryable<TItem> Query
     {
         get
         {
-            var container = _cosmosDbAdapter.GetContainer().Result;
             if (!_splitByType)
             {
-                return new CosmosDBCollectionQueryable<TItem>(container.GetItemLinqQueryable<TItem>());
+                return new CosmosDBCollectionQueryable<TItem>(_container.GetItemLinqQueryable<TItem>());
             }
 
-            var queryable = container.GetItemLinqQueryable<TItem>().Where(SplitByType());
+            var queryable = _container.GetItemLinqQueryable<TItem>().Where(SplitByType());
             return new CosmosDBCollectionQueryable<TItem>(queryable);
         }
     }
@@ -50,8 +49,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<TItem?> GetAsync(string id, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var feedIterator = container.GetItemLinqQueryable<TItem>()
+        var feedIterator = _container.GetItemLinqQueryable<TItem>()
             .Where(w => w.Id == id)
             .ToFeedIterator();
 
@@ -77,8 +75,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<long> CountAsync(CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-        return await container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
+        return await _container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
     }
 
     #endregion
@@ -96,9 +93,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-
-        var result = await container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
+        var result = await _container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
         return result.Resource;
     }
 
@@ -106,13 +101,12 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     {
         var count = 0;
 
-        var container = await _cosmosDbAdapter.GetContainer();
 
-        var batch = new List<Task>(_capacity);
+        var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
             token.ThrowIfCancellationRequested();
-            batch.Add(container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token)
+            batch.Add(_container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
@@ -145,20 +139,18 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var result = await container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
+        var result = await _container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
         return result.Resource;
     }
 
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
         var count = 0;
-        var batch = new List<Task>(_capacity);
+        var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
             token.ThrowIfCancellationRequested();
-            batch.Add(container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token)
+            batch.Add(_container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
@@ -191,20 +183,18 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var result = await container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
+        var result = await _container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
         return result.Resource;
     }
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
         var count = 0;
-        var batch = new List<Task>(_capacity);
+        var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
             token.ThrowIfCancellationRequested();
-            batch.Add(container.ReplaceItemAsync(item, item.Id, cancellationToken: token)
+            batch.Add(_container.ReplaceItemAsync(item, item.Id, cancellationToken: token)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
@@ -237,12 +227,10 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<bool> DeleteAsync(string id, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-
         if (_useItemIdAsPartitionKey)
         {
             var deleteItemResult =
-                await container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: token);
+                await _container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: token);
             return deleteItemResult != null;
         }
 
@@ -252,22 +240,20 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             return false;
         }
 
-        var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
         return result != null;
     }
 
     public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
-        var result = await container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
         return result != null;
     }
 
     public async Task<int> DeleteAsync(IEnumerable<string> ids, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
         var count = 0;
-        var batch = new List<Task>(_capacity);
+        var batch = new List<Task>(Capacity);
         foreach (var item in ids)
         {
             token.ThrowIfCancellationRequested();
@@ -300,13 +286,12 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var container = await _cosmosDbAdapter.GetContainer();
         var count = 0;
-        var batch = new List<Task>(_capacity);
+        var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
             token.ThrowIfCancellationRequested();
-            batch.Add(container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
+            batch.Add(_container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
@@ -341,8 +326,8 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             return delete > 0;
         }
 
-        var container = await _cosmosDbAdapter.GetContainer();
-        var result = await container.DeleteContainerAsync(cancellationToken: token);
+
+        var result = await _container.DeleteContainerAsync(cancellationToken: token);
         return result != null;
     }
 

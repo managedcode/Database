@@ -5,15 +5,15 @@ using Newtonsoft.Json;
 
 namespace ManagedCode.Database.CosmosDB;
 
-public class CosmosDbItem : IItem<string>
+public class CosmosDBItem : IItem<string>
 {
-    public CosmosDbItem()
+    public CosmosDBItem()
     {
         Id = $"{Guid.NewGuid():N}";
         Type = GetType().Name;
     }
 
-    public CosmosDbItem(string id)
+    public CosmosDBItem(string id)
     {
         Id = id;
         Type = GetType().Name;

@@ -18,7 +18,7 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
     {
         _options = options;
         var client = new MongoClient(options.ConnectionString);
-        DataBase = client.GetDatabase(options.DataBaseName);
+        DBClient = client.GetDatabase(options.DataBaseName);
         IsInitialized = true;
     }
 
@@ -27,7 +27,7 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
         throw new NotImplementedException();
     }
 
-    public IMongoDatabase DataBase { get; }
+    public IMongoDatabase DBClient { get; }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
@@ -51,7 +51,7 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
         }
 
         var collectionName = string.IsNullOrEmpty(_options.CollectionName) ? typeof(TItem).Name.Pluralize() : _options.CollectionName;
-        return new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
+        return new MongoDbCollection<TItem>(DBClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
     }
 
     public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
@@ -61,6 +61,6 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new MongoDbCollection<TItem>(DataBase.GetCollection<TItem>(name, new MongoCollectionSettings()));
+        return new MongoDbCollection<TItem>(DBClient.GetCollection<TItem>(name, new MongoCollectionSettings()));
     }
 }

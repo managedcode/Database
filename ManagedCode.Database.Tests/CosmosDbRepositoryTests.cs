@@ -25,12 +25,13 @@ public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbI
             .WithWaitStrategy(Wait.ForUnixContainer())
             .Build();
 
-        _database = new CosmosDatabase(new CosmosDbRepositoryOptions
+        _database = new CosmosDatabase(new CosmosDBRepositoryOptions
         {
             ConnectionString =
                 "AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
             CollectionName = "container",
+            AllowTableCreation = true,
         });
     }
 
