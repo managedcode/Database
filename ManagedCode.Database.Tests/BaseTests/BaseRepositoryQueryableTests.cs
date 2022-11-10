@@ -22,6 +22,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
     public abstract void Dispose();
 
+    public int CountItem = 10;
+
     protected TItem CreateNewItem()
     {
         var rnd = new Random();
@@ -47,50 +49,34 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereQuery_ReturnOk()
     {
-       /* var count = 0;
+        await Collection.DeleteAllAsync();
+
         var guid = Guid.NewGuid().ToString();
 
-        var item = CreateNewItem();
-        item.StringData = guid;
-        await Collection.InsertAsync(item);
-
-        item = CreateNewItem();
-        item.StringData = guid;
-        await Collection.InsertAsync(CreateNewItem());
-
-        item = CreateNewItem();
-        item.StringData = guid;
-        await Collection.InsertAsync(CreateNewItem()); 
-
-        item = CreateNewItem();
-        item.StringData = guid;
-        await Collection.InsertAsync(CreateNewItem()); 
-
-        item = CreateNewItem();
-        item.StringData = guid;
-        await Collection.InsertAsync(CreateNewItem());
-       
+        for (var i = 0; i < CountItem; i++)
+        {
+            var item = CreateNewItem();
+            item.StringData = guid;
+            await Collection.InsertAsync(item);
+        }
 
         var countResult = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
 
-        countResult.Should().Be(count);*/
+        countResult.Should().Be(CountItem);
     }
 
     [Fact]
     public virtual async Task WhereQuery_ReturnNull()
     {
-        var count = 0;
+        await Collection.DeleteAllAsync();
+
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
-        for (var i = 0; i < 10; i++)
+
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                count++;
-            }
-
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -104,19 +90,16 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
-
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
             await Collection.InsertAsync(item);
-            count++;
         }
 
         var itemsResult = await Collection.Query.OrderBy(o => o.IntData).ToListAsync();
 
-        itemsResult.Count.Should().Be(count);
+        itemsResult.Count.Should().Be(CountItem);
     }
 
     [Fact]
@@ -124,39 +107,54 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
-
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
             await Collection.InsertAsync(item);
-            count++;
         }
 
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).ToListAsync();
 
-        itemsResult.Count.Should().Be(count);
+        itemsResult.Count.Should().Be(CountItem);
     }
 
-    [Fact]
+/*    [Fact]
     public virtual async Task TakeQuery_ReturnOk()
     {
         await Collection.DeleteAllAsync();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
             item.IntData = i;
             await Collection.InsertAsync(item);
         }
 
-        var itemsResult = await Collection.Query.Take(10).ToListAsync();
+        var itemsResult = await Collection.Query.Take(5).ToListAsync();
 
-        itemsResult.Count.Should().Be(10);
+        itemsResult.Count.Should().Be(5);
         itemsResult.First().IntData.Should().Be(0);
-    }  
-    
+    }*/
+/*
+    [Fact]
+    public virtual async Task TakeQueryBeyond_ReturnOk()
+    {
+        await Collection.DeleteAllAsync();
+
+        for (var i = 0; i < CountItem; i++)
+        {
+            var item = CreateNewItem();
+            item.IntData = i;
+            await Collection.InsertAsync(item);
+        }
+
+        var itemsResult = await Collection.Query.Take(CountItem + 5).ToListAsync();
+
+        itemsResult.Count.Should().Be(CountItem);
+        itemsResult.First().IntData.Should().Be(0);
+    }*/
+
     [Fact]
     public virtual async Task SkipQuery_ReturnOk()
     {
@@ -179,25 +177,19 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
 
-        itemsResult.Count.Should().Be(count);
+        itemsResult.Count.Should().Be(CountItem);
         itemsResult.First().IntData.Should().Be(0);
     }
 
@@ -209,15 +201,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -231,26 +219,20 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
 
-        itemsResult.Count.Should().Be(count);
-        itemsResult.First().IntData.Should().Be(8);
+        itemsResult.Count.Should().Be(CountItem);
+        itemsResult.First().IntData.Should().Be(CountItem - 1);
     }
 
     [Fact]
@@ -261,15 +243,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -285,15 +263,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -312,15 +286,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -333,25 +303,19 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(2).ToListAsync();
 
-        itemsResult.Count.Should().Be(count-2);
+        itemsResult.Count.Should().Be(CountItem - 2);
         itemsResult.First().IntData.Should().Be(4);
     }
 
@@ -363,15 +327,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -385,14 +345,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.IntData = i;
-            }
-
+            item.IntData = i;
             await Collection.InsertAsync(item);
         }
 
@@ -407,23 +363,16 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
-
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.IntData = i;
-            }
-            count++;
-
+            item.IntData = i;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
-        itemsResult.Count.Should().Be(count-2);
+        itemsResult.Count.Should().Be(CountItem  - 2);
     }
 
     [Fact]
@@ -431,12 +380,12 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-
+        for (var i = 0; i < CountItem; i++)
+        {
+            var item = CreateNewItem();
+            item.IntData = i;
+            await Collection.InsertAsync(item);
+        }
 
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
@@ -448,23 +397,16 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
-
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.IntData = i;
-                
-            }
-            count++;
+            item.IntData = i;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
-        itemsResult.Count.Should().Be(count - 2);
+        itemsResult.Count.Should().Be(CountItem - 2);
     }
 
     [Fact]
@@ -472,37 +414,43 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
-        await Collection.InsertAsync(CreateNewItem());
+        for (var i = 0; i < CountItem; i++)
+        {
+            await Collection.InsertAsync(CreateNewItem());
+        }
 
-        var itemsResult = await Collection.Query.Skip(1).Take(3).ToListAsync();
+        var itemsResult = await Collection.Query.Take(3).Skip(1).ToListAsync();
 
-        itemsResult.Count.Should().Be(3);
+        itemsResult.Count.Should().Be(2);
     }
 
-    //TODO Take beyond 
+/*    [Fact]
+    public virtual async Task TakeSkipQueryBeyond_ReturnOk()
+    {
+        await Collection.DeleteAllAsync();
+
+        for (var i = 0; i < CountItem; i++)
+        {
+            await Collection.InsertAsync(CreateNewItem());
+        }
+
+        var itemsResult = await Collection.Query.Take(CountItem + 5).Skip(5).ToListAsync();
+
+        itemsResult.Count.Should().Be(CountItem - 5);
+    }*/
 
     [Fact]
     public virtual async Task WhereOrderByTakeQuery_ReturnOk()
     {
         await Collection.DeleteAllAsync();
-
-        var count = 0;
+        
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -521,15 +469,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -544,19 +488,13 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -564,7 +502,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
             .OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(8);
+        itemsResult.First().IntData.Should().Be(CountItem - 1);
     }
 
     [Fact]
@@ -575,15 +513,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -598,27 +532,21 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
-        itemsResult.Count.Should().Be(count - 2);
-        itemsResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(CountItem - 2);
+        itemsResult.First().IntData.Should().Be(2);
     }
 
     [Fact]
@@ -629,15 +557,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -652,27 +576,21 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
             .OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
-        itemsResult.Count.Should().Be(count - 2);
-        itemsResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(CountItem - 2);
+        itemsResult.First().IntData.Should().Be(CountItem - 3);
     }
 
     [Fact]
@@ -683,15 +601,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -706,19 +620,13 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -726,7 +634,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
             .OrderBy(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(4);
+        itemsResult.First().IntData.Should().Be(2);
     }
 
     [Fact]
@@ -737,15 +645,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -760,19 +664,13 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     {
         await Collection.DeleteAllAsync();
 
-        var count = 0;
         var guid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-                count++;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
@@ -780,7 +678,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
             .OrderByDescending(o => o.IntData).Take(4).Skip(2).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(4);
+        itemsResult.First().IntData.Should().Be(CountItem - 3);
     }
 
     [Fact]
@@ -791,15 +689,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                item.IntData = i;
-            }
-
+            item.IntData = i;
+            item.StringData = guid;
             await Collection.InsertAsync(item);
         }
 
