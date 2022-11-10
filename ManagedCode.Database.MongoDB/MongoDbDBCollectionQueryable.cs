@@ -10,7 +10,7 @@ using MongoDB.Driver.Linq;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
+public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
 

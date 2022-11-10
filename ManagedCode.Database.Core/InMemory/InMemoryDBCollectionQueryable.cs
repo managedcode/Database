@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace ManagedCode.Database.Core.InMemory;
 
@@ -17,73 +19,48 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
 
     private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
     {
-        List<TItem> list;
-        lock (_storage)
+        var items = _storage.AsEnumerable();
+
+        foreach (var query in Predicates)
         {
-            IEnumerable<KeyValuePair<TId, TItem>> items = null;
-
-            foreach (var predicate in WherePredicates)
+            switch(query.QueryType)
             {
-                if (items == null)
-                {
-                    items = _storage.Where(x => predicate.Compile().Invoke(x.Value));
-                }
-                else
-                {
-                    items = items.Where(x => predicate.Compile().Invoke(x.Value));
-                }
+                case QueryType.Where:
+                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x.Value));
+                    break;
+
+                case QueryType.OrderBy:
+                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+
+                case QueryType.OrderByDescending:
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+
+               /* case QueryType.ThenBy:
+                    IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems = null;
+                    orderedItems = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+
+                case QueryType.ThenByDescending:
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;*/
+
+                case QueryType.Take:
+                    items = items.Take(query.Count.GetValueOrDefault());
+                    break;
+
+                case QueryType.Skip:
+                    items = items.Skip(query.Count.GetValueOrDefault());
+                    break;
+
+                default: 
+                    break;
             }
-
-
-            if (OrderByPredicates.Count > 0 || OrderByDescendingPredicates.Count > 0)
-            {
-                IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems = null;
-                bool firstOrderBy = true;
-                foreach (var predicate in OrderByPredicates)
-                {
-                    if (firstOrderBy)
-                    {
-                        orderedItems = items.OrderBy(x => predicate.Compile().Invoke(x.Value));
-                        firstOrderBy = false;
-                    }
-                    else
-                    {
-                        orderedItems = orderedItems.ThenBy(x => predicate.Compile().Invoke(x.Value));
-                    }
-                }
-
-                bool firstOrderByDescending = true;
-                foreach (var predicate in OrderByDescendingPredicates)
-                {
-                    if (firstOrderByDescending)
-                    {
-                        orderedItems = items.OrderByDescending(x => predicate.Compile().Invoke(x.Value));
-                        firstOrderByDescending = false;
-                    }
-                    else
-                    {
-                        orderedItems = orderedItems.ThenByDescending(x => predicate.Compile().Invoke(x.Value));
-                    }
-                }
-
-                items = orderedItems;
-            }
-
-
-            if (SkipValue.HasValue)
-            {
-                items = items.Skip(SkipValue.Value);
-            }
-
-            if (TakeValue.HasValue)
-            {
-                items = items.Take(TakeValue.Value);
-            }
-
-            foreach (var item in items)
-            {
-                yield return item;
-            }
+        }
+        foreach (var item in items)
+        {
+            yield return item;
         }
     }
 
@@ -111,8 +88,8 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
         int count = 0;
         foreach (var item in GetItemsInternal())
         {
-            count++;
             _storage.Remove(item.Key, out _);
+            count++;
         }
 
         return Task.FromResult(count);

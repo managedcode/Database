@@ -16,48 +16,51 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
         _connection = connection;
     }
 
+    private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
+    {
+        var items = _connection.Table<KeyValuePair<TId, TItem>>().AsEnumerable();
+
+        foreach (var query in Predicates)
+        {
+            switch (query.QueryType)
+            {
+                case QueryType.Where:
+                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x.Value));
+                    break;
+                case QueryType.OrderBy:
+                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+
+                case QueryType.OrderByDescending:
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+                case QueryType.Take:
+                    items = items.Take(query.Count.GetValueOrDefault());
+                    break;
+
+                case QueryType.Skip:
+                    items = items.Skip(query.Count.GetValueOrDefault());
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+    }
+
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        var query = _connection.Table<TItem>();
 
-        foreach (var predicate in WherePredicates)
+        foreach (var item in GetItemsInternal())
         {
-            query = query.Where(predicate);
+            yield return item.Value;
         }
 
-        if (OrderByPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByPredicates)
-            {
-                query = query.OrderBy(predicate);
-            }
-        }
-
-        if (OrderByDescendingPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByDescendingPredicates)
-            {
-                query = query.OrderByDescending(predicate);
-            }
-        }
-
-        SkipValue ??= 0;
-
-        if (TakeValue.HasValue)
-        {
-            foreach (var item in query.Skip(SkipValue.Value).Take(TakeValue.Value))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.Skip(SkipValue.Value))
-            {
-                yield return item;
-            }
-        }
     }
 
     public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
@@ -69,23 +72,25 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
     {
         await Task.Yield();
 
-        var query = _connection.Table<TItem>();
-        foreach (var predicate in WherePredicates)
+        int count = 0;
+
+        foreach (var item in GetItemsInternal())
         {
-            query = query.Where(predicate);
+            count++;
         }
 
-        return query.Count();
+        return count;
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        var ids = _connection.Table<TItem>().Where(WherePredicates.FirstOrDefault()).Select(s => s.Id);
-        var count = 0;
-        foreach (var id in ids)
+
+        int count = 0;
+
+        foreach (var item in GetItemsInternal())
         {
-            _connection.Delete<TItem>(id);
+            _connection.Delete<TItem>(item.Key);
             count++;
         }
 

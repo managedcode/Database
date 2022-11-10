@@ -9,7 +9,7 @@ using ManagedCode.Database.AzureTable.Extensions;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem> where TItem : ITableEntity, new()
+public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : ITableEntity, new()
 {
     private readonly AzureTableAdapter<TItem> _tableAdapter;
 

@@ -4,15 +4,17 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.SQLite;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class SQLiteRepositoryTests : BaseRepositoryTests<int, SQLiteDbItem>
+    public class SQLiteRepositoryTests : BaseRepositoryQueryableTests<int, SQLiteDbItem>
     {
         private static int _count;
         private readonly SqLiteDatabase _database;
+
 
         public SQLiteRepositoryTests()
         {
@@ -20,6 +22,7 @@ namespace ManagedCode.Database.Tests
             {
                 ConnectionString = "sqlite_test.db"
             });
+
         }
 
         public override async Task InitializeAsync()
@@ -32,12 +35,18 @@ namespace ManagedCode.Database.Tests
             await _database.DisposeAsync();
         }
 
+        public override void Dispose()
+        {
+            _database.Dispose();
+        }
+        
+
+        protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
+
         private static string GetTempDbName()
         {
             return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + "sqlite_test.db");
         }
-
-        protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
 
         protected override int GenerateId()
         {
@@ -45,22 +54,24 @@ namespace ManagedCode.Database.Tests
             return _count;
         }
 
-        [Fact]
-        public override async Task InsertOneItem()
-        {
-            Func<Task> act = () => base.InsertOneItem();
+        /* 
+          
+         [Fact]
+         public override async Task InsertOneItem()
+         {
+             Func<Task> act = () => base.InsertOneItem();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
-        }
+             await act.Should().ThrowAsync<Exception>()
+                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+         }
 
-        [Fact]
-        public override async Task Insert99Items()
-        {
-            Func<Task> act = () => base.Insert99Items();
+         [Fact]
+         public override async Task Insert99Items()
+         {
+             Func<Task> act = () => base.Insert99Items();
 
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
-        }
+             await act.Should().ThrowAsync<Exception>()
+                 .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");
+         }*/
     }
 }
