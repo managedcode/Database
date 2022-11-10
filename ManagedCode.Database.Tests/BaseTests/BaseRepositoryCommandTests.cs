@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests
 {
-    public abstract class BaseCommandTests<TId, TItem> : IDisposable
+    public abstract class BaseCommandTests<TId, TItem> : IAsyncLifetime, IDisposable
         where TItem : IBaseItem<TId>, new()
     {
         protected abstract IDBCollection<TId, TItem> Collection { get; }
@@ -17,6 +17,10 @@ namespace ManagedCode.Database.Tests.BaseTests
         protected abstract TId GenerateId();
 
         public abstract void Dispose();
+
+        public abstract Task InitializeAsync();
+
+        public abstract Task DisposeAsync();
 
         protected TItem CreateNewItem()
         {
@@ -259,6 +263,23 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
+        public virtual async Task DeleteListOfItems_WhenItemsDontExist()
+        {
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var deletedItems = await Collection.DeleteAsync(list);
+
+            deletedItems.Should().Be(0);
+            list.Count.Should().Be(itemsCount);
+        }
+
+        [Fact]
         public virtual async Task DeleteListOfItemsById()
         {
             int itemsCount = 5;
@@ -276,6 +297,25 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             items.Should().Be(itemsCount);
             deletedItems.Should().Be(itemsCount);
+        }
+
+        [Fact]
+        public virtual async Task DeleteListOfItemsById_WhenItemsDontExist()
+        {
+
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var ids = list.Select(item => item.Id);
+
+            var deletedItems = await Collection.DeleteAsync(ids);
+
+            deletedItems.Should().Be(0);
         }
 
         [Fact]
@@ -303,6 +343,30 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
+        public virtual async Task DeleteByQuery_WhenItemsDontExist()
+        {
+            int itemsCount = 5;
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            await Collection.InsertOrUpdateAsync(list);
+
+            var query1 = "test0";
+            var query2 = "test1";
+            var query3 = "test2";
+
+            var equals = await Collection.Query.Where(w => w.StringData == query1).DeleteAsync();
+            var or = await Collection.Query.Where(w => w.StringData == query2 || w.StringData == query3).DeleteAsync();
+
+            equals.Should().Be(0);
+            or.Should().Be(0);
+        }
+
+        [Fact]
         public virtual async Task DeleteAll()
         {
             int itemsCount = 5;
@@ -319,6 +383,16 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             deletedItems.Should().BeTrue();
             items.Should().Be(itemsCount);
+            count.Should().Be(0);
+        }
+
+        [Fact]
+        public virtual async Task DeleteAll_WhenNoItems()
+        {
+            var deletedItems = await Collection.DeleteAllAsync();
+            var count = await Collection.CountAsync();
+
+            deletedItems.Should().BeTrue();
             count.Should().Be(0);
         }
 
