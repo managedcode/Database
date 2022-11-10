@@ -2,6 +2,7 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.InMemory;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
+using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests.InMemoryTests;
 
@@ -27,6 +28,12 @@ public class InMemoryDataBaseTests : BaseRepositoryQueryableTests<int, InMemoryI
     {
         _databaseb.Dispose();
     }
+
+    public override async Task InitializeAsync() =>
+            await _databaseb.InitializeAsync();
+
+    public override async Task DisposeAsync() =>
+        await _databaseb.DisposeAsync();
 
 }
 

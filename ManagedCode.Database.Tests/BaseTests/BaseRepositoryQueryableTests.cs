@@ -9,11 +9,16 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests;
 
-public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable where TItem : IBaseItem<TId>, new()
+public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IAsyncLifetime
+    where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
 
     protected abstract TId GenerateId();
+
+    public abstract Task InitializeAsync();
+
+    public abstract Task DisposeAsync();
 
     public abstract void Dispose();
 
