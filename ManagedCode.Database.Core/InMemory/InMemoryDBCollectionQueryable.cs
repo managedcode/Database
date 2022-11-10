@@ -58,10 +58,10 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     break;
             }
         }
-            foreach (var item in items)
-            {
-                yield return item;
-            }
+        foreach (var item in items)
+        {
+            yield return item;
+        }
     }
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
@@ -88,8 +88,8 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
         int count = 0;
         foreach (var item in GetItemsInternal())
         {
-            count++;
             _storage.Remove(item.Key, out _);
+            count++;
         }
 
         return Task.FromResult(count);

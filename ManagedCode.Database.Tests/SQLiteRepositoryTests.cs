@@ -22,6 +22,7 @@ namespace ManagedCode.Database.Tests
             {
                 ConnectionString = "sqlite_test.db"
             });
+
         }
 
         public override async Task InitializeAsync()
@@ -42,6 +43,11 @@ namespace ManagedCode.Database.Tests
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
 
+        private static string GetTempDbName()
+        {
+            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + "sqlite_test.db");
+        }
+
         protected override int GenerateId()
         {
             _count++;
@@ -49,10 +55,6 @@ namespace ManagedCode.Database.Tests
         }
 
         /* 
-         private static string GetTempDbName()
-        {
-            return Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + "sqlite_test.db");
-        } 
           
          [Fact]
          public override async Task InsertOneItem()
