@@ -10,6 +10,8 @@ public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
 {
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = new Dictionary<string, IDisposable>();
+
         return Task.CompletedTask;
     }
 
@@ -21,12 +23,15 @@ public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
 
     protected override void DisposeInternal()
     {
-        foreach (var item in NativeClient)
+        lock (NativeClient)
         {
-            item.Value.Dispose();
-        }
+            foreach (var item in NativeClient)
+            {
+                item.Value.Dispose();
+            }
 
-        NativeClient.Clear();
+            NativeClient.Clear();
+        }
     }
 
     public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
