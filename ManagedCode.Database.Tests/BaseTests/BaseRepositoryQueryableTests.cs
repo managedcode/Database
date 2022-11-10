@@ -49,8 +49,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -68,8 +66,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -88,8 +84,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderByQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -105,8 +99,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderByDescendingQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -119,11 +111,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         itemsResult.Count.Should().Be(CountItem);
     }
 
-/*    [Fact]
+    [Fact]
     public virtual async Task TakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -135,13 +125,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         itemsResult.Count.Should().Be(5);
         itemsResult.First().IntData.Should().Be(0);
-    }*/
-/*
+    }
+
     [Fact]
     public virtual async Task TakeQueryBeyond_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -153,13 +141,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         itemsResult.Count.Should().Be(CountItem);
         itemsResult.First().IntData.Should().Be(0);
-    }*/
+    }
 
     [Fact]
     public virtual async Task SkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < 10; i++)
         {
             var item = CreateNewItem();
@@ -175,8 +161,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -196,8 +180,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -217,8 +199,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -238,8 +218,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -259,8 +237,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereTakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -281,8 +257,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereTakeQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -301,8 +275,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
     public virtual async Task WhereSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -322,8 +294,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereSkipQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -343,8 +313,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderByTakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -361,8 +329,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderBySkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -378,8 +344,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderByDescendingTakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -395,8 +359,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task OrderByDescendingSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             var item = CreateNewItem();
@@ -412,8 +374,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task TakeSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             await Collection.InsertAsync(CreateNewItem());
@@ -424,11 +384,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         itemsResult.Count.Should().Be(2);
     }
 
-/*    [Fact]
+    [Fact]
     public virtual async Task TakeSkipQueryBeyond_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         for (var i = 0; i < CountItem; i++)
         {
             await Collection.InsertAsync(CreateNewItem());
@@ -437,13 +395,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var itemsResult = await Collection.Query.Take(CountItem + 5).Skip(5).ToListAsync();
 
         itemsResult.Count.Should().Be(CountItem - 5);
-    }*/
+    }
 
     [Fact]
     public virtual async Task WhereOrderByTakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-        
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -464,8 +420,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByTakeQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -486,8 +440,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingTakeQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -508,8 +460,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingTakeQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -530,8 +480,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderBySkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -552,8 +500,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderBySkipQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -574,8 +520,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -596,8 +540,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingSkipQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -618,8 +560,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByTakeSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -640,8 +580,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByTakeSkipQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
@@ -662,8 +600,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingTakeSkipQuery_ReturnOk()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
 
         for (var i = 0; i < CountItem; i++)
@@ -684,8 +620,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     [Fact]
     public virtual async Task WhereOrderByDescendingTakeSkipQuery_ReturnNull()
     {
-        await Collection.DeleteAllAsync();
-
         var guid = Guid.NewGuid().ToString();
         var falseGuid = Guid.NewGuid().ToString();
 
