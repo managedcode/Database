@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -65,4 +65,4 @@ public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIte
     {
         throw new NotImplementedException();
     }
-}*/
+}

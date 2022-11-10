@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -82,4 +82,4 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
         var result = await _collection.DeleteManyAsync<TItem>(WherePredicates.FirstOrDefault(), cancellationToken);
         return Convert.ToInt32(result.DeletedCount);
     }
-}*/
+}

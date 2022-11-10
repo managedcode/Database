@@ -1,4 +1,4 @@
-/*using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -156,4 +156,4 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     {
         return new ValueTask(Task.CompletedTask);
     }
-}*/
+}
