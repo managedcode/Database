@@ -7,7 +7,7 @@ using SQLite;
 
 namespace ManagedCode.Database.SQLite;
 
-public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TItem : class, IItem<TId>, new()
+public class SQLiteDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : class, IItem<TId>, new()
 {
     private readonly SQLiteConnection _connection;
 

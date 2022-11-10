@@ -8,7 +8,7 @@ using System.Timers;
 
 namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryDBCollectionQueryable<TId, TItem> : NewBaseDBCollectionQueryable<TItem> where TId : notnull
+public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TId : notnull
 {
     private readonly ConcurrentDictionary<TId, TItem> _storage;
 
@@ -36,6 +36,15 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : NewBaseDBCollectionQuer
                 case QueryType.OrderByDescending:
                     items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
+
+               /* case QueryType.ThenBy:
+                    IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems = null;
+                    orderedItems = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;
+
+                case QueryType.ThenByDescending:
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    break;*/
 
                 case QueryType.Take:
                     items = items.Take(query.Count.GetValueOrDefault());

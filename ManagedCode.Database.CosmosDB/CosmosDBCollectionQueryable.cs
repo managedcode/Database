@@ -10,7 +10,7 @@ using ManagedCode.Database.CosmosDB.Extensions;
 
 namespace ManagedCode.Database.CosmosDB;
 
-public class CosmosDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem>
+public class CosmosDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem>
     where TItem : CosmosDBItem, IItem<string>, new()
 {
     private readonly IQueryable<TItem> _query;

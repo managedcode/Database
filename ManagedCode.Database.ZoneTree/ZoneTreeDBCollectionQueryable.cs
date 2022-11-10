@@ -2,7 +2,7 @@ using ManagedCode.Database.Core;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
-public class ZoneTreeDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TItem : IItem<TId>
+public class ZoneTreeDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : IItem<TId>
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 

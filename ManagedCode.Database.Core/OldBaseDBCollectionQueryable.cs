@@ -7,26 +7,13 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core;
 
-public abstract class NewBaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
+public abstract class OldBaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
 {
-    protected readonly List<QueryItem> Predicates = new();
-
-    protected enum QueryType
-    {
-        Where,
-        OrderBy,
-        OrderByDescending,
-        Take,
-        Skip,
-    }
-
-    protected struct QueryItem
-    {
-        public QueryType QueryType;
-        public Expression<Func<TSource, object>> ExpressionObject;
-        public Expression<Func<TSource, bool>> ExpressionBool;
-        public int? Count;
-    }
+    protected int? TakeValue;
+    protected int? SkipValue;
+    protected readonly List<Expression<Func<TSource, bool>>> WherePredicates = new();
+    protected readonly List<Expression<Func<TSource, object>>> OrderByPredicates = new();
+    protected readonly List<Expression<Func<TSource, object>>> OrderByDescendingPredicates = new();
 
     public abstract IAsyncEnumerable<TSource> ToAsyncEnumerable(CancellationToken cancellationToken = default);
     public abstract Task<TSource?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
@@ -35,31 +22,47 @@ public abstract class NewBaseDBCollectionQueryable<TSource> : IDBCollectionQuery
 
     public IDBCollectionQueryable<TSource> Where(Expression<Func<TSource, bool>> predicate)
     {
-        Predicates.Add(new QueryItem { QueryType = QueryType.Where, ExpressionBool = predicate});
+        WherePredicates.Add(predicate);
         return this;
     }
 
     public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
     {
-        Predicates.Add(new QueryItem { QueryType = QueryType.OrderBy, ExpressionObject = keySelector });
+        OrderByPredicates.Add(keySelector);
+        return this;
+    }
+
+    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelectorF,
+        Expression<Func<TSource, object>> keySelectorS)
+    {
+        OrderByPredicates.Add(keySelectorF);
+        OrderByPredicates.Add(keySelectorS);
         return this;
     }
 
     public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
     {
-        Predicates.Add(new QueryItem { QueryType = QueryType.OrderByDescending, ExpressionObject = keySelector });
+        OrderByDescendingPredicates.Add(keySelector);
+        return this;
+    }
+
+    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelectorF,
+        Expression<Func<TSource, object>> keySelectorS)
+    {
+        OrderByDescendingPredicates.Add(keySelectorF);
+        OrderByDescendingPredicates.Add(keySelectorS);
         return this;
     }
 
     public IDBCollectionQueryable<TSource> Take(int? count)
     {
-        Predicates.Add(new QueryItem {QueryType = QueryType.Take, Count = count });
+        TakeValue = count;
         return this;
     }
 
     public IDBCollectionQueryable<TSource> Skip(int count)
     {
-        Predicates.Add(new QueryItem { QueryType = QueryType.Skip, Count = count });
+        SkipValue = count;
         return this;
     }
 

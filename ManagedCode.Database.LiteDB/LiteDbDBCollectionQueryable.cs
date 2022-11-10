@@ -9,7 +9,7 @@ using ManagedCode.Database.LiteDB.Extensions;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem>
+public class LiteDbDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQueryable<TItem>
     where TItem : LiteDbItem<TId>, IItem<TId>, new()
 {
     private readonly ILiteCollection<TItem> _collection;
