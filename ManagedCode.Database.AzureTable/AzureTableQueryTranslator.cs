@@ -116,7 +116,7 @@ internal class AzureTableQueryTranslator : ExpressionVisitor
 
     protected override Expression VisitBinary(BinaryExpression node)
     {
-        _filter.Append("(");
+        _filter.Append('(');
 
         _binarySideStack.Push(BinarySide.Left);
         Visit(node.Left);
@@ -144,7 +144,7 @@ internal class AzureTableQueryTranslator : ExpressionVisitor
         Visit(node.Right);
         _binarySideStack.Pop();
 
-        _filter.Append(")");
+        _filter.Append(')');
 
         return node;
     }

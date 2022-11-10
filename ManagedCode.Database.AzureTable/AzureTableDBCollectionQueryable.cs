@@ -11,12 +11,13 @@ namespace ManagedCode.Database.AzureTable;
 
 public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : ITableEntity, new()
 {
-    private readonly AzureTableAdapter<TItem> _tableAdapter;
+    private readonly CloudTable _cloudTable;
 
-    public AzureTableDBCollectionQueryable(AzureTableAdapter<TItem> azureTableAdapter)
+    public AzureTableDBCollectionQueryable(CloudTable cloudTable)
     {
-        _tableAdapter = azureTableAdapter;
+        _cloudTable = cloudTable;
     }
+
 
     public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
@@ -24,24 +25,19 @@ public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryab
 
         query = query
             .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
             .OrderBy(OrderByPredicates)
             .OrderByDescending(OrderByDescendingPredicates)
             .Take(TakeValue)
             .Skip(SkipValue);
 
-        return _tableAdapter.ExecuteQuery(query, cancellationToken);
+        return _cloudTable.ExecuteQuery(query, cancellationToken);
     }
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = new TableQuery<TItem>();
+        var query = new TableQuery<TItem>().Where(WherePredicates);
 
-        query = query
-            .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-
-        return await _tableAdapter.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
+        return await _cloudTable.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
@@ -49,10 +45,10 @@ public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryab
         var query = new TableQuery<TItem>();
 
         query = query
-            .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
+            .Where(WherePredicates);
+        // .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
 
-        return await _tableAdapter
+        return await _cloudTable
             .ExecuteQuery(query, cancellationToken)
             .LongCountAsync(cancellationToken: cancellationToken);
     }
@@ -69,17 +65,18 @@ public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryab
 
             query = query
                 .Where(WherePredicates)
-                .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
-                .Take(_tableAdapter.BatchSize);
+                // .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
+                // TODO: check
+                .Take(100);
 
-            var items = await _tableAdapter
+            var items = await _cloudTable
                 .ExecuteQuery(query, cancellationToken)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             count = items.Count;
 
             cancellationToken.ThrowIfCancellationRequested();
-            totalCount += await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
+            totalCount += await _cloudTable.ExecuteBatchAsync(items.Select(s =>
                 TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
                 {
                     ETag = "*"
