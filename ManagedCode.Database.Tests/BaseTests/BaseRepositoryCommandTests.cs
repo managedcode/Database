@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests
 {
-    public abstract class BaseCommandTests<TId, TItem> : IDisposable
+    public abstract class BaseCommandTests<TId, TItem> : IAsyncLifetime, IDisposable
         where TItem : IBaseItem<TId>, new()
     {
         protected abstract IDBCollection<TId, TItem> Collection { get; }
@@ -17,6 +17,10 @@ namespace ManagedCode.Database.Tests.BaseTests
         protected abstract TId GenerateId();
 
         public abstract void Dispose();
+
+        public abstract Task InitializeAsync();
+
+        public abstract Task DisposeAsync();
 
         protected TItem CreateNewItem()
         {
