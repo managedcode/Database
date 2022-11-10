@@ -139,7 +139,6 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     public Task<bool> DeleteAllAsync(CancellationToken token = default)
     {
-        var count = _storage.Count;
         _storage.Clear();
         return Task.FromResult(_storage.Count == 0);
     }
