@@ -18,14 +18,14 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
     public CosmosDatabase(CosmosDBRepositoryOptions options)
     {
         _options = options;
-
-        NativeClient = new CosmosClient(options.ConnectionString, options.CosmosClientOptions);
-        NativeClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
-        NativeClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
     }
 
     protected override async Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
+        NativeClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
+        NativeClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
+
         if (_options.AllowTableCreation)
         {
             _database = await NativeClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
