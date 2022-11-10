@@ -7,33 +7,31 @@ using SQLite;
 
 namespace ManagedCode.Database.SQLite;
 
-public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
+public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
 {
     public SqLiteDatabase(
         SQLiteRepositoryOptions options)
     {
-        DBClient = options.Connection ?? new SQLiteConnection(options.ConnectionString);
+        NativeClient = options.Connection ?? new SQLiteConnection(options.ConnectionString);
         IsInitialized = true;
     }
 
-    public override Task Delete(CancellationToken token = default)
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
 
-    public SQLiteConnection DBClient { get; }
-
     protected override ValueTask DisposeAsyncInternal()
     {
-        DBClient.Close();
-        DBClient.Dispose();
+        NativeClient.Close();
+        NativeClient.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
-        DBClient.Close();
-        DBClient.Dispose();
+        NativeClient.Close();
+        NativeClient.Dispose();
     }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
@@ -48,6 +46,6 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new SQLiteDBCollection<TId, TItem>(DBClient);
+        return new SQLiteDBCollection<TId, TItem>(NativeClient);
     }
 }

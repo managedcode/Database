@@ -2,6 +2,7 @@
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
+using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests.InMemoryTests
 {
@@ -15,7 +16,8 @@ namespace ManagedCode.Database.Tests.InMemoryTests
             _databaseb = new InMemoryDataBase();
         }
 
-        protected override IDBCollection<int, InMemoryItem> Collection => _databaseb.GetCollection<int, InMemoryItem>();
+        protected override IDBCollection<int, InMemoryItem> Collection 
+            => _databaseb.GetCollection<int, InMemoryItem>();
 
         protected override int GenerateId()
         {
@@ -27,5 +29,11 @@ namespace ManagedCode.Database.Tests.InMemoryTests
         {
             _databaseb.Dispose();
         }
+
+        public override async Task InitializeAsync() =>
+            await _databaseb.InitializeAsync();
+
+        public override async Task DisposeAsync() =>
+            await _databaseb.DisposeAsync();
     }
 }

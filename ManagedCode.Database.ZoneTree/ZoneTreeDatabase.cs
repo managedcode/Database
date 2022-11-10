@@ -3,7 +3,7 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
-public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
+public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
 {
     private readonly string _path;
     private Dictionary<string, IDisposable> _collection = new();
@@ -31,12 +31,10 @@ public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
         }
     }
 
-    public override Task Delete(CancellationToken token = default)
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
-
-    public ZoneTreeDatabase DBClient { get; }
 
     public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
@@ -50,7 +48,7 @@ public class ZoneTreeDatabase : BaseDatabase, IDatabase<ZoneTreeDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        lock (DBClient)
+        lock (NativeClient)
         {
             var className = typeof(TItem).FullName;
             if (_collection.TryGetValue(className, out var collection))

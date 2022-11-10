@@ -7,7 +7,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace ManagedCode.Database.CosmosDB;
 
-public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
+public class CosmosDatabase : BaseDatabase<CosmosClient>
 {
     private const int RetryCount = 25;
 
@@ -19,18 +19,17 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
     {
         _options = options;
 
-        DBClient = new CosmosClient(options.ConnectionString, options.CosmosClientOptions);
-        DBClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
-        DBClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
+        NativeClient = new CosmosClient(options.ConnectionString, options.CosmosClientOptions);
+        NativeClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
+        NativeClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
     }
-
-    public CosmosClient DBClient { get; }
 
     protected override async Task InitializeAsyncInternal(CancellationToken token = default)
     {
         if (_options.AllowTableCreation)
         {
-            _database = await DBClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, cancellationToken: token);
+            _database = await NativeClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
+                cancellationToken: token);
 
             _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, "/id",
                 cancellationToken: token);
@@ -38,7 +37,7 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
             return;
         }
 
-        var database = DBClient.GetDatabase(_options.DatabaseName);
+        var database = NativeClient.GetDatabase(_options.DatabaseName);
 
         if (database is null)
         {
@@ -64,7 +63,7 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
 
     protected override void DisposeInternal()
     {
-        DBClient.Dispose();
+        NativeClient.Dispose();
     }
 
     public CosmosDBCollection<TItem> GetCollection<TItem>() where TItem : CosmosDBItem, new()
@@ -77,7 +76,7 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
         return new CosmosDBCollection<TItem>(_options, _container!);
     }
 
-    public override async Task Delete(CancellationToken token = default)
+    public override async Task DeleteAsync(CancellationToken token = default)
     {
         await _database.DeleteAsync(cancellationToken: token);
     }

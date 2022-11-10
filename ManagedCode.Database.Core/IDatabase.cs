@@ -9,11 +9,11 @@ public interface IDatabase : IDisposable, IAsyncDisposable
     bool IsInitialized { get; }
 
     Task InitializeAsync(CancellationToken token = default);
-    
-    Task Delete(CancellationToken token = default);
+
+    Task DeleteAsync(CancellationToken token = default);
 }
 
 public interface IDatabase<out T> : IDatabase
 {
-    T DBClient { get; }
+    T NativeClient { get; }
 }

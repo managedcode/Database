@@ -7,20 +7,19 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
+public class LiteDbDatabase : BaseDatabase<LiteDatabase>
 {
     public LiteDbDatabase(LiteDbRepositoryOptions options)
     {
-        DBClient = options.Database ?? new LiteDatabase(options.ConnectionString);
+        NativeClient = options.Database ?? new LiteDatabase(options.ConnectionString);
         IsInitialized = true;
     }
 
-    public override Task Delete(CancellationToken token = default)
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
 
-    public LiteDatabase DBClient { get; }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
@@ -29,13 +28,13 @@ public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
 
     protected override ValueTask DisposeAsyncInternal()
     {
-        DBClient.Dispose();
+        NativeClient.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
-        DBClient.Dispose();
+        NativeClient.Dispose();
     }
 
     public LiteDbDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDbItem<TId>, new()
@@ -45,6 +44,6 @@ public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new LiteDbDBCollection<TId, TItem>(DBClient.GetCollection<TItem>());
+        return new LiteDbDBCollection<TId, TItem>(NativeClient.GetCollection<TItem>());
     }
 }
