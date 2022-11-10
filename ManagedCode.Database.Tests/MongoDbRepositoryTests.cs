@@ -50,4 +50,3 @@ namespace ManagedCode.Database.Tests
         }
     }
 }
-

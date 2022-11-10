@@ -24,7 +24,7 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
         throw new NotImplementedException();
     }
 
-    public CloudTableClient DataBase { get; }
+    public CloudTableClient DBClient { get; }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {

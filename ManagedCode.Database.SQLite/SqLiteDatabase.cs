@@ -10,10 +10,9 @@ namespace ManagedCode.Database.SQLite;
 public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
 {
     public SqLiteDatabase(
-        [System.Diagnostics.CodeAnalysis.NotNull]
         SQLiteRepositoryOptions options)
     {
-        DataBase = options.Connection ?? new SQLiteConnection(options.ConnectionString);
+        DBClient = options.Connection ?? new SQLiteConnection(options.ConnectionString);
         IsInitialized = true;
     }
 
@@ -22,19 +21,19 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
         throw new NotImplementedException();
     }
 
-    public SQLiteConnection DataBase { get; }
+    public SQLiteConnection DBClient { get; }
 
     protected override ValueTask DisposeAsyncInternal()
     {
-        DataBase.Close();
-        DataBase.Dispose();
+        DBClient.Close();
+        DBClient.Dispose();
         return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
-        DataBase.Close();
-        DataBase.Dispose();
+        DBClient.Close();
+        DBClient.Dispose();
     }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
@@ -49,6 +48,6 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new SQLiteDBCollection<TId, TItem>(DataBase);
+        return new SQLiteDBCollection<TId, TItem>(DBClient);
     }
 }

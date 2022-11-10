@@ -7,13 +7,15 @@ public abstract class BaseDatabase : IDatabase
 {
     private bool _disposed;
 
-    public bool IsInitialized { get; protected set; } = true;
+    public bool IsInitialized { get; protected set; }
 
     public async Task InitializeAsync(CancellationToken token = default)
     {
-        if (IsInitialized == false)
+        if (IsInitialized is false)
         {
             await InitializeAsyncInternal(token);
+
+            IsInitialized = true;
         }
     }
 

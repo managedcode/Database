@@ -21,11 +21,11 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
 
     protected override void DisposeInternal()
     {
-        foreach (var item in DataBase)
+        foreach (var item in DBClient)
         {
             item.Value.Dispose();
         }
-        DataBase.Clear();
+        DBClient.Clear();
     }
     
     public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
@@ -40,15 +40,15 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
             throw new DatabaseNotInitializedException(GetType());
         }
         
-        lock (DataBase)
+        lock (DBClient)
         {
-            if (DataBase.TryGetValue(name, out var table))
+            if (DBClient.TryGetValue(name, out var table))
             {
                 return (InMemoryDBCollection<TId, TItem>)table;
             }
 
             var db = new InMemoryDBCollection<TId, TItem>();
-            DataBase[name] = db;
+            DBClient[name] = db;
             return db;
         }
     }
@@ -59,5 +59,5 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
         return Task.CompletedTask;
     }
 
-    public Dictionary<string, IDisposable> DataBase { get; } = new();
+    public Dictionary<string, IDisposable> DBClient { get; } = new();
 }

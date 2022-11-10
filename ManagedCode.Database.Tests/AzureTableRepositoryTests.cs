@@ -67,11 +67,4 @@ namespace ManagedCode.Database.Tests
             await insertSecond.Should().ThrowAsync<StorageException>();
         }
     }
-//<<<<<<< HEAD
 }
-
-/*
-=======
-}
->>>>>>> origin/main
-*/
