@@ -10,7 +10,7 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
+public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
 {
     private readonly MongoDbRepositoryOptions _options;
 
@@ -18,16 +18,14 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
     {
         _options = options;
         var client = new MongoClient(options.ConnectionString);
-        DBClient = client.GetDatabase(options.DataBaseName);
+        NativeClient = client.GetDatabase(options.DataBaseName);
         IsInitialized = true;
     }
 
-    public override Task Delete(CancellationToken token = default)
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
-
-    public IMongoDatabase DBClient { get; }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
@@ -50,8 +48,11 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        var collectionName = string.IsNullOrEmpty(_options.CollectionName) ? typeof(TItem).Name.Pluralize() : _options.CollectionName;
-        return new MongoDbCollection<TItem>(DBClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
+        var collectionName = string.IsNullOrEmpty(_options.CollectionName)
+            ? typeof(TItem).Name.Pluralize()
+            : _options.CollectionName;
+        return new MongoDbCollection<TItem>(
+            NativeClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
     }
 
     public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
@@ -61,6 +62,6 @@ public class MongoDbDatabase : BaseDatabase, IDatabase<IMongoDatabase>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new MongoDbCollection<TItem>(DBClient.GetCollection<TItem>(name, new MongoCollectionSettings()));
+        return new MongoDbCollection<TItem>(NativeClient.GetCollection<TItem>(name, new MongoCollectionSettings()));
     }
 }

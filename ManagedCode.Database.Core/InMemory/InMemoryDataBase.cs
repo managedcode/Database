@@ -6,7 +6,7 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisposable>>
+public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
 {
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
@@ -21,43 +21,42 @@ public class InMemoryDataBase : BaseDatabase, IDatabase<Dictionary<string, IDisp
 
     protected override void DisposeInternal()
     {
-        foreach (var item in DBClient)
+        foreach (var item in NativeClient)
         {
             item.Value.Dispose();
         }
-        DBClient.Clear();
+
+        NativeClient.Clear();
     }
-    
+
     public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
         return GetCollection<TId, TItem>(typeof(TItem).FullName);
     }
-    
+
     public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-        
-        lock (DBClient)
+
+        lock (NativeClient)
         {
-            if (DBClient.TryGetValue(name, out var table))
+            if (NativeClient.TryGetValue(name, out var table))
             {
                 return (InMemoryDBCollection<TId, TItem>)table;
             }
 
             var db = new InMemoryDBCollection<TId, TItem>();
-            DBClient[name] = db;
+            NativeClient[name] = db;
             return db;
         }
     }
-    
-    public override Task Delete(CancellationToken token = default)
+
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         DisposeInternal();
         return Task.CompletedTask;
     }
-
-    public Dictionary<string, IDisposable> DBClient { get; } = new();
 }

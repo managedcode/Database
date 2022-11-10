@@ -8,7 +8,7 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
+public class AzureTableDatabase : BaseDatabase<CloudTableClient>
 {
     private readonly AzureTableRepositoryOptions _options;
     private readonly Dictionary<string, object> _tableAdapters = new();
@@ -16,15 +16,12 @@ public class AzureTableDatabase : BaseDatabase, IDatabase<CloudTableClient>
     public AzureTableDatabase(AzureTableRepositoryOptions options)
     {
         _options = options;
-        IsInitialized = true;
     }
 
-    public override Task Delete(CancellationToken token = default)
+    public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();
     }
-
-    public CloudTableClient DBClient { get; }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
