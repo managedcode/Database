@@ -111,7 +111,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         itemsResult.Count.Should().Be(CountItem);
     }
 
-    [Fact]
+/*    [Fact]
     public virtual async Task TakeQuery_ReturnOk()
     {
         for (var i = 0; i < CountItem; i++)
@@ -125,7 +125,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         itemsResult.Count.Should().Be(5);
         itemsResult.First().IntData.Should().Be(0);
-    }
+    }*/
 
 /*    [Fact]
     public virtual async Task TakeQueryBeyond_ReturnOk()
