@@ -8,7 +8,7 @@ using System.Timers;
 
 namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TId : notnull
+public class InMemoryDBCollectionQueryable<TId, TItem> : NewBaseDBCollectionQueryable<TItem> where TId : notnull
 {
     private readonly ConcurrentDictionary<TId, TItem> _storage;
 

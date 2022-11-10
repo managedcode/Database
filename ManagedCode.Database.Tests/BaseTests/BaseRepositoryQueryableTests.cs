@@ -44,17 +44,27 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
     {
         var count = 0;
         var guid = Guid.NewGuid().ToString();
-        for (var i = 0; i < 10; i++)
-        {
-            var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.StringData = guid;
-                count++;
-            }
 
-            await Collection.InsertAsync(item);
-        }
+        var item = CreateNewItem();
+        item.StringData = guid;
+        await Collection.InsertAsync(item);
+
+        item = CreateNewItem();
+        item.StringData = guid;
+        await Collection.InsertAsync(CreateNewItem());
+
+        item = CreateNewItem();
+        item.StringData = guid;
+        await Collection.InsertAsync(CreateNewItem()); 
+
+        item = CreateNewItem();
+        item.StringData = guid;
+        await Collection.InsertAsync(CreateNewItem()); 
+
+        item = CreateNewItem();
+        item.StringData = guid;
+        await Collection.InsertAsync(CreateNewItem());
+       
 
         var countResult = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
 
