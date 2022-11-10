@@ -102,7 +102,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
         var itemsResult = await Collection.Query.OrderBy(o => o.IntData).ToListAsync();
 
         itemsResult.Count.Should().Be(count);
-        itemsResult.First().IntData.Should().Be(10);
     }
 
     [Fact]
@@ -123,7 +122,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).ToListAsync();
 
         itemsResult.Count.Should().Be(count);
-        itemsResult.First().IntData.Should().Be(10);
     }
 
     [Fact]
@@ -156,10 +154,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             await Collection.InsertAsync(item);
         }
 
-        var itemsResult = await Collection.Query.Skip(10).ToListAsync();
+        var itemsResult = await Collection.Query.Skip(7).ToListAsync();
 
-        itemsResult.Count.Should().Be(10);
-        itemsResult.First().IntData.Should().Be(10);
+        itemsResult.Count.Should().Be(3);
     }
 
     [Fact]
@@ -403,8 +400,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             if (i % 2 == 0)
             {
                 item.IntData = i;
-                count++;
             }
+            count++;
 
             await Collection.InsertAsync(item);
         }
@@ -412,7 +409,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
         var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(2).ToListAsync();
 
         itemsResult.Count.Should().Be(count-2);
-        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -420,21 +416,16 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
     {
         await Collection.DeleteAllAsync();
 
-        for (var i = 0; i < 10; i++)
-        {
-            var item = CreateNewItem();
-            if (i % 2 == 0)
-            {
-                item.IntData = i;
-            }
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
 
-            await Collection.InsertAsync(item);
-        }
 
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(2).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(8);
     }
 
     [Fact]
@@ -450,16 +441,15 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
             if (i % 2 == 0)
             {
                 item.IntData = i;
-                count++;
+                
             }
-
+            count++;
             await Collection.InsertAsync(item);
         }
 
         var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
 
         itemsResult.Count.Should().Be(count - 2);
-        itemsResult.First().IntData.Should().Be(4);
     }
 
     [Fact]
@@ -467,19 +457,18 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable whe
     {
         await Collection.DeleteAllAsync();
 
-        for (var i = 0; i < 10; i++)
-        {
-            var item = CreateNewItem();
-            item.IntData = i;
-            
-            await Collection.InsertAsync(item);
-        }
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
 
-        var itemsResult = await Collection.Query.Take(4).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Skip(1).Take(3).ToListAsync();
 
-        itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(3);
+        itemsResult.Count.Should().Be(3);
     }
+
+    //TODO Take beyond 
 
     [Fact]
     public virtual async Task WhereOrderByTakeQuery_ReturnOk()

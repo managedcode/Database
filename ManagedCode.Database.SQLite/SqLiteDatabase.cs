@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -51,4 +51,4 @@ public class SqLiteDatabase : BaseDatabase, IDatabase<SQLiteConnection>
 
         return new SQLiteDBCollection<TId, TItem>(DataBase);
     }
-}
+}*/

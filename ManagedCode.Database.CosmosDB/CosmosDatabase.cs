@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,4 +48,4 @@ public class CosmosDatabase : BaseDatabase, IDatabase<CosmosClient>
 
         return new CosmosDBCollection<TItem>(_options);
     }
-}
+}*/

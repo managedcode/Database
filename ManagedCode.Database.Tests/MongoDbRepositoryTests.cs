@@ -1,4 +1,4 @@
-using ManagedCode.Database.Core;
+/*using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
@@ -39,3 +39,4 @@ namespace ManagedCode.Database.Tests
     }
 }
 
+*/

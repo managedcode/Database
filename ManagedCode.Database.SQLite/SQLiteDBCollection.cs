@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -154,4 +154,4 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
     }
 
     #endregion
-}
+}*/

@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
@@ -47,4 +47,4 @@ public class LiteDbDatabase : BaseDatabase, IDatabase<LiteDatabase>
 
         return new LiteDbDBCollection<TId, TItem>(DataBase.GetCollection<TItem>());
     }
-}
+}*/
