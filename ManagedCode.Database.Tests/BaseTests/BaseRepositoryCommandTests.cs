@@ -392,8 +392,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             var deletedItems = await Collection.DeleteAllAsync();
             var count = await Collection.CountAsync();
 
-            // why here is true???
-            deletedItems.Should().BeFalse();
+            deletedItems.Should().BeTrue();
             count.Should().Be(0);
         }
 
