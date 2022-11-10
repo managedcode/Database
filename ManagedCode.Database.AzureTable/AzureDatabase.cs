@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Humanizer;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDatabase : BaseDatabase<CloudTableClient>
+public class AzureTableDatabase : BaseDatabase<TableServiceClient>
 {
     private readonly AzureTableRepositoryOptions _options;
     private readonly Dictionary<string, object> _collections = new();
@@ -26,13 +26,12 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
-        var cloudStorageAccount = string.IsNullOrEmpty(_options.ConnectionString) switch
+        NativeClient = string.IsNullOrEmpty(_options.ConnectionString) switch
         {
-            true => new CloudStorageAccount(_options.TableStorageCredentials, _options.TableStorageUri),
-            false => CloudStorageAccount.Parse(_options.ConnectionString),
+            true => new TableServiceClient(_options.TableStorageUri, _options.TableSharedKeyCredential),
+            false => new TableServiceClient(_options.ConnectionString),
         };
 
-        NativeClient = cloudStorageAccount.CreateCloudTableClient();
         return Task.CompletedTask;
     }
 
@@ -69,7 +68,7 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
                 return obj as AzureTableDBCollection<TItem>;
             }
 
-            var table = NativeClient.GetTableReference(tableName);
+            var table = NativeClient.GetTableClient(tableName);
 
             if (_options.AllowTableCreation)
             {
@@ -77,12 +76,12 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
             }
             else
             {
-                var exists = table.Exists();
-
-                if (!exists)
-                {
-                    throw new InvalidOperationException($"Table '{tableName}' does not exist");
-                }
+                // var exists = table.
+                //
+                // if (!exists)
+                // {
+                //     throw new InvalidOperationException($"Table '{tableName}' does not exist");
+                // }
             }
 
             var collection = new AzureTableDBCollection<TItem>(table);

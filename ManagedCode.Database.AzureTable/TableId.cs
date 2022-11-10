@@ -1,4 +1,4 @@
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -49,7 +49,7 @@ public class TableId
 
         return false;
     }
-    
+
     public override int GetHashCode()
     {
         return PartitionKey.GetHashCode() ^ RowKey.GetHashCode();

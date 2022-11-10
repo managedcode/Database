@@ -1,11 +1,12 @@
-using Microsoft.Azure.Cosmos.Table;
+using System;
+using Azure.Data.Tables;
 
 namespace ManagedCode.Database.AzureTable;
 
 public class AzureTableRepositoryOptions
 {
     public string ConnectionString { get; set; }
-    public StorageCredentials TableStorageCredentials { get; set; }
-    public StorageUri TableStorageUri { get; set; }
+    public TableSharedKeyCredential TableSharedKeyCredential { get; set; }
+    public Uri TableStorageUri { get; set; }
     public bool AllowTableCreation { get; set; }
 }

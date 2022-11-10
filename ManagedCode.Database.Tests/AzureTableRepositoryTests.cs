@@ -6,7 +6,6 @@ using FluentAssertions;
 using ManagedCode.Database.AzureTable;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
-using Microsoft.Azure.Cosmos.Table;
 using Xunit;
 
 namespace ManagedCode.Database.Tests
@@ -65,7 +64,9 @@ namespace ManagedCode.Database.Tests
             var insertSecond = async () => await Collection.InsertAsync(secondItem);
 
             insertFirst.Should().NotBeNull();
-            await insertSecond.Should().ThrowAsync<StorageException>();
+
+            throw new NotImplementedException();
+            // await insertSecond.Should().ThrowAsync<StorageException>();
         }
     }
 }

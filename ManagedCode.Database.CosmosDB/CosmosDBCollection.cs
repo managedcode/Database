@@ -101,7 +101,6 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     {
         var count = 0;
 
-
         var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
