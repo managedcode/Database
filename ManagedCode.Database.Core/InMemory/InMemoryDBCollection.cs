@@ -25,7 +25,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region Insert
 
-    public Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
         if (!_storage.TryGetValue(item.Id, out _))
         {
@@ -36,7 +36,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult<TItem>(default);
     }
 
-    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -58,14 +58,14 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region InsertOrUpdate
 
-    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _storage[item.Id] = item;
         return Task.FromResult(item);
     }
 
     public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
-        CancellationToken token = default)
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -82,7 +82,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region Update
 
-    public Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         if (_storage.TryGetValue(item.Id, out _))
         {
@@ -93,7 +93,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult<TItem>(default);
     }
 
-    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -113,31 +113,31 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region Delete
 
-    public Task<bool> DeleteAsync(TId id, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_storage.TryRemove(id, out _));
     }
 
-    public Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_storage.TryRemove(item.Id, out _));
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
     {
         var count = ids.Count(id => _storage.TryRemove(id, out _));
 
         return Task.FromResult(count);
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = items.Count(item => _storage.TryRemove(item.Id, out _));
 
         return Task.FromResult(count);
     }
 
-    public Task<bool> DeleteCollectionAsync(CancellationToken token = default)
+    public Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         _storage.Clear();
         return Task.FromResult(_storage.Count == 0);
@@ -147,7 +147,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region Get
 
-    public Task<TItem> GetAsync(TId id, CancellationToken token = default)
+    public Task<TItem> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
         if (_storage.TryGetValue(id, out var item))
         {
@@ -162,7 +162,7 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
 
     #region Count
 
-    public Task<long> CountAsync(CancellationToken token = default)
+    public Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult((long)_storage.Count);
     }

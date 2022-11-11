@@ -32,9 +32,9 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Get
 
-    public async Task<TItem> GetAsync(ObjectId id, CancellationToken token = default)
+    public async Task<TItem> GetAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
-        var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: token);
+        var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: cancellationToken);
         return cursor.FirstOrDefault();
     }
 
@@ -42,15 +42,15 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await _collection.InsertOneAsync(item, new InsertOneOptions(), token);
+        await _collection.InsertOneAsync(item, new InsertOneOptions(), cancellationToken);
         return item;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        await _collection.InsertManyAsync(items, new InsertManyOptions(), token);
+        await _collection.InsertManyAsync(items, new InsertManyOptions(), cancellationToken);
         return items.Count();
     }
 
@@ -58,22 +58,22 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var result = await _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
         {
             IsUpsert = true
-        }, token);
+        }, cancellationToken);
 
         return item;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in items)
         {
-            await InsertOrUpdateAsync(item, token);
+            await InsertOrUpdateAsync(item, cancellationToken);
             count++;
         }
 
@@ -84,19 +84,19 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var r = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
-            cancellationToken: token);
+            cancellationToken: cancellationToken);
         return item;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in items)
         {
-            await UpdateAsync(item, token);
+            await UpdateAsync(item, cancellationToken);
             count++;
         }
 
@@ -107,26 +107,26 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(ObjectId id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
         var item = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == id, new FindOneAndDeleteOptions<TItem>(),
-            token);
+            cancellationToken);
         return item != null;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var i = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == item.Id,
-            new FindOneAndDeleteOptions<TItem>(), token);
+            new FindOneAndDeleteOptions<TItem>(), cancellationToken);
         return i != null;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<ObjectId> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<ObjectId> ids, CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in ids)
         {
-            if (await DeleteAsync(item, token))
+            if (await DeleteAsync(item, cancellationToken))
             {
                 count++;
             }
@@ -135,12 +135,12 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in items)
         {
-            if (await DeleteAsync(item, token))
+            if (await DeleteAsync(item, cancellationToken))
             {
                 count++;
             }
@@ -149,9 +149,9 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteManyAsync(w => true, token);
+        var result = await _collection.DeleteManyAsync(w => true, cancellationToken);
         return result.DeletedCount > 0;
     }
 
@@ -159,9 +159,9 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), token));
+        return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), cancellationToken));
     }
 
     #endregion

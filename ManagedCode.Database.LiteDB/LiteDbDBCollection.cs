@@ -34,7 +34,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Get
 
-    public async Task<TItem?> GetAsync(TId id, CancellationToken token = default)
+    public async Task<TItem?> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().FindById(new BsonValue(id));
@@ -44,7 +44,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().Count();
@@ -54,14 +54,14 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var v = GetDatabase().Insert(item);
         return GetDatabase().FindById(v);
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().InsertBulk(items);
@@ -71,14 +71,14 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         GetDatabase().Upsert(item);
         return GetDatabase().FindById(new BsonValue(item.Id));
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().Upsert(items);
@@ -88,7 +88,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         if (GetDatabase().Update(item))
@@ -99,7 +99,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
         return default;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().Update(items);
@@ -109,19 +109,19 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TId id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().Delete(new BsonValue(id));
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().Delete(new BsonValue(item.Id));
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -137,7 +137,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -153,7 +153,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return GetDatabase().DeleteAll() > 0;

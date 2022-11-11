@@ -47,7 +47,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region Get
 
-    public async Task<TItem?> GetAsync(string id, CancellationToken token = default)
+    public async Task<TItem?> GetAsync(string id, CancellationToken cancellationToken = default)
     {
         var feedIterator = _container.GetItemLinqQueryable<TItem>()
             .Where(w => w.Id == id)
@@ -57,9 +57,9 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         {
             if (iterator.HasMoreResults)
             {
-                token.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var item in await iterator.ReadNextAsync(token))
+                foreach (var item in await iterator.ReadNextAsync(cancellationToken))
                 {
                     return item;
                 }
@@ -73,9 +73,9 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        return await _container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(token);
+        return await _container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(cancellationToken);
     }
 
     #endregion
@@ -91,28 +91,28 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         return new ValueTask(Task.CompletedTask);
     }
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
+        var result = await _container.CreateItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
 
         var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token)
+            cancellationToken.ThrowIfCancellationRequested();
+            batch.Add(_container.CreateItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -121,7 +121,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
@@ -136,27 +136,27 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
+        var result = await _container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token)
+            cancellationToken.ThrowIfCancellationRequested();
+            batch.Add(_container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -165,7 +165,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
@@ -180,27 +180,27 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
+        var result = await _container.ReplaceItemAsync(item, item.Id, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_container.ReplaceItemAsync(item, item.Id, cancellationToken: token)
+            cancellationToken.ThrowIfCancellationRequested();
+            batch.Add(_container.ReplaceItemAsync(item, item.Id, cancellationToken: cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -209,7 +209,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
@@ -224,46 +224,46 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(string id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         if (_useItemIdAsPartitionKey)
         {
             var deleteItemResult =
-                await _container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: token);
+                await _container.DeleteItemAsync<TItem>(id, new PartitionKey(id), cancellationToken: cancellationToken);
             return deleteItemResult != null;
         }
 
-        var item = await GetAsync(id, token);
+        var item = await GetAsync(id, cancellationToken);
         if (item == null)
         {
             return false;
         }
 
-        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
         return result != null;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
         return result != null;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<string> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var item in ids)
         {
-            token.ThrowIfCancellationRequested();
-            batch.Add(DeleteAsync(item, token)
+            cancellationToken.ThrowIfCancellationRequested();
+            batch.Add(DeleteAsync(item, cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result)
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -272,7 +272,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
@@ -283,21 +283,21 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var item in items)
         {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token)
+            cancellationToken.ThrowIfCancellationRequested();
+            batch.Add(_container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result != null)
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -306,7 +306,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
@@ -317,16 +317,16 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         if (_splitByType)
         {
-            var delete = await Query.Where(item => true).DeleteAsync(token);
+            var delete = await Query.Where(item => true).DeleteAsync(cancellationToken);
             return delete > 0;
         }
 
 
-        var result = await _container.DeleteContainerAsync(cancellationToken: token);
+        var result = await _container.DeleteContainerAsync(cancellationToken: cancellationToken);
         return result != null;
     }
 

@@ -9,13 +9,13 @@ public static class BatchHelper
 {
     private const int Capacity = 50;
 
-    public static async Task<int> ExecuteAsync(IEnumerable<Task<Response?>> actions, CancellationToken token = default)
+    public static async Task<int> ExecuteAsync(IEnumerable<Task<Response?>> actions, CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var action in actions)
         {
-            token.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             batch.Add(action
                 .ContinueWith(task =>
@@ -24,7 +24,7 @@ public static class BatchHelper
                     {
                         Interlocked.Increment(ref count);
                     }
-                }, token));
+                }, cancellationToken));
 
             if (count == batch.Capacity)
             {
@@ -33,7 +33,7 @@ public static class BatchHelper
             }
         }
 
-        token.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (batch.Count > 0)
         {
