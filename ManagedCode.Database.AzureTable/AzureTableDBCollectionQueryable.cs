@@ -2,90 +2,123 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Data.Tables;
 using ManagedCode.Database.Core;
-using Microsoft.Azure.Cosmos.Table;
-using ManagedCode.Database.AzureTable.Extensions;
 
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : ITableEntity, new()
+public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem>
+    where TItem : class, ITableEntity, new()
 {
-    private readonly AzureTableAdapter<TItem> _tableAdapter;
+    private readonly TableClient _tableClient;
 
-    public AzureTableDBCollectionQueryable(AzureTableAdapter<TItem> azureTableAdapter)
+    public AzureTableDBCollectionQueryable(TableClient tableClient)
     {
-        _tableAdapter = azureTableAdapter;
+        _tableClient = tableClient;
     }
 
     public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var query = new TableQuery<TItem>();
+        var filter = ConvertPredicatesToFilter(Predicates);
+        var query = _tableClient.QueryAsync<TItem>(filter, cancellationToken: cancellationToken);
 
-        query = query
-            .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
-            .OrderBy(OrderByPredicates)
-            .OrderByDescending(OrderByDescendingPredicates)
-            .Take(TakeValue)
-            .Skip(SkipValue);
-
-        return _tableAdapter.ExecuteQuery(query, cancellationToken);
+        return ApplyPredicates(query, Predicates);
     }
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = new TableQuery<TItem>();
+        var filter = ConvertPredicatesToFilter(Predicates);
 
-        query = query
-            .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-
-        return await _tableAdapter.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
+        return await _tableClient
+            .QueryAsync<TItem>(filter, maxPerPage: 1, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = new TableQuery<TItem>();
+        var filter = ConvertPredicatesToFilter(Predicates);
 
-        query = query
-            .Where(WherePredicates)
-            .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-
-        return await _tableAdapter
-            .ExecuteQuery(query, cancellationToken)
-            .LongCountAsync(cancellationToken: cancellationToken);
+        return await _tableClient
+            .QueryAsync<TItem>(filter, cancellationToken: cancellationToken)
+            .CountAsync(cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        int count, totalCount = 0;
+        var filter = ConvertPredicatesToFilter(Predicates);
 
-        do
+        var items = await _tableClient
+            .QueryAsync<TItem>(filter, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
+
+        var actions = items
+            .Select(item =>
+                _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
+
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+    }
+
+    private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable, List<QueryItem> predicates)
+    {
+        foreach (var query in predicates)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var query = new TableQuery<TItem>();
-
-            query = query
-                .Where(WherePredicates)
-                .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
-                .Take(_tableAdapter.BatchSize);
-
-            var items = await _tableAdapter
-                .ExecuteQuery(query, cancellationToken)
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            count = items.Count;
-
-            cancellationToken.ThrowIfCancellationRequested();
-            totalCount += await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
-                TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
+            switch (query.QueryType)
+            {
+                case QueryType.OrderBy:
+                    asyncEnumerable = asyncEnumerable.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+                case QueryType.OrderByDescending:
+                    asyncEnumerable =
+                        asyncEnumerable.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+                case QueryType.ThenBy:
                 {
-                    ETag = "*"
-                })), cancellationToken);
-        } while (count > 0);
+                    if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedEnumerable)
+                    {
+                        asyncEnumerable = orderedEnumerable.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    }
 
-        return totalCount;
+                    // TODO: Maybe need throw exception
+                    break;
+                }
+                case QueryType.ThenByDescending:
+                {
+                    if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedDescendingEnumerable)
+                    {
+                        asyncEnumerable =
+                            orderedDescendingEnumerable.ThenByDescending(
+                                x => query.ExpressionObject.Compile().Invoke(x));
+                    }
+
+                    // TODO: Maybe need throw exception
+                    break;
+                }
+                case QueryType.Take:
+                    if (query.Count.HasValue)
+                    {
+                        asyncEnumerable = asyncEnumerable.Take(query.Count.Value);
+                    }
+                    break;
+                case QueryType.Skip:
+                    if (query.Count.HasValue)
+                    {
+                        asyncEnumerable = asyncEnumerable.Skip(query.Count.Value);
+                    }
+                    break;
+            }
+        }
+
+        return asyncEnumerable;
+    }
+
+    private static string ConvertPredicatesToFilter(IEnumerable<QueryItem> predicates)
+    {
+        var filter = predicates
+            .Where(p => p.QueryType is QueryType.Where)
+            .Select(p => TableClient.CreateQueryFilter(p.ExpressionBool))
+            .Aggregate((a, b) => a + " and " + b);
+
+        return filter;
     }
 }

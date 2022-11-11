@@ -389,7 +389,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             var items = await Collection.InsertAsync(list);
-            var deletedItems = await Collection.DeleteAllAsync();
+            var deletedItems = await Collection.DeleteCollectionAsync();
             var count = await Collection.CountAsync();
 
             deletedItems.Should().BeTrue();
@@ -400,7 +400,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task DeleteAll_WhenNoItems()
         {
-            var deletedItems = await Collection.DeleteAllAsync();
+            var deletedItems = await Collection.DeleteCollectionAsync();
             var count = await Collection.CountAsync();
 
             deletedItems.Should().BeTrue();

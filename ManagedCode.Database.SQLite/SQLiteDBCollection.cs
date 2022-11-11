@@ -28,7 +28,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region Get
 
-    public async Task<TItem> GetAsync(TId id, CancellationToken token = default)
+    public async Task<TItem> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.Find<TItem>(id);
@@ -38,7 +38,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.Table<TItem>().Count();
@@ -48,14 +48,14 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var v = _database.Insert(item);
         return item;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.InsertAll(items);
@@ -65,14 +65,14 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         _database.InsertOrReplace(item);
         return item;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -88,14 +88,14 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         _database.Update(item);
         return item;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -111,19 +111,19 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TId id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.Delete<TItem>(id) != 0;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.Delete(item) != 0;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -135,7 +135,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         var count = 0;
@@ -147,7 +147,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
         return _database.DeleteAll<TItem>() != 0;

@@ -2,148 +2,151 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ManagedCode.Database.AzureTable.Extensions;
+using Azure;
+using Azure.Data.Tables;
 using ManagedCode.Database.Core;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
 public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     where TItem : AzureTableItem, new()
 {
-    private readonly AzureTableAdapter<TItem> _tableAdapter;
+    private readonly TableClient _tableClient;
 
-    public AzureTableDBCollection(AzureTableAdapter<TItem> tableAdapter)
+    public AzureTableDBCollection(TableClient tableClient)
     {
-        _tableAdapter = tableAdapter;
+        _tableClient = tableClient;
     }
 
-    public IDBCollectionQueryable<TItem> Query => new AzureTableDBCollectionQueryable<TItem>(_tableAdapter);
+    public IDBCollectionQueryable<TItem> Query => new AzureTableDBCollectionQueryable<TItem>(_tableClient);
 
     #region Get
 
-    public Task<TItem?> GetAsync(TableId id, CancellationToken token = default)
+    public async Task<TItem?> GetAsync(TableId id, CancellationToken cancellationToken = default)
     {
-        return _tableAdapter.ExecuteAsync<TItem>(TableOperation.Retrieve<TItem>(id.PartitionKey, id.RowKey), token);
+        try
+        {
+            var response =
+                await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey, cancellationToken: cancellationToken);
+
+            return response.HasValue ? response.Value : null;
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            return null;
+        }
     }
 
     #endregion
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken token = default)
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = new TableQuery<DynamicTableEntity>();
-        query = query.CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-
-        return await _tableAdapter.ExecuteQuery(query, cancellationToken: token).CountAsync(token);
+        var query = _tableClient.QueryAsync<TItem>(cancellationToken: cancellationToken);
+        return await query.LongCountAsync(cancellationToken: cancellationToken);
     }
 
     #endregion
 
     #region Insert
 
-    public async Task<TItem?> InsertAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _tableAdapter.ExecuteAsync(TableOperation.Insert(item), token);
-        return result as TItem;
+        var response = await _tableClient.AddEntityAsync(item, cancellationToken);
+
+        return response.IsError ? null : item;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Insert(s)), token);
+        var actions = items.Select(item => _tableClient.AddEntityAsync(item, cancellationToken: cancellationToken));
+
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
     }
 
     #endregion
 
     #region InsertOrUpdate
 
-    public async Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.InsertOrReplace(item), token);
-        return result;
+        var response = await _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken);
+
+        return response.IsError ? null : item;
     }
 
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
-        CancellationToken token = default)
+        CancellationToken cancellationToken = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(items.Select(TableOperation.InsertOrReplace), token);
+        var actions = items.Select(item => _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken));
+
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
     }
 
     #endregion
 
     #region Update
 
-    public async Task<TItem?> UpdateAsync(TItem item, CancellationToken token = default)
+    public async Task<TItem?> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(item.ETag))
+        if (item.ETag != ETag.All)
         {
-            item.ETag = "*";
+            item.ETag = ETag.All;
         }
 
-        var result = await _tableAdapter.ExecuteAsync<TItem>(TableOperation.Replace(item), token);
-        return result;
+        var response = await _tableClient.UpdateEntityAsync(item, item.ETag, cancellationToken: cancellationToken);
+
+        return response.IsError ? null : item;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(items.Select(s =>
-        {
-            if (string.IsNullOrEmpty(s.ETag))
-            {
-                s.ETag = "*";
-            }
-
-            return TableOperation.Replace(s);
-        }), token);
+        var actions = items.Select(i => _tableClient.UpdateEntityAsync(i, i.ETag, cancellationToken: cancellationToken));
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken);
     }
 
     #endregion
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TableId id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TableId id, CancellationToken cancellationToken = default)
     {
-        var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(
-            new DynamicTableEntity(id.PartitionKey, id.RowKey)
-            {
-                ETag = "*"
-            }), token);
-        return result is not null;
+        var response = await _tableClient
+            .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: cancellationToken);
+
+        return response?.IsError is not true;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _tableAdapter.ExecuteAsync(TableOperation.Delete(
-            new DynamicTableEntity(item.PartitionKey, item.RowKey)
-            {
-                ETag = "*"
-            }), token);
-        return result is not null;
+        var response = await _tableClient
+            .DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken: cancellationToken);
+
+        return response?.IsError is not true;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken cancellationToken = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(ids.Select(s => TableOperation.Delete(
-            new DynamicTableEntity(s.PartitionKey, s.RowKey)
-            {
-                ETag = "*"
-            })), token);
+        var actions = ids
+            .Select(id => _tableClient.DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken));
+
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        return await _tableAdapter.ExecuteBatchAsync(items.Select(s => TableOperation.Delete(
-            new DynamicTableEntity(s.PartitionKey, s.RowKey)
-            {
-                ETag = "*"
-            })), token);
+        var actions = items
+            .Select(item => _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
+
+        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        //return _tableAdapter.DropTable(token);
-        return await Query.DeleteAsync(token) > 0;
+        var response = await _tableClient.DeleteAsync(cancellationToken);
+
+        return !response.IsError;
     }
 
     #endregion
