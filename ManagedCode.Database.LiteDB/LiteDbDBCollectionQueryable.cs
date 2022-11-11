@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -21,50 +22,40 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
         _collection = collection;
     }
 
-    private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
+    private IEnumerable<TItem> GetItemsInternal()
     {
-        IEnumerable<KeyValuePair<TId, TItem>> items = _collection.FindAll().ToAsyncEnumerable();
+        var items = _collection.Query().ToEnumerable();
 
         foreach (var query in Predicates)
         {
             switch (query.QueryType)
             {
                 case QueryType.Where:
-                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x.Value));
+                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderBy:
-                    /*if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    if (items is IOrderedEnumerable<TItem>)
                     {
-                        throw new InvalidOperationException("After OrderBy call ThenBy.");
-                    }*/
-                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
+                    }
+                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderByDescending:
-                    /*if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    if (items is IOrderedEnumerable<TItem>)
                     {
-                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
 
-                    }*/
-                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    }
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
-                case QueryType.ThenBy: //TODO Add Exception
-                /*if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems)
-                {
-                    items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
-                    break;
-                }
-                throw new InvalidOperationException("Before ThenBy call first OrderBy.");*/
+                case QueryType.ThenBy:
+                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
 
                 case QueryType.ThenByDescending:
-                    /*if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedDescendingItems)
-                    {
-                        items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x));
-                        break;
-                    }
-                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");*/
+                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
 
                 case QueryType.Take:
                     items = items.Take(query.Count.GetValueOrDefault());
@@ -78,10 +69,9 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     break;
             }
         }
+
         return items;
-
     }
-
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -90,20 +80,15 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
         foreach (var item in GetItemsInternal())
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            yield return item.Value;
+            yield return item;
         }
     }
 
-   public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-       /* await Task.Yield();
+        await Task.Yield();
 
-        return _collection.Query()
-            .Where(WherePredicates)
-            .FirstOrDefault();*/
-       throw new NotImplementedException();
+        return GetItemsInternal().FirstOrDefault();
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
@@ -120,14 +105,20 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
         return count;
     }
 
-   public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        /*await Task.Yield();
+        await Task.Yield();
 
         // TODO: check
 
-        return _collection.DeleteMany(WherePredicates.First());*/
-        throw new NotImplementedException();
+        int count = 0;
 
+        foreach (var item in GetItemsInternal())
+        {
+            _collection.DeleteMany(item => true);
+            count++;
+        }
+
+        return count;
     }
 }
