@@ -109,8 +109,6 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
     {
         await Task.Yield();
 
-        // TODO: check
-
         int count = 0;
 
         foreach (var item in GetItemsInternal())
