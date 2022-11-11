@@ -98,7 +98,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             await insertSecondItem.Should().ThrowExactlyAsync<StorageException>();
         }
 
-        public override async Task Insert5Items_WhenOneItemAlreadyExists()
+        public override async Task InsertItems_WhenOneItemAlreadyExists()
         {
 
             var id = GenerateId();

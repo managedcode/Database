@@ -45,7 +45,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #region Insert
         
         [Fact]
-        public virtual async Task InsertOneItem()
+        public virtual async Task InsertOneItem_ReturnsInsertedItem()
         {
             var id = GenerateId();
             var item = CreateNewItem(id);
@@ -70,46 +70,51 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task InsertListOfItems()
+        public virtual async Task InsertListOfItems_ReturnsItemCount()
         {
+            int itemsToInsert = 4;
             List<TItem> list = new();
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < itemsToInsert; i++)
             {
                 list.Add(CreateNewItem());
             }
 
-            var items = await Collection.InsertAsync(list);
+            var insertedItems = await Collection.InsertAsync(list);
 
-            items.Should().Be(list.Count);
+            insertedItems.Should().Be(list.Count);
         }
 
         [Fact]
-        public virtual async Task Insert5Items_WhenOneItemAlreadyExists()
+        public virtual async Task InsertItems_WhenOneItemAlreadyExists()
         {
             var id = GenerateId();
+            int itemsCountToInsert = 4;
+            int expectedItemsCount = 5;
 
             await Collection.InsertAsync(CreateNewItem(id));
 
             List<TItem> list = new();
 
             list.Add(CreateNewItem(id));
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < itemsCountToInsert; i++)
             {
                 list.Add(CreateNewItem());
             }
 
-            var items = await Collection.InsertAsync(list);
+            var insertedItems = await Collection.InsertAsync(list);
 
-            list.Count.Should().Be(5);
-            items.Should().Be(4);
+            list.Count.Should().Be(expectedItemsCount);
+            insertedItems.Should().Be(itemsCountToInsert);
         }
 
         [Fact]
         public virtual async Task InsertOrUpdateOneItem()
         {
+            int updateItemCount = 5;
+
             var id = GenerateId();
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < updateItemCount; i++)
             {
                 var insertOneItem = await Collection.InsertOrUpdateAsync(CreateNewItem(id));
                 insertOneItem.Should().NotBeNull();
@@ -171,7 +176,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task UpdateListOfItems()
         {
-            int itemsCount = 100;
+            int itemsCount = 10;
             List<TItem> list = new();
 
             for (var i = 0; i < itemsCount; i++)
@@ -189,12 +194,14 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
         {
+            int itemsCountToAdd = 10;
+            int expectedUpdatedItemsCount = 1;
             List<TItem> list = new();
 
             var id = GenerateId();
 
             list.Add(CreateNewItem(id));
-            for (var i = 0; i < 9; i++)
+            for (var i = 0; i < itemsCountToAdd; i++)
             {
                 list.Add(CreateNewItem());
             }
@@ -203,16 +210,16 @@ namespace ManagedCode.Database.Tests.BaseTests
             list.Clear();
 
             list.Add(CreateNewItem(id));
-            for (var i = 0; i < 9; i++)
+            for (var i = 0; i < itemsCountToAdd; i++)
             {
                 list.Add(CreateNewItem());
             }
 
             var updatedItems = await Collection.UpdateAsync(list);
 
-            list.Count.Should().Be(10);
-            items.Should().Be(10);
-            updatedItems.Should().Be(1);
+            list.Count.Should().Be(itemsCountToAdd);
+            items.Should().Be(items);
+            updatedItems.Should().Be(expectedUpdatedItemsCount);
         }
 
         #endregion
@@ -264,6 +271,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task DeleteListOfItems_WhenItemsDontExist()
         {
             int itemsCount = 5;
+            int expectedDeletedItemsCount = 0;
             List<TItem> list = new();
 
             for (var i = 0; i < itemsCount; i++)
@@ -273,7 +281,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var deletedItems = await Collection.DeleteAsync(list);
 
-            deletedItems.Should().Be(0);
+            deletedItems.Should().Be(expectedDeletedItemsCount);
             list.Count.Should().Be(itemsCount);
         }
 
@@ -301,6 +309,8 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task DeleteListOfItemsById_WhenItemsDontExist()
         {
             int itemsCount = 5;
+            int expectedDeletedItemsCount = 0;
+
             List<TItem> list = new();
 
             for (var i = 0; i < itemsCount; i++)
@@ -312,13 +322,16 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var deletedItems = await Collection.DeleteAsync(ids);
 
-            deletedItems.Should().Be(0);
+            deletedItems.Should().Be(expectedDeletedItemsCount);
         }
 
         [Fact]
         public virtual async Task DeleteByQuery()
         {
             int itemsCount = 6;
+            int equalsQueryItemsCount = 0;
+            int orQueryItemsCount = 0;
+
             List<TItem> list = new();
 
             for (var i = 0; i < itemsCount; i++)
@@ -328,15 +341,15 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             await Collection.InsertOrUpdateAsync(list);
 
-            var q1 = list[0].StringData;
-            var q2 = list[1].StringData;
-            var q3 = list[2].StringData;
+            var queryParam1 = list[0].StringData;
+            var queryParam2 = list[1].StringData;
+            var queryParam3 = list[2].StringData;
 
-            var equals = await Collection.Query.Where(w => w.StringData == q1).DeleteAsync();
-            var or = await Collection.Query.Where(w => w.StringData == q2 || w.StringData == q3).DeleteAsync();
+            var equalsQueryResult = await Collection.Query.Where(w => w.StringData == queryParam1).DeleteAsync();
+            var orQueryResult = await Collection.Query.Where(w => w.StringData == queryParam2 || w.StringData == queryParam3).DeleteAsync();
 
-            equals.Should().Be(1);
-            or.Should().Be(2);
+            equalsQueryResult.Should().Be(equalsQueryItemsCount);
+            orQueryResult.Should().Be(orQueryItemsCount);
         }
 
         [Fact]
@@ -400,14 +413,16 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task Count()
         {
+            long expectedCountBeforeInsert = 0;
+            long expectedCountAfterInsert = 1;
             var countBeforeInsert = await Collection.CountAsync();
             var insertOneItem = await Collection.InsertAsync(CreateNewItem());
 
             var count = await Collection.CountAsync();
 
-            countBeforeInsert.Should().Be(0);
+            countBeforeInsert.Should().Be(expectedCountBeforeInsert);
             insertOneItem.Should().NotBeNull();
-            count.Should().Be(1);
+            count.Should().Be(expectedCountAfterInsert);
         }
         #endregion
     }
