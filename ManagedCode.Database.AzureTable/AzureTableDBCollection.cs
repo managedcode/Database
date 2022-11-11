@@ -11,7 +11,6 @@ namespace ManagedCode.Database.AzureTable;
 public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     where TItem : AzureTableItem, new()
 {
-    private const int Capacity = 50;
     private readonly TableClient _tableClient;
 
     public AzureTableDBCollection(TableClient tableClient)
@@ -61,37 +60,9 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var count = 0;
+        var actions = items.Select(item => _tableClient.AddEntityAsync(item, cancellationToken: token));
 
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_tableClient.AddEntityAsync(item, cancellationToken: token)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, token));
-
-            if (count == batch.Capacity)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
-
-        return count;
+        return await BatchHelper.ExecuteAsync(actions, token: token);
     }
 
     #endregion
@@ -108,36 +79,9 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
         CancellationToken token = default)
     {
-        var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_tableClient.UpsertEntityAsync(item, cancellationToken: token)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, token));
+        var actions = items.Select(item => _tableClient.UpsertEntityAsync(item, cancellationToken: token));
 
-            if (count == batch.Capacity)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
-
-        return count;
+        return await BatchHelper.ExecuteAsync(actions, token: token);
     }
 
     #endregion
@@ -158,42 +102,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            token.ThrowIfCancellationRequested();
-
-            if (item.ETag != ETag.All)
-            {
-                item.ETag = ETag.All;
-            }
-
-            batch.Add(_tableClient.UpdateEntityAsync(item, item.ETag, cancellationToken: token)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, token));
-
-            if (count == batch.Capacity)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
-
-        return count;
+        var actions = items.Select(i => _tableClient.UpdateEntityAsync(i, i.ETag, cancellationToken: token));
+        return await BatchHelper.ExecuteAsync(actions, token);
     }
 
     #endregion
@@ -218,70 +128,18 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken token = default)
     {
-        var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var id in ids)
-        {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_tableClient.DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: token)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, token));
+        var actions = ids
+            .Select(id => _tableClient.DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, token));
 
-            if (count == batch.Capacity)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
-
-        return count;
+        return await BatchHelper.ExecuteAsync(actions, token: token);
     }
 
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
     {
-        var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            token.ThrowIfCancellationRequested();
-            batch.Add(_tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, cancellationToken: token)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, token));
+        var actions = items
+            .Select(item => _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, token));
 
-            if (count == batch.Capacity)
-            {
-                await Task.WhenAll(batch);
-                batch.Clear();
-            }
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
-
-        return count;
+        return await BatchHelper.ExecuteAsync(actions, token: token);
     }
 
     public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)

@@ -453,8 +453,8 @@ public abstract class BaseRepositoryTests<TId, TItem> : IAsyncLifetime where TIt
 
         var items = await Collection.Query.Where(w => w.IntData > 10).Skip(15).Take(10).ToListAsync();
         items.Count.Should().Be(10);
-        // items.First().IntData.Should().Be(26);
-        // items.Last().IntData.Should().Be(35);
+        items.First().IntData.Should().Be(26);
+        items.Last().IntData.Should().Be(35);
     }
 
     [Fact]
