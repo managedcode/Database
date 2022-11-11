@@ -8,6 +8,7 @@ using ManagedCode.Database.Tests.Common;
 using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests.AzureTableTests
@@ -82,6 +83,84 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             var updateItemAction = async () => await Collection.UpdateAsync(CreateNewItem(id));
 
             await updateItemAction.Should().ThrowExactlyAsync<StorageException>();
+        }
+
+        public override async Task InsertItemDuplicate()
+        {
+            var id = GenerateId();
+            var firstItem = CreateNewItem(id);
+            var secondItem = CreateNewItem(id);
+
+            var insertFirstItem = await Collection.InsertAsync(firstItem);
+            var insertSecondItem = async () => await Collection.InsertAsync(secondItem);
+
+            insertFirstItem.Should().NotBeNull();
+            await insertSecondItem.Should().ThrowExactlyAsync<StorageException>();
+        }
+
+        public override async Task Insert5Items()
+        {
+
+            var id = GenerateId();
+
+            await Collection.InsertAsync(CreateNewItem(id));
+
+            List<TestAzureTableItem> list = new();
+
+            list.Add(CreateNewItem(id));
+            for (var i = 0; i < 4; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var insertAction = async () => await Collection.InsertAsync(list);
+
+            list.Count.Should().Be(5);
+            await insertAction.Should().ThrowExactlyAsync<StorageException>();
+        }
+
+        public override async Task DeleteOneItemById_WhenItemDoesntExists()
+        {
+            var item = CreateNewItem();
+
+            await Collection.InsertAsync(item);
+            var deleteAction = async () => await Collection.DeleteAsync(item.Id);
+
+            item.Should().NotBeNull();
+            await deleteAction.Should().ThrowExactlyAsync<StorageException>();
+        }
+
+        public override async Task DeleteListOfItemsById_WhenItemsDontExist()
+        {
+            int itemsCount = 5;
+            List<TestAzureTableItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var ids = list.Select(item => item.Id);
+
+            var deletedItemsAction = async () => await Collection.DeleteAsync(ids);
+
+            await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
+        }
+
+        public override async Task DeleteListOfItems_WhenItemsDontExist()
+        {
+            int itemsCount = 5;
+            List<TestAzureTableItem> list = new();
+
+            for (var i = 0; i < itemsCount; i++)
+            {
+                list.Add(CreateNewItem());
+            }
+
+            var deletedItemsAction = async () => await Collection.DeleteAsync(list);
+
+            await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
+            list.Count.Should().Be(itemsCount);
         }
     }
 }
