@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,7 +8,8 @@ using SQLite;
 
 namespace ManagedCode.Database.SQLite;
 
-public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TItem : class, IItem<TId>, new()
+public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> 
+    where TItem : class, IItem<TId>, new()
 {
     private readonly SQLiteConnection _connection;
 
@@ -18,7 +20,7 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
     private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
     {
-        var items = _connection.Table<KeyValuePair<TId, TItem>>().AsEnumerable();
+        IEnumerable<KeyValuePair<TId, TItem>> items = _connection.Table<KeyValuePair<TId, TItem>>().AsEnumerable();
 
         foreach (var query in Predicates)
         {
@@ -27,13 +29,40 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                 case QueryType.Where:
                     items = items.Where(x => query.ExpressionBool.Compile().Invoke(x.Value));
                     break;
+
                 case QueryType.OrderBy:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+                    }
                     items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
 
                 case QueryType.OrderByDescending:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+
+                    }
                     items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
+
+                case QueryType.ThenBy:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems)
+                    {
+                        items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
+                case QueryType.ThenByDescending:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedDescendingItems)
+                    {
+                        items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
                 case QueryType.Take:
                     items = items.Take(query.Count.GetValueOrDefault());
                     break;
@@ -46,10 +75,8 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     break;
             }
         }
-        foreach (var item in items)
-        {
-            yield return item;
-        }
+        return items;
+        
     }
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)

@@ -70,4 +70,14 @@ public abstract class OldBaseDBCollectionQueryable<TSource> : IDBCollectionQuery
     {
         return new List<TSource>(await ToAsyncEnumerable(cancellationToken).ToListAsync(cancellationToken));
     }
+
+    public IDBCollectionQueryable<TSource> ThenBy(Expression<Func<TSource, object>> keySelector)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IDBCollectionQueryable<TSource> ThenByDescending(Expression<Func<TSource, object>> keySelector)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -111,7 +111,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         itemsResult.Count.Should().Be(CountItem);
     }
 
-/*    [Fact]
+    [Fact]
     public virtual async Task TakeQuery_ReturnOk()
     {
         for (var i = 0; i < CountItem; i++)
@@ -125,9 +125,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         itemsResult.Count.Should().Be(5);
         itemsResult.First().IntData.Should().Be(0);
-    }*/
+    }
 
-/*    [Fact]
+    [Fact]
     public virtual async Task TakeQueryBeyond_ReturnOk()
     {
         for (var i = 0; i < CountItem; i++)
@@ -141,7 +141,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
 
         itemsResult.Count.Should().Be(CountItem);
         itemsResult.First().IntData.Should().Be(0);
-    }*/
+    }
 
     [Fact]
     public virtual async Task SkipQuery_ReturnOk()
@@ -382,9 +382,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var itemsResult = await Collection.Query.Take(3).Skip(1).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
+
     }
 
-/*    [Fact]
+    [Fact]
     public virtual async Task TakeSkipQueryBeyond_ReturnOk()
     {
         for (var i = 0; i < CountItem; i++)
@@ -395,7 +396,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
         var itemsResult = await Collection.Query.Take(CountItem + 5).Skip(5).ToListAsync();
 
         itemsResult.Count.Should().Be(CountItem - 5);
-    }*/
+    }
 
     [Fact]
     public virtual async Task WhereOrderByTakeQuery_ReturnOk()

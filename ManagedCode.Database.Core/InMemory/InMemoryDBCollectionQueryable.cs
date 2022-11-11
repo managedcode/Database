@@ -19,7 +19,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
 
     private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
     {
-        var items = _storage.AsEnumerable();
+        IEnumerable<KeyValuePair<TId, TItem>> items = _storage.AsEnumerable();
 
         foreach (var query in Predicates)
         {
@@ -30,21 +30,37 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     break;
 
                 case QueryType.OrderBy:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+                    }
                     items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
 
                 case QueryType.OrderByDescending:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+
+                    }
                     items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
 
-               /* case QueryType.ThenBy:
-                    IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems = null;
-                    orderedItems = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
-                    break;
+                case QueryType.ThenBy:
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems)
+                    {
+                        items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.ThenByDescending:
-                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
-                    break;*/
+                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedDescendingItems)
+                    {
+                        items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.Take:
                     items = items.Take(query.Count.GetValueOrDefault());
@@ -58,15 +74,15 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     break;
             }
         }
-        foreach (var item in items)
-        {
-            yield return item;
-        }
+       
+        return items;
+
     }
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
+
         foreach (var item in GetItemsInternal())
         {
             yield return item.Value;
