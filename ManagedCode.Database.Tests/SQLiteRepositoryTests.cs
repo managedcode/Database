@@ -57,9 +57,9 @@ namespace ManagedCode.Database.Tests
         /* 
           
          [Fact]
-         public override async Task InsertOneItem()
+         public override async Task InsertOneItem_ReturnsInsertedItem()
          {
-             Func<Task> act = () => base.InsertOneItem();
+             Func<Task> act = () => base.InsertOneItem_ReturnsInsertedItem();
 
              await act.Should().ThrowAsync<Exception>()
                  .WithMessage("UNIQUE constraint failed: SQLiteDbItem.Id");

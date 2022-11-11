@@ -34,13 +34,13 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return ValueTask.CompletedTask;
     }
 
-    public Task<TItem> InsertAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Insert(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -52,13 +52,13 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<TItem> UpdateAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Update(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -70,19 +70,19 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<bool> DeleteAsync(TId id, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
     {
         _zoneTree.Delete(id);
         return Task.FromResult(true);
     }
 
-    public Task<bool> DeleteAsync(TItem item, CancellationToken token = default)
+    public Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Delete(item.Id);
         return Task.FromResult(true);
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var id in ids)
@@ -94,7 +94,7 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -106,19 +106,19 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         _zoneTree.DeleteAll();
         return Task.FromResult(true);
     }
 
-    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken token = default)
+    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Upsert(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken token = default)
+    public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -130,12 +130,12 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<TItem> GetAsync(TId id, CancellationToken token = default)
+    public Task<TItem> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_zoneTree.Get(id));
     }
 
-    public Task<long> CountAsync(CancellationToken token = default)
+    public Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_zoneTree.Count());
     }

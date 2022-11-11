@@ -25,11 +25,6 @@ namespace ManagedCode.Database.Tests.InMemoryTests
             return _count;
         }
 
-        public override void Dispose()
-        {
-            _databaseb.Dispose();
-        }
-
         public override async Task InitializeAsync() =>
             await _databaseb.InitializeAsync();
 

@@ -1,5 +1,5 @@
+using Azure.Data.Tables;
 using ManagedCode.Database.Core;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 

@@ -1,9 +1,12 @@
+using System;
+using System.Runtime.Serialization;
+using Azure;
+using Azure.Data.Tables;
 using ManagedCode.Database.Core;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableItem : TableEntity, IItem<TableId>
+public class AzureTableItem : ITableEntity, IItem<TableId>
 {
     private TableId _id;
 
@@ -12,7 +15,12 @@ public class AzureTableItem : TableEntity, IItem<TableId>
         _id = new TableId(this);
     }
 
-    [IgnoreProperty]
+    public string PartitionKey { get; set; } = default!;
+    public string RowKey { get; set; } = default!;
+    public DateTimeOffset? Timestamp { get; set; } = default!;
+    public ETag ETag { get; set; }
+
+    [IgnoreDataMember]
     public TableId Id
     {
         get => _id;

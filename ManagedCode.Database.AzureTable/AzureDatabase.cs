@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
+using Humanizer;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableDatabase : BaseDatabase<CloudTableClient>
+public class AzureTableDatabase : BaseDatabase<TableServiceClient>
 {
     private readonly AzureTableRepositoryOptions _options;
-    private readonly Dictionary<string, object> _tableAdapters = new();
+    private readonly Dictionary<string, object> _collections = new();
 
     public AzureTableDatabase(AzureTableRepositoryOptions options)
     {
@@ -25,6 +26,12 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = string.IsNullOrEmpty(_options.ConnectionString) switch
+        {
+            true => new TableServiceClient(_options.TableStorageUri, _options.TableSharedKeyCredential),
+            false => new TableServiceClient(_options.ConnectionString),
+        };
+
         return Task.CompletedTask;
     }
 
@@ -36,7 +43,7 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
 
     protected override void DisposeInternal()
     {
-        _tableAdapters.Clear();
+        _collections.Clear();
     }
 
     public AzureTableDBCollection<TItem> GetCollection<TId, TItem>() where TItem : AzureTableItem, IItem<TId>, new()
@@ -44,7 +51,7 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
         return GetCollection<TId, TItem>(typeof(TItem).FullName);
     }
 
-    public AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name)
+    private AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name)
         where TItem : AzureTableItem, IItem<TId>, new()
     {
         if (!IsInitialized)
@@ -52,24 +59,41 @@ public class AzureTableDatabase : BaseDatabase<CloudTableClient>
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        lock (_tableAdapters)
+        var tableName = GetTableName<TItem>();
+
+        lock (_collections)
         {
-            if (_tableAdapters.TryGetValue(name, out var table))
+            if (_collections.TryGetValue(name, out var obj))
             {
-                return (AzureTableDBCollection<TItem>)table;
+                return obj as AzureTableDBCollection<TItem>;
             }
 
-            var tableAdapter = string.IsNullOrEmpty(_options.ConnectionString) switch
+            var table = NativeClient.GetTableClient(tableName);
+
+            if (_options.AllowTableCreation)
             {
-                true => new AzureTableAdapter<TItem>(_options.TableStorageCredentials, _options.TableStorageUri),
-                false => new AzureTableAdapter<TItem>(_options.ConnectionString),
-            };
+                table.CreateIfNotExists();
+            }
+            else
+            {
+                // var exists = table.
+                //
+                // if (!exists)
+                // {
+                //     throw new InvalidOperationException($"Table '{tableName}' does not exist");
+                // }
+            }
 
+            var collection = new AzureTableDBCollection<TItem>(table);
 
-            var collection = new AzureTableDBCollection<TItem>(tableAdapter);
+            _collections[name] = collection;
 
-            _tableAdapters[name] = collection;
             return collection;
         }
+    }
+
+    private string GetTableName<TItem>()
+    {
+        return typeof(TItem).Name.Pluralize();
     }
 }
