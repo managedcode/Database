@@ -106,7 +106,7 @@ public class ZoneTreeDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
         return Task.FromResult(i);
     }
 
-    public Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
         _zoneTree.DeleteAll();
         return Task.FromResult(true);

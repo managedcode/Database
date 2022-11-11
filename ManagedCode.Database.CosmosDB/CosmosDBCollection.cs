@@ -317,7 +317,7 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
         if (_splitByType)
         {

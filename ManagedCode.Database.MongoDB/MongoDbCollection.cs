@@ -149,7 +149,7 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
         var result = await _collection.DeleteManyAsync(w => true, token);
         return result.DeletedCount > 0;

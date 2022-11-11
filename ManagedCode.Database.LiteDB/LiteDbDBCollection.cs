@@ -153,7 +153,7 @@ public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
         await Task.Yield();
         return GetDatabase().DeleteAll() > 0;

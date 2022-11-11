@@ -25,9 +25,17 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<TItem?> GetAsync(TableId id, CancellationToken token = default)
     {
-        var response = await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey, cancellationToken: token);
+        try
+        {
+            var response =
+                await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey, cancellationToken: token);
 
-        return response.HasValue ? response.Value : null;
+            return response.HasValue ? response.Value : null;
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            return null;
+        }
     }
 
     #endregion
@@ -36,13 +44,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<long> CountAsync(CancellationToken token = default)
     {
-        //
-        // var query = new TableQuery<DynamicTableEntity>();
-        // query = query.CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-        //
-        // return await _tableClient.ExecuteQuery(query, cancellationToken: token).CountAsync(token);
-
-        return 0;
+        var query = _tableClient.QueryAsync<TItem>(cancellationToken: token);
+        return await query.LongCountAsync(cancellationToken: token);
     }
 
     #endregion
@@ -281,10 +284,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
-        // return await Query.DeleteAsync(token) > 0;
-
         var response = await _tableClient.DeleteAsync(token);
 
         return !response.IsError;

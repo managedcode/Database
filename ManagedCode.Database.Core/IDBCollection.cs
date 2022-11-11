@@ -23,7 +23,7 @@ public interface IDBCollection<in TId, TItem> : IDisposable, IAsyncDisposable wh
     Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken token = default);
     Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken token = default);
 
-    Task<bool> DeleteAllAsync(CancellationToken token = default);
+    Task<bool> DeleteCollectionAsync(CancellationToken token = default);
 
     Task<TItem?> GetAsync(TId id, CancellationToken token = default);
 

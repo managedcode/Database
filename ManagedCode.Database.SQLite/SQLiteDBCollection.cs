@@ -147,7 +147,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
         return count;
     }
 
-    public async Task<bool> DeleteAllAsync(CancellationToken token = default)
+    public async Task<bool> DeleteCollectionAsync(CancellationToken token = default)
     {
         await Task.Yield();
         return _database.DeleteAll<TItem>() != 0;

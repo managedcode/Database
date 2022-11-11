@@ -15,6 +15,11 @@ public class AzureTableItem : ITableEntity, IItem<TableId>
         _id = new TableId(this);
     }
 
+    public string PartitionKey { get; set; } = default!;
+    public string RowKey { get; set; } = default!;
+    public DateTimeOffset? Timestamp { get; set; } = default!;
+    public ETag ETag { get; set; }
+
     [IgnoreDataMember]
     public TableId Id
     {
@@ -25,9 +30,4 @@ public class AzureTableItem : ITableEntity, IItem<TableId>
             _id.SetEntity(this);
         }
     }
-
-    public string PartitionKey { get; set; }
-    public string RowKey { get; set; }
-    public DateTimeOffset? Timestamp { get; set; } = default!;
-    public ETag ETag { get; set; } = default!;
 }

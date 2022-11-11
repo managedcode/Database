@@ -22,42 +22,28 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
 
     public override IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        // _tableClient.Query<TItem>();
-        // var query = _tableClient.Query();
-        //
-        // query = query
-        //     .Where(WherePredicates)
-        //     .OrderBy(OrderByPredicates)
-        //     .OrderByDescending(OrderByDescendingPredicates)
-        //     .Take(TakeValue)
-        //     .Skip(SkipValue);
-        //
-        // return _tableClient.ExecuteQuery(query, cancellationToken);
+        var filter = CreateFiler();
 
-        throw new NotImplementedException();
+        return GetItemsInternal(_tableClient.QueryAsync<TItem>(filter, cancellationToken: cancellationToken)
+            .AsAsyncEnumerable());
     }
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        // var query = new TableQuery<TItem>().Where(WherePredicates);
-        //
-        // return await _tableClient.ExecuteQuery(query, cancellationToken).FirstOrDefaultAsync(cancellationToken);
+        var filter = CreateFiler();
 
-        throw new NotImplementedException();
+        return await _tableClient
+            .QueryAsync<TItem>(filter, maxPerPage: 1, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        // var query = new TableQuery<TItem>();
-        //
-        // query = query
-        //     .Where(WherePredicates);
-        // // .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey));
-        //
-        // return await _tableClient
-        //     .ExecuteQuery(query, cancellationToken)
-        //     .LongCountAsync(cancellationToken: cancellationToken);
-        throw new NotImplementedException();
+        var filter = CreateFiler();
+
+        return await _tableClient
+            .QueryAsync<TItem>(filter, cancellationToken: cancellationToken)
+            .CountAsync(cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
@@ -68,30 +54,77 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         // {
         //     cancellationToken.ThrowIfCancellationRequested();
         //
-        //     var query = new TableQuery<TItem>();
-        //
-        //     query = query
-        //         .Where(WherePredicates)
-        //         // .CustomSelect(item => new DynamicTableEntity(item.PartitionKey, item.RowKey))
-        //         // TODO: check
-        //         .Take(100);
+        //     var filter = CreateFiler();
         //
         //     var items = await _tableClient
-        //         .ExecuteQuery(query, cancellationToken)
-        //         .ToListAsync(cancellationToken: cancellationToken);
+        //         .QueryAsync<TItem>(filter, cancellationToken: cancellationToken)
+        //         .ToListAsync(cancellationToken);
+        //
         //
         //     count = items.Count;
         //
         //     cancellationToken.ThrowIfCancellationRequested();
-        //     totalCount += await _tableClient.ExecuteBatchAsync(items.Select(s =>
+        //     totalCount += await _tableClient.DeleteEntityAsync() .ExecuteBatchAsync(items.Select(s =>
         //         TableOperation.Delete(new DynamicTableEntity(s.PartitionKey, s.RowKey)
         //         {
         //             ETag = "*"
         //         })), cancellationToken);
         // } while (count > 0);
         //
-        // return totalCount;
-
+        // // return totalCount;
+        //
         throw new NotImplementedException();
+    }
+
+    private IAsyncEnumerable<TItem> GetItemsInternal(IAsyncEnumerable<TItem> asyncEnumerable)
+    {
+        foreach (var query in Predicates)
+        {
+            if (query.QueryType == QueryType.OrderBy)
+            {
+                asyncEnumerable = asyncEnumerable.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+            }
+            else if (query.QueryType == QueryType.OrderByDescending)
+            {
+                asyncEnumerable =
+                    asyncEnumerable.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+            }
+            else if (query.QueryType == QueryType.ThenBy)
+            {
+                if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedEnumerable)
+                {
+                    asyncEnumerable = orderedEnumerable.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                }
+            }
+            else if (query.QueryType == QueryType.ThenByDescending)
+            {
+                if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedDescendingEnumerable)
+                {
+                    asyncEnumerable =
+                        orderedDescendingEnumerable.ThenByDescending(
+                            x => query.ExpressionObject.Compile().Invoke(x));
+                }
+            }
+            else if (query.QueryType == QueryType.Take)
+            {
+                asyncEnumerable = asyncEnumerable.Take(query.Count.GetValueOrDefault());
+            }
+            else if (query.QueryType == QueryType.Skip)
+            {
+                asyncEnumerable = asyncEnumerable.Skip(query.Count.GetValueOrDefault());
+            }
+        }
+
+        return asyncEnumerable;
+    }
+
+    private string CreateFiler()
+    {
+        var filter = Predicates
+            .Where(p => p.QueryType is QueryType.Where)
+            .Select(p => TableClient.CreateQueryFilter(p.ExpressionBool))
+            .Aggregate((a, b) => a + " and " + b);
+
+        return filter;
     }
 }

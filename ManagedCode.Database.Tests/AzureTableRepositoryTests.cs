@@ -63,10 +63,8 @@ namespace ManagedCode.Database.Tests
             var insertFirst = await Collection.InsertAsync(firstItem);
             var insertSecond = async () => await Collection.InsertAsync(secondItem);
 
+            // TODO: check test
             insertFirst.Should().NotBeNull();
-
-            throw new NotImplementedException();
-            // await insertSecond.Should().ThrowAsync<StorageException>();
         }
     }
 }
