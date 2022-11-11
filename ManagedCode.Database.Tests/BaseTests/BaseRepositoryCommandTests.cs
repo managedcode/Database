@@ -194,7 +194,8 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
         {
-            int itemsCountToAdd = 10;
+            int expectedItemsCount = 10;
+            int itemsCountToAdd = 9;
             int expectedUpdatedItemsCount = 1;
             List<TItem> list = new();
 
@@ -217,8 +218,8 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var updatedItems = await Collection.UpdateAsync(list);
 
-            list.Count.Should().Be(itemsCountToAdd);
-            items.Should().Be(items);
+            list.Count.Should().Be(expectedItemsCount);
+            items.Should().Be(expectedItemsCount);
             updatedItems.Should().Be(expectedUpdatedItemsCount);
         }
 
@@ -329,8 +330,8 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task DeleteByQuery()
         {
             int itemsCount = 6;
-            int equalsQueryItemsCount = 0;
-            int orQueryItemsCount = 0;
+            int equalsQueryItemsCount = 1;
+            int orQueryItemsCount = 2;
 
             List<TItem> list = new();
 
