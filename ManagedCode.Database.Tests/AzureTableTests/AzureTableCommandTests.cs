@@ -123,7 +123,6 @@ namespace ManagedCode.Database.Tests.AzureTableTests
         {
             var item = CreateNewItem();
 
-            await Collection.InsertAsync(item);
             var deleteAction = async () => await Collection.DeleteAsync(item.Id);
 
             item.Should().NotBeNull();
