@@ -34,6 +34,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     {
                         throw new InvalidOperationException("After OrderBy call ThenBy.");
                     }
+
                     items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
 
@@ -41,8 +42,8 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
                     {
                         throw new InvalidOperationException("After OrderBy call ThenBy.");
-
                     }
+
                     items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
                     break;
 
@@ -52,6 +53,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                         items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
                         break;
                     }
+
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.ThenByDescending:
@@ -60,6 +62,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                         items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
                         break;
                     }
+
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.Take:
