@@ -56,7 +56,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task InsertItemDuplicate()
+        public virtual async Task InsertItem_WhenItemExsist()
         {
             var id = GenerateId();
             var firstItem = CreateNewItem(id);
@@ -85,7 +85,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task Insert5Items()
+        public virtual async Task Insert5Items_WhenOneItemAlreadyExists()
         {
             var id = GenerateId();
 
@@ -187,7 +187,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task UpdateOneItemFromList()
+        public virtual async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
         {
             List<TItem> list = new();
 
@@ -220,7 +220,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #region Delete
 
         [Fact]
-        public virtual async Task DeleteOneItemById()
+        public virtual async Task DeleteItemById()
         {
             var item = CreateNewItem();
             
@@ -232,7 +232,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task DeleteOneItemById_WhenItemDoesntExists()
+        public virtual async Task DeleteItemById_WhenItemDoesntExists()
         {
             var item = CreateNewItem();
             
@@ -300,7 +300,6 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task DeleteListOfItemsById_WhenItemsDontExist()
         {
-
             int itemsCount = 5;
             List<TItem> list = new();
 

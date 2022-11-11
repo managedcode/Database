@@ -51,7 +51,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             await _database.InitializeAsync();
         }
 
-        public override async Task UpdateOneItemFromList()
+        public override async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
         {
             List<TestAzureTableItem> list = new();
 
@@ -85,7 +85,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             await updateItemAction.Should().ThrowExactlyAsync<StorageException>();
         }
 
-        public override async Task InsertItemDuplicate()
+        public override async Task InsertItem_WhenItemExsist()
         {
             var id = GenerateId();
             var firstItem = CreateNewItem(id);
@@ -98,7 +98,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             await insertSecondItem.Should().ThrowExactlyAsync<StorageException>();
         }
 
-        public override async Task Insert5Items()
+        public override async Task Insert5Items_WhenOneItemAlreadyExists()
         {
 
             var id = GenerateId();
@@ -119,7 +119,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
             await insertAction.Should().ThrowExactlyAsync<StorageException>();
         }
 
-        public override async Task DeleteOneItemById_WhenItemDoesntExists()
+        public override async Task DeleteItemById_WhenItemDoesntExists()
         {
             var item = CreateNewItem();
 
