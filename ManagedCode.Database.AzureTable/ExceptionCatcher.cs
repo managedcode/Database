@@ -15,20 +15,9 @@ public static class ExceptionCatcher
         {
             return await task;
         }
-        catch (Exception e) when (e is RequestFailedException exception)
-        {
-            if (exception.ErrorCode == "EntityAlreadyExists")
-            {
-                throw new DatabaseException(exception.Message, exception,
-                    ErrorCode.EntityAlreadyExist);
-            }
-
-            throw new DatabaseException(exception.Message, exception,
-                ErrorCode.Unknown);
-        }
         catch (Exception exception)
         {
-            throw new DatabaseException(exception.Message, exception, ErrorCode.Unknown);
+            throw new DatabaseException(exception.Message, exception);
         }
     }
 }

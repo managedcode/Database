@@ -7,6 +7,7 @@ using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.AzureTable.Extensions;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -28,13 +29,12 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     {
         try
         {
-            var response =
-                await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey,
-                    cancellationToken: cancellationToken);
+            var response = await ExceptionCatcher.ExecuteAsync(_tableClient.GetEntityAsync<TItem>(id.PartitionKey,
+                id.RowKey, cancellationToken: cancellationToken));
 
             return response.HasValue ? response.Value : null;
         }
-        catch (RequestFailedException e) when (e.Status == 404)
+        catch (DatabaseException e) when (e.InnerException is RequestFailedException { Status: 404 })
         {
             return null;
         }
