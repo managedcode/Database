@@ -53,39 +53,7 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
         await _database.InitializeAsync();
     }
 
-    public override async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
-    {
-        List<TestAzureTableItem> list = new();
-
-        var id = GenerateId();
-
-        list.Add(CreateNewItem(id));
-        for (var i = 0; i < 9; i++)
-        {
-            list.Add(CreateNewItem());
-        }
-
-        var items = await Collection.InsertAsync(list);
-        list.Clear();
-
-        list.Add(CreateNewItem(id));
-
-        //  ᓚᘏᗢ It throws exception if item with that Id doesn't exists
-        var updatedItems = await Collection.UpdateAsync(list);
-
-        list.Count.Should().Be(1);
-        items.Should().Be(10);
-        updatedItems.Should().Be(1);
-    }
-
-    public override async Task UpdateItem_WhenItem_DoesntExists()
-    {
-        var id = GenerateId();
-
-        var updateItemAction = async () => await Collection.UpdateAsync(CreateNewItem(id));
-
-        await updateItemAction.Should().ThrowExactlyAsync<DatabaseException>();
-    }
+    #region Insert
 
     public override async Task InsertItem_WhenItemExsist()
     {
@@ -120,18 +88,106 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
         await insertAction.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
+    public override async Task InsertOrUpdateListOfItems()
+    {
+        int itemsCount = 5;
+        List<TestAzureTableItem> list = new();
+
+        for (var i = 0; i < itemsCount; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        var itemsInsert = await Collection.InsertOrUpdateAsync(list);
+
+        foreach (var item in list)
+        {
+            item.DateTimeData = DateTime.UtcNow.AddDays(-1);
+        }
+
+        var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
+        //TODO: LiteDB must be 100, but result 0
+
+        itemsUpdate.Should().Be(itemsCount);
+        itemsInsert.Should().Be(itemsCount);
+        list.Count.Should().Be(itemsCount);
+    }
+
+    #endregion
+
+    #region Update
+
+    public override async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
+    {
+        List<TestAzureTableItem> list = new();
+
+        var id = GenerateId();
+
+        list.Add(CreateNewItem(id));
+        for (var i = 0; i < 9; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        var items = await Collection.InsertAsync(list);
+        list.Clear();
+
+        list.Add(CreateNewItem(id));
+
+        //  ᓚᘏᗢ It throws exception if item with that Id doesn't exists
+        var updatedItems = await Collection.UpdateAsync(list);
+
+        list.Count.Should().Be(1);
+        items.Should().Be(10);
+        updatedItems.Should().Be(1);
+    }
+
+    public override async Task UpdateItem_WhenItem_DoesntExists()
+    {
+        var id = GenerateId();
+
+        var updateItemAction = async () => await Collection.UpdateAsync(CreateNewItem(id));
+
+        await updateItemAction.Should().ThrowExactlyAsync<DatabaseException>();
+    }
+
+    #endregion
+
+    #region Delete
+
     public override async Task DeleteItemById_WhenItemDoesntExists()
     {
         var item = CreateNewItem();
 
-        var deleteAction = async () => await Collection.DeleteAsync(item.Id);
+        var result = await Collection.DeleteAsync(item.Id);
 
         item.Should().NotBeNull();
-        await deleteAction.Should().ThrowExactlyAsync<Exception>();
+        result.Should().BeFalse();
+    }
+
+    public override async Task DeleteAll()
+    {
+        //  Here in azure tables it deletes entire table, not all elements in collection
+        int itemsCount = 5;
+        List<TestAzureTableItem> list = new();
+
+        for (var i = 0; i < itemsCount; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        var items = await Collection.InsertAsync(list);
+        var deletedItems = await Collection.DeleteCollectionAsync();
+        var count = await Collection.CountAsync();
+
+        deletedItems.Should().BeTrue();
+        items.Should().Be(itemsCount);
+        count.Should().Be(0);
     }
 
     public override async Task DeleteListOfItemsById_WhenItemsDontExist()
     {
+        // Non supppoerted in AzureTableDbCollection
         int itemsCount = 5;
         List<TestAzureTableItem> list = new();
 
@@ -144,7 +200,7 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
         var deletedItemsAction = async () => await Collection.DeleteAsync(ids);
 
-        // await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
+        await deletedItemsAction.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
     public override async Task DeleteListOfItems_WhenItemsDontExist()
@@ -159,7 +215,8 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
         var deletedItemsAction = async () => await Collection.DeleteAsync(list);
 
-        // await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
-        list.Count.Should().Be(itemsCount);
+        await deletedItemsAction.Should().ThrowExactlyAsync<DatabaseException>();
     }
+
+    #endregion
 }
