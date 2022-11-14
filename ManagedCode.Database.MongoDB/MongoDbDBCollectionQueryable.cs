@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using DnsClient;
 using ManagedCode.Database.Core;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,7 +12,7 @@ using MongoDB.Driver.Linq;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
+public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
 
@@ -19,45 +21,79 @@ public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<
         _collection = collection;
     }
 
+    private IEnumerable<TItem> GetItemsInternal()
+    {
+        var mongoQuery = _collection.AsQueryable();
+
+        foreach (var query in Predicates)
+        {
+            switch (query.QueryType)
+            {
+                case QueryType.Where:
+                    mongoQuery = mongoQuery.Where(x => query.ExpressionBool.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderBy:
+                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+                    }
+                    mongoQuery = mongoQuery.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderByDescending:
+                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
+                    {
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
+                    }
+                    mongoQuery = mongoQuery.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.ThenBy:
+                    if (mongoQuery is IOrderedMongoQueryable<TItem> orderedItems)
+                    {
+                        mongoQuery = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
+                case QueryType.ThenByDescending:
+                    if (mongoQuery is IOrderedMongoQueryable<TItem> orderedDescendingItems)
+                    {
+                        mongoQuery = orderedDescendingItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
+                case QueryType.Take:
+                    if (query.Count.HasValue)
+                    {
+                        mongoQuery = mongoQuery.Take(query.Count.Value);
+                    }
+                    break;
+
+                case QueryType.Skip:
+                    if (query.Count.HasValue)
+                    {
+                        mongoQuery = mongoQuery.Skip(query.Count.Value);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        return mongoQuery;
+    }
+
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var query = _collection.AsQueryable();
-        foreach (var predicate in WherePredicates)
-        {
-            query = query.Where(predicate);
-        }
+        await Task.Yield();
 
-        if (OrderByPredicates.Count > 0)
+        foreach (var item in GetItemsInternal())
         {
-            foreach (var predicate in OrderByPredicates)
-            {
-                query = query.OrderBy(predicate);
-            }
-        }
-
-        if (OrderByDescendingPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByDescendingPredicates)
-            {
-                query = query.OrderByDescending(predicate);
-            }
-        }
-
-        SkipValue ??= 0;
-
-        if (TakeValue.HasValue)
-        {
-            foreach (var item in await Task.Run(() => query.Skip(SkipValue.Value).Take(TakeValue.Value).ToArray(), cancellationToken))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.Skip(SkipValue.Value).ToArray(), cancellationToken))
-            {
-                yield return item;
-            }
+            yield return item;
         }
     }
 
@@ -68,18 +104,17 @@ public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = _collection.AsQueryable();
-        foreach (var predicate in WherePredicates)
-        {
-            query = query.Where(predicate);
-        }
-
-        return await Task.Run(() => query.Count(), cancellationToken);
+        return await Task.Run(() => GetItemsInternal().Count(), cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteManyAsync<TItem>(WherePredicates.FirstOrDefault(), cancellationToken);
+        var ids = GetItemsInternal().Select(d => d.Id);
+
+        var filter = Builders<TItem>.Filter.In(d => d.Id, ids);
+
+        var result = await _collection.DeleteManyAsync(filter);
+
         return Convert.ToInt32(result.DeletedCount);
     }
 }
