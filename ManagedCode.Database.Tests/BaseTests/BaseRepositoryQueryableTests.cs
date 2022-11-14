@@ -118,11 +118,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
             item.IntData = i;
             await Collection.InsertAsync(item);
         }
-
+        
         var itemsResult = await Collection.Query.Take(5).ToListAsync();
-
         itemsResult.Count.Should().Be(5);
-        itemsResult.First().IntData.Should().Be(0);
     }
 
     [Fact]
@@ -248,7 +246,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(2).ToListAsync();
 
         itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(0);
+        itemsResult[0].StringData.Should().Be(guid);
+        itemsResult[1].StringData.Should().Be(guid);
     }
 
 

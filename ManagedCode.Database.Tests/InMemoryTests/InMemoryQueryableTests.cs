@@ -28,7 +28,7 @@ public class InMemoryQueryableTests : BaseRepositoryQueryableTests<int, InMemory
             await _database.InitializeAsync();
 
     public override async Task DisposeAsync() =>
-        await _database.DisposeAsync();
+        await _database.DeleteAsync();
 
 }
 

@@ -100,7 +100,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
 
     public override Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        return Task.FromResult<TItem?>(GetItemsInternal().FirstOrDefault().Value);
     }
 
     public override Task<long> CountAsync(CancellationToken cancellationToken = default)
