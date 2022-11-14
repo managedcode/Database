@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using DnsClient;
@@ -22,51 +23,59 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
 
     private IEnumerable<TItem> GetItemsInternal()
     {
-        var items = _collection.AsQueryable();
+        var mongoQuery = _collection.AsQueryable();
 
         foreach (var query in Predicates)
         {
             switch (query.QueryType)
             {
                 case QueryType.Where:
-                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x));
+                    mongoQuery = mongoQuery.Where(x => query.ExpressionBool.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderBy:
-                    if (items is IOrderedEnumerable<TItem>)
+                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
                     {
-                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
                     }
-
-                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    mongoQuery = mongoQuery.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderByDescending:
-                    if (items is IOrderedEnumerable<TItem>)
+                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
                     {
-                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
+                        throw new InvalidOperationException("After OrderBy call ThenBy.");
                     }
-
-                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+                    mongoQuery = mongoQuery.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.ThenBy:
-                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
+                    if (mongoQuery is IOrderedMongoQueryable<TItem> orderedItems)
+                    {
+                        mongoQuery = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.ThenByDescending:
-                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
+                    if (mongoQuery is IOrderedMongoQueryable<TItem> orderedDescendingItems)
+                    {
+                        mongoQuery = orderedDescendingItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.Take:
                     if (query.Count.HasValue)
                     {
-                        items = items.Take(query.Count.Value);
+                        mongoQuery = mongoQuery.Take(query.Count.Value);
                     }
                     break;
 
                 case QueryType.Skip:
                     if (query.Count.HasValue)
                     {
-                        items = items.Skip(query.Count.Value);
+                        mongoQuery = mongoQuery.Skip(query.Count.Value);
                     }
                     break;
 
@@ -75,7 +84,7 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
             }
         }
 
-        return items;
+        return mongoQuery;
     }
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
