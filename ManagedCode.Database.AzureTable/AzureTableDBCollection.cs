@@ -27,7 +27,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
         try
         {
             var response =
-                await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey, cancellationToken: cancellationToken);
+                await _tableClient.GetEntityAsync<TItem>(id.PartitionKey, id.RowKey,
+                    cancellationToken: cancellationToken);
 
             return response.HasValue ? response.Value : null;
         }
@@ -53,7 +54,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<TItem?> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var response = await _tableClient.AddEntityAsync(item, cancellationToken);
+        var response = await ExceptionCatcher.ExecuteAsync(_tableClient.AddEntityAsync(item, cancellationToken));
 
         return response.IsError ? null : item;
     }
@@ -62,7 +63,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     {
         var actions = items.Select(item => _tableClient.AddEntityAsync(item, cancellationToken: cancellationToken));
 
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
     }
 
     #endregion
@@ -71,7 +72,9 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var response = await _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(
+                _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken));
 
         return response.IsError ? null : item;
     }
@@ -81,7 +84,7 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     {
         var actions = items.Select(item => _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken));
 
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
     }
 
     #endregion
@@ -95,15 +98,19 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
             item.ETag = ETag.All;
         }
 
-        var response = await _tableClient.UpdateEntityAsync(item, item.ETag, cancellationToken: cancellationToken);
+        var response = await ExceptionCatcher.ExecuteAsync(_tableClient.UpdateEntityAsync(item, item.ETag,
+            cancellationToken: cancellationToken));
 
         return response.IsError ? null : item;
     }
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(i => _tableClient.UpdateEntityAsync(i, i.ETag, cancellationToken: cancellationToken));
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken);
+        var actions =
+            items.Select(i => _tableClient.UpdateEntityAsync(i, i.ETag, cancellationToken: cancellationToken));
+
+        _tableClient()
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken);
     }
 
     #endregion
@@ -113,8 +120,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<bool> DeleteAsync(TableId id, CancellationToken cancellationToken = default)
     {
         var response = await _tableClient
-            .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: cancellationToken);
-
+                .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: cancellationToken);
+            )
         return response?.IsError is not true;
     }
 
@@ -131,15 +138,18 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
         var actions = ids
             .Select(id => _tableClient.DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken));
 
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
     }
 
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var actions = items
-            .Select(item => _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
+            .Select(item =>
+                _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
 
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+        TableTransactionAction action = new TableTransactionAction(TableTransactionActionType.Delete);
+
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
     }
 
     public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)

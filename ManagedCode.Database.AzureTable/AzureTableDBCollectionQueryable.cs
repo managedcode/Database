@@ -56,11 +56,12 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
             .Select(item =>
                 _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
 
-        return await BatchHelper.ExecuteAsync(actions, cancellationToken: cancellationToken);
+        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
     }
 
     private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable, List<QueryItem> predicates)
     {
+        // TODO: add warning
         foreach (var query in predicates)
         {
             switch (query.QueryType)
