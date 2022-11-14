@@ -39,6 +39,7 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     {
                         throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
                     }
+
                     items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
@@ -46,8 +47,8 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     if (items is IOrderedEnumerable<TItem>)
                     {
                         throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
-
                     }
+
                     items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
@@ -58,11 +59,17 @@ public class LiteDbDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     throw new InvalidOperationException("LiteBD does not support ThenBy.");
 
                 case QueryType.Take:
-                    items = items.Take(query.Count.GetValueOrDefault());
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Take(query.Count.Value);
+                    }
                     break;
 
                 case QueryType.Skip:
-                    items = items.Skip(query.Count.GetValueOrDefault());
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Skip(query.Count.Value);
+                    }
                     break;
 
                 default:
