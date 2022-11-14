@@ -4,7 +4,7 @@ namespace ManagedCode.Database.Core.Extensions;
 
 public static class TypeExtensions
 {
-    public static bool EqualsToGeneric(this Type type, Type baseType)
+    public static bool EqualsToGeneric(this Type? type, Type baseType)
     {
         if (type != null)
         {

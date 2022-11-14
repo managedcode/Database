@@ -31,7 +31,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 LongData = rnd.Next(),
                 FloatData = Convert.ToSingle(rnd.NextDouble()),
                 DoubleData = rnd.NextDouble(),
-                DateTimeData = DateTime.Now,
+                DateTimeData = DateTime.UtcNow,
             };
         }
 
