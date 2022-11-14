@@ -67,10 +67,14 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
             {
                 case QueryType.OrderBy:
                     asyncEnumerable = asyncEnumerable.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+
+                    // TODO: Maybe need to check is IOrderedEnumerable and do throw exception
                     break;
                 case QueryType.OrderByDescending:
                     asyncEnumerable =
                         asyncEnumerable.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+
+                    // TODO: Maybe need to check is IOrderedEnumerable and do throw exception
                     break;
                 case QueryType.ThenBy:
                 {

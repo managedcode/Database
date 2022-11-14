@@ -66,11 +66,17 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.Take:
-                    items = items.Take(query.Count.GetValueOrDefault());
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Take(query.Count.Value);
+                    }
                     break;
 
                 case QueryType.Skip:
-                    items = items.Skip(query.Count.GetValueOrDefault());
+                    if(query.Count.HasValue)
+                    {
+                        items = items.Skip(query.Count.Value);
+                    }
                     break;
 
                 default: 

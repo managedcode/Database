@@ -20,7 +20,7 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
     private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
     {
-        IEnumerable<KeyValuePair<TId, TItem>> items = _connection.Table<KeyValuePair<TId, TItem>>().AsEnumerable();
+        IEnumerable<KeyValuePair<TId, TItem>> items = _connection.Table<KeyValuePair<TId, TItem>>();
 
         foreach (var query in Predicates)
         {
@@ -64,11 +64,17 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.Take:
-                    items = items.Take(query.Count.GetValueOrDefault());
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Take(query.Count.Value);
+                    }
                     break;
 
                 case QueryType.Skip:
-                    items = items.Skip(query.Count.GetValueOrDefault());
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Skip(query.Count.Value);
+                    }
                     break;
 
                 default:
