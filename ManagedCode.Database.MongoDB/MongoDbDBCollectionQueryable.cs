@@ -95,14 +95,7 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        int count = 0;
-
-        foreach (var item in GetItemsInternal())
-        {
-            count++;
-        }
-
-        return await Task.Run(() => count, cancellationToken);
+        return await Task.Run(() => GetItemsInternal().Count(), cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
