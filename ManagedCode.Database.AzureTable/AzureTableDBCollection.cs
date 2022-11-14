@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using ManagedCode.Database.AzureTable.Extensions;
 using ManagedCode.Database.Core;
 
 namespace ManagedCode.Database.AzureTable;
@@ -62,13 +63,10 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item =>
-            new TableTransactionAction(TableTransactionActionType.Add, item, item.ETag));
+        var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
+            TableTransactionActionType.Add, cancellationToken);
 
-        var response =
-            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
-
-        return response?.Value.Count(v => !v.IsError) ?? 0;
+        return responses.Count(v => !v.IsError);
     }
 
     #endregion
@@ -87,13 +85,10 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item =>
-            new TableTransactionAction(TableTransactionActionType.UpsertMerge, item, item.ETag));
+        var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
+            TableTransactionActionType.UpsertMerge, cancellationToken);
 
-        var response =
-            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
-
-        return response?.Value.Count(v => !v.IsError) ?? 0;
+        return responses.Count(v => !v.IsError);
     }
 
     #endregion
@@ -115,13 +110,10 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item =>
-            new TableTransactionAction(TableTransactionActionType.UpdateMerge, item, item.ETag));
+        var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
+            TableTransactionActionType.UpdateMerge, cancellationToken);
 
-        var response =
-            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
-
-        return response?.Value.Count(v => !v.IsError) ?? 0;
+        return responses.Count(v => !v.IsError);
     }
 
     #endregion
@@ -151,12 +143,10 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item => new TableTransactionAction(TableTransactionActionType.Delete, item, item.ETag));
+        var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
+            TableTransactionActionType.Delete, cancellationToken);
 
-        var response =
-            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
-
-        return response?.Value.Count(v => !v.IsError) ?? 0;
+        return responses.Count(v => !v.IsError);
     }
 
     public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)

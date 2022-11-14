@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
-
+using ManagedCode.Database.AzureTable.Extensions;
 
 namespace ManagedCode.Database.AzureTable;
 
@@ -51,13 +51,10 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         var items = await _tableClient
             .QueryAsync<TItem>(filter, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
 
-        var actions = items.Select(item =>
-            new TableTransactionAction(TableTransactionActionType.Delete, item, item.ETag));
+        var responses = await _tableClient.SubmitTransactionByChunksAsync<TItem>(items,
+            TableTransactionActionType.Delete, cancellationToken);
 
-        var response =
-            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
-
-        return response?.Value.Count(v => !v.IsError) ?? 0;
+        return responses.Count(v => !v.IsError);
     }
 
     private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable,
