@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests;
 
-public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IAsyncLifetime
+public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
@@ -19,8 +19,6 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IDisposable, IA
     public abstract Task InitializeAsync();
 
     public abstract Task DisposeAsync();
-
-    public abstract void Dispose();
 
     public int CountItem = 10;
 

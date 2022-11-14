@@ -97,7 +97,7 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
         }
     }
 
-    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

@@ -18,7 +18,9 @@ public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
 
     public override Task DeleteAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        DisposeInternal();
+        System.IO.File.Delete(NativeClient.DatabasePath);
+        return Task.CompletedTask;
     }
 
     protected override ValueTask DisposeAsyncInternal()
@@ -46,6 +48,7 @@ public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
             throw new DatabaseNotInitializedException(GetType());
         }
 
+        NativeClient.CreateTable<TItem>();
         return new SQLiteDBCollection<TId, TItem>(NativeClient);
     }
 }

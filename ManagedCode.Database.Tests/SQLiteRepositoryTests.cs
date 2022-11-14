@@ -32,14 +32,8 @@ namespace ManagedCode.Database.Tests
 
         public override async Task DisposeAsync()
         {
-            await _database.DisposeAsync();
+            await _database.DeleteAsync();
         }
-
-        public override void Dispose()
-        {
-            _database.Dispose();
-        }
-        
 
         protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
 
