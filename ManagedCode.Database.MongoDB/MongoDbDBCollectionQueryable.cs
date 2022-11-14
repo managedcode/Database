@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DnsClient;
 using ManagedCode.Database.Core;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,7 +11,7 @@ using MongoDB.Driver.Linq;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
+public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
 
@@ -19,45 +20,71 @@ public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<
         _collection = collection;
     }
 
+    private IEnumerable<TItem> GetItemsInternal()
+    {
+        var items = _collection.AsQueryable();
+
+        foreach (var query in Predicates)
+        {
+            switch (query.QueryType)
+            {
+                case QueryType.Where:
+                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderBy:
+                    if (items is IOrderedEnumerable<TItem>)
+                    {
+                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
+                    }
+
+                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderByDescending:
+                    if (items is IOrderedEnumerable<TItem>)
+                    {
+                        throw new InvalidOperationException("LiteBD does not support multiple OrderBy.");
+                    }
+
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.ThenBy:
+                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
+
+                case QueryType.ThenByDescending:
+                    throw new InvalidOperationException("LiteBD does not support ThenBy.");
+
+                case QueryType.Take:
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Take(query.Count.Value);
+                    }
+                    break;
+
+                case QueryType.Skip:
+                    if (query.Count.HasValue)
+                    {
+                        items = items.Skip(query.Count.Value);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        return items;
+    }
+
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var query = _collection.AsQueryable();
-        foreach (var predicate in WherePredicates)
-        {
-            query = query.Where(predicate);
-        }
+        await Task.Yield();
 
-        if (OrderByPredicates.Count > 0)
+        foreach (var item in GetItemsInternal())
         {
-            foreach (var predicate in OrderByPredicates)
-            {
-                query = query.OrderBy(predicate);
-            }
-        }
-
-        if (OrderByDescendingPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByDescendingPredicates)
-            {
-                query = query.OrderByDescending(predicate);
-            }
-        }
-
-        SkipValue ??= 0;
-
-        if (TakeValue.HasValue)
-        {
-            foreach (var item in await Task.Run(() => query.Skip(SkipValue.Value).Take(TakeValue.Value).ToArray(), cancellationToken))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in await Task.Run(() => query.Skip(SkipValue.Value).ToArray(), cancellationToken))
-            {
-                yield return item;
-            }
+            yield return item;
         }
     }
 
@@ -68,18 +95,24 @@ public class MongoDbDBCollectionQueryable<TItem> : OldBaseDBCollectionQueryable<
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = _collection.AsQueryable();
-        foreach (var predicate in WherePredicates)
+        int count = 0;
+
+        foreach (var item in GetItemsInternal())
         {
-            query = query.Where(predicate);
+            count++;
         }
 
-        return await Task.Run(() => query.Count(), cancellationToken);
+        return await Task.Run(() => count, cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteManyAsync<TItem>(WherePredicates.FirstOrDefault(), cancellationToken);
+        var ids = GetItemsInternal().Select(d => d.Id);
+
+        var filter = Builders<TItem>.Filter.In(d => d.Id, ids);
+
+        var result = await _collection.DeleteManyAsync(filter);
+
         return Convert.ToInt32(result.DeletedCount);
     }
 }
