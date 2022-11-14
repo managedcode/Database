@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -61,9 +62,13 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item => _tableClient.AddEntityAsync(item, cancellationToken: cancellationToken));
+        var actions = items.Select(item =>
+            new TableTransactionAction(TableTransactionActionType.Add, item, item.ETag));
 
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
+
+        return response?.Value.Count(v => !v.IsError) ?? 0;
     }
 
     #endregion
@@ -82,9 +87,13 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var actions = items.Select(item => _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken));
+        var actions = items.Select(item =>
+            new TableTransactionAction(TableTransactionActionType.UpsertMerge, item, item.ETag));
 
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
+
+        return response?.Value.Count(v => !v.IsError) ?? 0;
     }
 
     #endregion
@@ -106,11 +115,13 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions =
-            items.Select(i => _tableClient.UpdateEntityAsync(i, i.ETag, cancellationToken: cancellationToken));
+        var actions = items.Select(item =>
+            new TableTransactionAction(TableTransactionActionType.UpdateMerge, item, item.ETag));
 
-        _tableClient()
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
+
+        return response?.Value.Count(v => !v.IsError) ?? 0;
     }
 
     #endregion
@@ -120,8 +131,8 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
     public async Task<bool> DeleteAsync(TableId id, CancellationToken cancellationToken = default)
     {
         var response = await _tableClient
-                .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: cancellationToken);
-            )
+            .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken: cancellationToken);
+
         return response?.IsError is not true;
     }
 
@@ -133,23 +144,19 @@ public class AzureTableDBCollection<TItem> : IDBCollection<TableId, TItem>
         return response?.IsError is not true;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken cancellationToken = default)
+    public Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken cancellationToken = default)
     {
-        var actions = ids
-            .Select(id => _tableClient.DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken));
-
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
+        throw new NotSupportedException();
     }
 
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var actions = items
-            .Select(item =>
-                _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
+        var actions = items.Select(item => new TableTransactionAction(TableTransactionActionType.Delete, item, item.ETag));
 
-        TableTransactionAction action = new TableTransactionAction(TableTransactionActionType.Delete);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
 
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
+        return response?.Value.Count(v => !v.IsError) ?? 0;
     }
 
     public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)

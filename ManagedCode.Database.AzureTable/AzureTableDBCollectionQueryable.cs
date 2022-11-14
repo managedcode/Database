@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
 
@@ -52,14 +51,17 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         var items = await _tableClient
             .QueryAsync<TItem>(filter, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
 
-        var actions = items
-            .Select(item =>
-                _tableClient.DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken));
+        var actions = items.Select(item =>
+            new TableTransactionAction(TableTransactionActionType.Delete, item, item.ETag));
 
-        return await ExceptionCatcher.ExecuteBatchAsync(actions, cancellationToken: cancellationToken);
+        var response =
+            await ExceptionCatcher.ExecuteAsync(_tableClient.SubmitTransactionAsync(actions, cancellationToken));
+
+        return response?.Value.Count(v => !v.IsError) ?? 0;
     }
 
-    private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable, List<QueryItem> predicates)
+    private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable,
+        List<QueryItem> predicates)
     {
         // TODO: add warning
         foreach (var query in predicates)
@@ -104,12 +106,14 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
                     {
                         asyncEnumerable = asyncEnumerable.Take(query.Count.Value);
                     }
+
                     break;
                 case QueryType.Skip:
                     if (query.Count.HasValue)
                     {
                         asyncEnumerable = asyncEnumerable.Skip(query.Count.Value);
                     }
+
                     break;
             }
         }
