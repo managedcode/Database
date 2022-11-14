@@ -105,14 +105,7 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
     {
         await Task.Yield();
 
-        int count = 0;
-
-        foreach (var item in GetItemsInternal())
-        {
-            count++;
-        }
-
-        return count;
+        return GetItemsInternal().Count();
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
