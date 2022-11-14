@@ -18,47 +18,47 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
         _connection = connection;
     }
 
-    private IEnumerable<KeyValuePair<TId, TItem>> GetItemsInternal()
+    private IEnumerable<TItem> GetItemsInternal()
     {
-        IEnumerable<KeyValuePair<TId, TItem>> items = _connection.Table<KeyValuePair<TId, TItem>>();
+        IEnumerable<TItem> items = _connection.Table<TItem>();
 
         foreach (var query in Predicates)
         {
             switch (query.QueryType)
             {
                 case QueryType.Where:
-                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x.Value));
+                    items = items.Where(x => query.ExpressionBool.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderBy:
-                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    if (items is IOrderedEnumerable<TItem>)
                     {
                         throw new InvalidOperationException("After OrderBy call ThenBy.");
                     }
-                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    items = items.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderByDescending:
-                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>>)
+                    if (items is IOrderedEnumerable<TItem>)
                     {
                         throw new InvalidOperationException("After OrderBy call ThenBy.");
 
                     }
-                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                    items = items.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.ThenBy:
-                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedItems)
+                    if (items is IOrderedEnumerable<TItem> orderedItems)
                     {
-                        items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        items = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
                         break;
                     }
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
 
                 case QueryType.ThenByDescending:
-                    if (items is IOrderedEnumerable<KeyValuePair<TId, TItem>> orderedDescendingItems)
+                    if (items is IOrderedEnumerable<TItem> orderedDescendingItems)
                     {
-                        items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x.Value));
+                        items = orderedDescendingItems.ThenByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                         break;
                     }
                     throw new InvalidOperationException("Before ThenBy call first OrderBy.");
@@ -91,14 +91,14 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
         foreach (var item in GetItemsInternal())
         {
-            yield return item.Value;
+            yield return item;
         }
 
     }
 
-    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        return Task.FromResult(GetItemsInternal().FirstOrDefault());
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
@@ -116,7 +116,7 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
         foreach (var item in GetItemsInternal())
         {
-            _connection.Delete<TItem>(item.Key);
+            _connection.Delete<TItem>(item);
             count++;
         }
 

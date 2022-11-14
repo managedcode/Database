@@ -98,7 +98,7 @@ public class InMemoryDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryab
         }
     }
 
-    public override Task<TItem> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public override Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();
     }
