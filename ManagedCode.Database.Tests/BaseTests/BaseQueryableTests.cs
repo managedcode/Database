@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests;
 
-public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
+public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
     where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }
@@ -58,10 +58,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var countResult = await Collection.Query.Where(w => w.StringData == guid).CountAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).ToListAsync();
 
         // Assert
-        countResult.Should().Be(itemsCountToInsert);
+        itemsResult.Count.Should().Be(itemsCountToInsert);
+        itemsResult.First().StringData.Should().Be(guid);
     }
 
     [Fact]
@@ -81,10 +82,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var countResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).CountAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).ToListAsync();
 
         // Assert
-        countResult.Should().Be(0);
+        itemsResult.Count.Should().Be(0);
     }
 
     [Fact]
@@ -176,6 +177,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 3;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -185,10 +187,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Skip(7).ToListAsync();
+        var itemsResult = await Collection.Query.Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(3);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
     }
 
     [Fact]
@@ -292,6 +294,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -304,12 +307,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
-        itemsResult[0].StringData.Should().Be(guid);
-        itemsResult[1].StringData.Should().Be(guid);
+        itemsResult.Count.Should().Be(itemsCountToTake);
+        itemsResult.First().StringData.Should().Be(guid);
     }
 
 
@@ -318,6 +320,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -331,7 +334,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Take(itemsCountToTake).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -341,6 +344,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -353,11 +357,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - 2);
-        itemsResult.First().IntData.Should().Be(4);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
     }
 
     [Fact]
@@ -365,6 +368,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -378,7 +382,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -389,6 +393,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -398,10 +403,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake);
         itemsResult.First().IntData.Should().Be(0);
     }
 
@@ -410,6 +415,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -419,10 +425,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert  - 2);
+        itemsResult.Count.Should().Be(itemsCountToInsert  - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToSkip);
     }
 
     [Fact]
@@ -430,6 +437,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -439,10 +447,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake);
+        itemsResult.First().IntData.Should().Be(itemsCountToTake);
     }
 
     [Fact]
@@ -450,6 +459,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -459,10 +469,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - 2);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToTake);
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToTake);
     }
 
     [Fact]
@@ -470,6 +481,9 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -477,10 +491,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Take(3).Skip(1).ToListAsync();
+        var itemsResult = await Collection.Query.Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
 
     }
 
@@ -489,6 +503,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTakeBeyond = itemsCountToInsert + 3;
+        int itemsCountToSkip = 2;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -496,10 +512,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.Take(itemsCountToInsert + 5).Skip(5).ToListAsync();
+        var itemsResult = await Collection.Query.Take(itemsCountToTakeBeyond).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - 5);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
     }
 
     [Fact]
@@ -507,6 +523,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -520,10 +537,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderBy(o => o.IntData).Take(2).ToListAsync();
+            .OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake);
         itemsResult.First().IntData.Should().Be(0);
     }
 
@@ -532,6 +549,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -546,7 +564,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderBy(o => o.IntData).Take(2).ToListAsync();
+            .OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -557,6 +575,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -570,10 +589,10 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderByDescending(o => o.IntData).Take(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake);
         itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
     }
 
@@ -582,6 +601,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -596,7 +616,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderByDescending(o => o.IntData).Take(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -607,6 +627,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -620,11 +641,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderBy(o => o.IntData).Skip(2).ToListAsync();
+            .OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - 2);
-        itemsResult.First().IntData.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToSkip);
     }
 
     [Fact]
@@ -632,6 +653,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -646,7 +668,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderBy(o => o.IntData).Skip(2).ToListAsync();
+            .OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -657,6 +679,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -670,11 +693,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - 2);
-        itemsResult.First().IntData.Should().Be(itemsCountToInsert - 3);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
     }
 
     [Fact]
@@ -682,6 +705,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -696,7 +720,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderByDescending(o => o.IntData).Skip(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -707,6 +731,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -720,11 +746,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderBy(o => o.IntData).Take(4).Skip(2).ToListAsync();
+            .OrderBy(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(2);
+        itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToSkip);
     }
 
     [Fact]
@@ -732,6 +758,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -746,7 +774,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderBy(o => o.IntData).Take(4).Skip(2).ToListAsync();
+            .OrderBy(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
@@ -757,6 +785,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
 
@@ -770,11 +800,11 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-            .OrderByDescending(o => o.IntData).Take(4).Skip(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(2);
-        itemsResult.First().IntData.Should().Be(itemsCountToInsert - 3);
+        itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
     }
 
     [Fact]
@@ -782,6 +812,8 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
 
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
@@ -796,7 +828,7 @@ public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Act
         var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-            .OrderByDescending(o => o.IntData).Take(4).Skip(2).ToListAsync();
+            .OrderByDescending(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
         itemsResult.Count.Should().Be(0);
