@@ -11,10 +11,10 @@ namespace ManagedCode.Database.AzureTable;
 
 public class AzureTableDatabase : BaseDatabase<TableServiceClient>
 {
-    private readonly AzureTableRepositoryOptions _options;
+    private readonly AzureTableOptions _options;
     private readonly Dictionary<string, object> _collections = new();
 
-    public AzureTableDatabase(AzureTableRepositoryOptions options)
+    public AzureTableDatabase(AzureTableOptions options)
     {
         _options = options;
     }

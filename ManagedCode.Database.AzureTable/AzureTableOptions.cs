@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 
 namespace ManagedCode.Database.AzureTable;
 
-public class AzureTableRepositoryOptions
+public class AzureTableOptions
 {
     public string ConnectionString { get; set; }
     public TableSharedKeyCredential TableSharedKeyCredential { get; set; }

@@ -8,12 +8,12 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
+public class MongoDBCollection<TItem> : IDBCollection<ObjectId, TItem>
     where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
 
-    public MongoDbCollection(IMongoCollection<TItem> collection)
+    public MongoDBCollection(IMongoCollection<TItem> collection)
     {
         _collection = collection;
     }

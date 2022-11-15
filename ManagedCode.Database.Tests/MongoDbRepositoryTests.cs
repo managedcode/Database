@@ -11,12 +11,12 @@ namespace ManagedCode.Database.Tests
 {
     public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
     {
-        private readonly MongoDbDatabase _database;
+        private readonly MongoDatabase _database;
         private readonly TestcontainersContainer _mongoDBContainer;
 
         public MongoDbRepositoryTests()
         {
-            _database = new MongoDbDatabase(new MongoDbRepositoryOptions()
+            _database = new MongoDatabase(new MongoOptions()
             {
                 ConnectionString = "mongodb://localhost:27017",
                 DataBaseName = "db"

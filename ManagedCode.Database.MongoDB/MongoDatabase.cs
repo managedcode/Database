@@ -10,11 +10,11 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
+public class MongoDatabase : BaseDatabase<IMongoDatabase>
 {
-    private readonly MongoDbRepositoryOptions _options;
+    private readonly MongoOptions _options;
 
-    public MongoDbDatabase(MongoDbRepositoryOptions options)
+    public MongoDatabase(MongoOptions options)
     {
         _options = options;
     }
@@ -41,7 +41,7 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
     {
     }
 
-    public MongoDbCollection<TItem> GetCollection<TItem>() where TItem : class, IItem<ObjectId>, new()
+    public MongoDBCollection<TItem> GetCollection<TItem>() where TItem : class, IItem<ObjectId>, new()
     {
         if (!IsInitialized)
         {
@@ -52,7 +52,7 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
             ? typeof(TItem).Name.Pluralize()
             : _options.CollectionName;
 
-        return new MongoDbCollection<TItem>(
+        return new MongoDBCollection<TItem>(
             NativeClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
     }
 }

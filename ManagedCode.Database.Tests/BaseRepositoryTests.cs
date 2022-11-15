@@ -420,7 +420,9 @@ public abstract class BaseRepositoryTests<TId, TItem> : IAsyncLifetime where TIt
         }
 
         var items = await Collection.Query
-            .Where(x => x.StringData == item1.StringData).Where(x => x.IntData == item1.IntData).ToAsyncEnumerable()
+            .Where(x => x.StringData == item1.StringData)
+            .Where(x => x.IntData == item1.IntData)
+            .ToAsyncEnumerable()
             .ToListAsync();
 
         items.Count.Should().Be(1);
