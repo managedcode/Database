@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core.Exceptions;
+using Azure;
 
 namespace ManagedCode.Database.Tests.AzureTableTests;
 
@@ -167,7 +168,6 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
     public override async Task DeleteAll()
     {
-        //  Here in azure tables it deletes entire table, not all elements in collection
         int itemsCount = 5;
         List<TestAzureTableItem> list = new();
 
@@ -178,16 +178,43 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
         var items = await Collection.InsertAsync(list);
         var deletedItems = await Collection.DeleteCollectionAsync();
-        var count = await Collection.CountAsync();
+        var countAction = async () => await Collection.CountAsync();
 
+        await countAction.Should().ThrowExactlyAsync<RequestFailedException>();
         deletedItems.Should().BeTrue();
         items.Should().Be(itemsCount);
-        count.Should().Be(0);
+    }
+
+    public override async Task DeleteAll_WhenNoItems()
+    {
+        var deletedItems = await Collection.DeleteCollectionAsync();
+        var countAction = async () => await Collection.CountAsync();
+
+        deletedItems.Should().BeTrue();
+        await countAction.Should().ThrowExactlyAsync<RequestFailedException>();
+    }
+
+    public override async Task DeleteListOfItemsById()
+    {
+        int itemsCount = 5;
+        List<TestAzureTableItem> list = new();
+
+        for (var i = 0; i < itemsCount; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        var ids = list.Select(item => item.Id);
+
+        var items = await Collection.InsertAsync(list);
+        var deletedItemsAction = async () => await Collection.DeleteAsync(ids);
+
+        items.Should().Be(itemsCount);
+        await deletedItemsAction.Should().ThrowExactlyAsync<NotSupportedException>();
     }
 
     public override async Task DeleteListOfItemsById_WhenItemsDontExist()
     {
-        // Non supppoerted in AzureTableDbCollection
         int itemsCount = 5;
         List<TestAzureTableItem> list = new();
 
@@ -200,7 +227,7 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
         var deletedItemsAction = async () => await Collection.DeleteAsync(ids);
 
-        await deletedItemsAction.Should().ThrowExactlyAsync<DatabaseException>();
+        await deletedItemsAction.Should().ThrowExactlyAsync<NotSupportedException>();
     }
 
     public override async Task DeleteListOfItems_WhenItemsDontExist()
