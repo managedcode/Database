@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -41,7 +42,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return _database.Table<TItem>().Count();
+        return _database.Table<TItem>().LongCount();
     }
 
     #endregion
@@ -76,6 +77,7 @@ public class SQLiteDBCollection<TId, TItem> : IDBCollection<TId, TItem> where TI
     {
         await Task.Yield();
         var count = 0;
+        
         foreach (var item in items)
         {
             count += _database.InsertOrReplace(item);

@@ -266,7 +266,7 @@ public abstract class BaseRepositoryTests<TId, TItem> : IAsyncLifetime where TIt
         var q2 = list[1].StringData;
         var q3 = list[2].StringData;
 
-        var equals = await Collection.Query.Where(w => w.StringData == q1).DeleteAsync();
+        var equals = await Collection.Query.Where(w => w.StringData == q1).Where(w => w.StringData == q1).DeleteAsync();
         var or = await Collection.Query.Where(w => w.StringData == q2 || w.StringData == q3).DeleteAsync();
 
         equals.Should().Be(1);
@@ -420,7 +420,9 @@ public abstract class BaseRepositoryTests<TId, TItem> : IAsyncLifetime where TIt
         }
 
         var items = await Collection.Query
-            .Where(x => x.StringData == item1.StringData).Where(x => x.IntData == item1.IntData).ToAsyncEnumerable()
+            .Where(x => x.StringData == item1.StringData)
+            .Where(x => x.IntData == item1.IntData)
+            .ToAsyncEnumerable()
             .ToListAsync();
 
         items.Count.Should().Be(1);

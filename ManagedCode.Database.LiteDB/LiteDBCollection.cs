@@ -6,17 +6,17 @@ using ManagedCode.Database.Core;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDBCollection<TId, TItem> : IDBCollection<TId, TItem>
-    where TItem : LiteDbItem<TId>, IItem<TId>, new()
+public class LiteDBCollection<TId, TItem> : IDBCollection<TId, TItem>
+    where TItem : LiteDBItem<TId>, IItem<TId>, new()
 {
     private readonly ILiteCollection<TItem> _collection;
 
-    public LiteDbDBCollection(ILiteCollection<TItem> collection)
+    public LiteDBCollection(ILiteCollection<TItem> collection)
     {
         _collection = collection;
     }
 
-    public IDBCollectionQueryable<TItem> Query => new LiteDbDBCollectionQueryable<TId, TItem>(GetDatabase());
+    public IDBCollectionQueryable<TItem> Query => new LiteDBCollectionQueryable<TId, TItem>(GetDatabase());
 
     private ILiteCollection<TItem> GetDatabase()
     {

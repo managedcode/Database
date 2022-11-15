@@ -5,9 +5,9 @@ namespace ManagedCode.Database.MongoDB.Extensions;
 
 public static class ProviderBuilderExtension
 {
-    public static IServiceCollection AddMongoDb(this IServiceCollection serviceCollection, Action<MongoDbRepositoryOptions> action)
+    public static IServiceCollection AddMongoDb(this IServiceCollection serviceCollection, Action<MongoOptions> action)
     {
-        var connectionOptions = new MongoDbRepositoryOptions();
+        var connectionOptions = new MongoOptions();
         action.Invoke(connectionOptions);
 
         serviceCollection.AddSingleton(connectionOptions);

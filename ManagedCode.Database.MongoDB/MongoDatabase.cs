@@ -10,16 +10,13 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
+public class MongoDatabase : BaseDatabase<IMongoDatabase>
 {
-    private readonly MongoDbRepositoryOptions _options;
+    private readonly MongoOptions _options;
 
-    public MongoDbDatabase(MongoDbRepositoryOptions options)
+    public MongoDatabase(MongoOptions options)
     {
         _options = options;
-        var client = new MongoClient(options.ConnectionString);
-        NativeClient = client.GetDatabase(options.DataBaseName);
-        IsInitialized = true;
     }
 
     public override Task DeleteAsync(CancellationToken token = default)
@@ -29,6 +26,9 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        var client = new MongoClient(_options.ConnectionString);
+        NativeClient = client.GetDatabase(_options.DataBaseName);
+
         return Task.CompletedTask;
     }
 
@@ -41,7 +41,7 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
     {
     }
 
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>() where TItem : class, IItem<ObjectId>, new()
+    public MongoDBCollection<TItem> GetCollection<TItem>() where TItem : class, IItem<ObjectId>, new()
     {
         if (!IsInitialized)
         {
@@ -51,17 +51,8 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
         var collectionName = string.IsNullOrEmpty(_options.CollectionName)
             ? typeof(TItem).Name.Pluralize()
             : _options.CollectionName;
-        return new MongoDbCollection<TItem>(
+
+        return new MongoDBCollection<TItem>(
             NativeClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
-    }
-
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-
-        return new MongoDbCollection<TItem>(NativeClient.GetCollection<TItem>(name, new MongoCollectionSettings()));
     }
 }

@@ -11,12 +11,12 @@ namespace ManagedCode.Database.Tests.MongoDbTests
 {
     public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
     {
-        private readonly MongoDbDatabase _database;
+        private readonly MongoDatabase _database;
         private readonly TestcontainersContainer _mongoDBContainer;
 
         public MongoDbRepositoryTests()
         {
-            _database = new MongoDbDatabase(new MongoDbRepositoryOptions()
+            _database = new MongoDatabase(new MongoOptions()
             {
                 ConnectionString = "mongodb://localhost:27017",
                 DataBaseName = "db"
@@ -29,7 +29,7 @@ namespace ManagedCode.Database.Tests.MongoDbTests
         }
 
         protected override IDBCollection<ObjectId, TestMongoDbItem> Collection =>
-            _database.GetCollection<ObjectId, TestMongoDbItem>();
+            _database.GetCollection<TestMongoDbItem>();
 
         protected override ObjectId GenerateId()
         {

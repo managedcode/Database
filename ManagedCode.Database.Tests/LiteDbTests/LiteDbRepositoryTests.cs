@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
@@ -10,13 +11,16 @@ namespace ManagedCode.Database.Tests.LiteDbTests
 {
     public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
     {
-        private readonly LiteDbDatabase _database;
+        private readonly LiteDBDatabase _database;
+        private readonly string _databasePath;
 
         public LiteDbRepositoryTests()
         {
-            _database = new LiteDbDatabase(new LiteDbRepositoryOptions
+            _databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+            _database = new LiteDBDatabase(new LiteDBOptions
             {
-                ConnectionString = "litedb_test.db"
+                ConnectionString = _databasePath,
             });
         }
 
@@ -36,6 +40,7 @@ namespace ManagedCode.Database.Tests.LiteDbTests
         public override async Task DisposeAsync()
         {
             await _database.DisposeAsync();
+            File.Delete(_databasePath);
         }
 
         [Fact]

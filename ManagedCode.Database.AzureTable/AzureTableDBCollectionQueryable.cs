@@ -61,56 +61,39 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         List<QueryItem> predicates)
     {
         // TODO: add warning
-        foreach (var query in predicates)
+        foreach (var predicate in predicates)
         {
-            switch (query.QueryType)
+            switch (predicate.QueryType)
             {
                 case QueryType.OrderBy:
-                    asyncEnumerable = asyncEnumerable.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
-
-                    // TODO: Maybe need to check is IOrderedEnumerable and do throw exception
+                    asyncEnumerable = asyncEnumerable.OrderBy(x => predicate.ExpressionObject.Compile().Invoke(x));
                     break;
+
                 case QueryType.OrderByDescending:
                     asyncEnumerable =
-                        asyncEnumerable.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
-
-                    // TODO: Maybe need to check is IOrderedEnumerable and do throw exception
+                        asyncEnumerable.OrderByDescending(x => predicate.ExpressionObject.Compile().Invoke(x));
                     break;
+
                 case QueryType.ThenBy:
-                {
-                    if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedEnumerable)
-                    {
-                        asyncEnumerable = orderedEnumerable.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
-                    }
-
-                    // TODO: Maybe need throw exception
+                    asyncEnumerable = (asyncEnumerable as IOrderedAsyncEnumerable<TItem>)!
+                        .ThenBy(x => predicate.ExpressionObject.Compile().Invoke(x));
                     break;
-                }
+
                 case QueryType.ThenByDescending:
-                {
-                    if (asyncEnumerable is IOrderedAsyncEnumerable<TItem> orderedDescendingEnumerable)
-                    {
-                        asyncEnumerable =
-                            orderedDescendingEnumerable.ThenByDescending(
-                                x => query.ExpressionObject.Compile().Invoke(x));
-                    }
-
-                    // TODO: Maybe need throw exception
+                    asyncEnumerable = (asyncEnumerable as IOrderedAsyncEnumerable<TItem>)!
+                        .ThenByDescending(x => predicate.ExpressionObject.Compile().Invoke(x));
                     break;
-                }
+
                 case QueryType.Take:
-                    if (query.Count.HasValue)
+                    if (predicate.Count.HasValue)
                     {
-                        asyncEnumerable = asyncEnumerable.Take(query.Count.Value);
+                        asyncEnumerable = asyncEnumerable.Take(predicate.Count.Value);
                     }
 
                     break;
-                case QueryType.Skip:
-                    if (query.Count.HasValue)
-                    {
-                        asyncEnumerable = asyncEnumerable.Skip(query.Count.Value);
-                    }
 
+                case QueryType.Skip:
+                    asyncEnumerable = asyncEnumerable.Skip(predicate.Count!.Value);
                     break;
             }
         }

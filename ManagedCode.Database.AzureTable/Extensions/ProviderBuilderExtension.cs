@@ -5,9 +5,9 @@ namespace ManagedCode.Database.AzureTable.Extensions;
 
 public static class ProviderBuilderExtension
 {
-    public static IServiceCollection AddAzureTable(this IServiceCollection serviceCollection, Action<AzureTableRepositoryOptions> action)
+    public static IServiceCollection AddAzureTable(this IServiceCollection serviceCollection, Action<AzureTableOptions> action)
     {
-        var connectionOptions = new AzureTableRepositoryOptions();
+        var connectionOptions = new AzureTableOptions();
         action.Invoke(connectionOptions);
 
         serviceCollection.AddSingleton(connectionOptions);

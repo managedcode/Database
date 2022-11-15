@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using ManagedCode.Database.Core;
 
 namespace ManagedCode.Database.AzureTable.Extensions;
 
