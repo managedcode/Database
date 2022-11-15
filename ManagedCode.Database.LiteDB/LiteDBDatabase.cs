@@ -7,12 +7,13 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDbDatabase : BaseDatabase<LiteDatabase>
+public class LiteDBDatabase : BaseDatabase<LiteDatabase>
 {
-    public LiteDbDatabase(LiteDbRepositoryOptions options)
+    private readonly LiteDBOptions _options;
+
+    public LiteDBDatabase(LiteDBOptions options)
     {
-        NativeClient = options.Database ?? new LiteDatabase(options.ConnectionString);
-        IsInitialized = true;
+        _options = options;
     }
 
     public override Task DeleteAsync(CancellationToken token = default)
@@ -23,6 +24,8 @@ public class LiteDbDatabase : BaseDatabase<LiteDatabase>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = _options.Database ?? new LiteDatabase(_options.ConnectionString);
+
         return Task.CompletedTask;
     }
 
@@ -37,13 +40,13 @@ public class LiteDbDatabase : BaseDatabase<LiteDatabase>
         NativeClient.Dispose();
     }
 
-    public LiteDbDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDbItem<TId>, new()
+    public LiteDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDBItem<TId>, new()
     {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
 
-        return new LiteDbDBCollection<TId, TItem>(NativeClient.GetCollection<TItem>());
+        return new LiteDBCollection<TId, TItem>(NativeClient.GetCollection<TItem>());
     }
 }
