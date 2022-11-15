@@ -3,18 +3,19 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests.MongoDbTests
 {
-    public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
+    public class MongoDbQueryableTests : BaseQueryableTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
     {
         private readonly MongoDbDatabase _database;
         private readonly TestcontainersContainer _mongoDBContainer;
 
-        public MongoDbRepositoryTests()
+        public MongoDbQueryableTests()
         {
             _database = new MongoDbDatabase(new MongoDbRepositoryOptions()
             {

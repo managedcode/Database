@@ -6,7 +6,7 @@ using ManagedCode.Database.LiteDB;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests.LiteDbTests
 {
     public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
     {

@@ -8,7 +8,7 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests.AzureTableTests
 {
     public class AzureTableRepositoryTests : BaseRepositoryTests<TableId, TestAzureTableItem>, IAsyncLifetime
     {

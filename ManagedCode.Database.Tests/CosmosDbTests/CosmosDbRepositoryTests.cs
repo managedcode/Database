@@ -8,7 +8,7 @@ using ManagedCode.Database.CosmosDB;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests;
+namespace ManagedCode.Database.Tests.CosmosDbTests;
 
 public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbItem>
 {

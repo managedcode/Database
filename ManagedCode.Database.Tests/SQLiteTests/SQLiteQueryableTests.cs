@@ -8,7 +8,7 @@ using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests.SQLiteTests
 {
     public class SQLiteRepositoryTests : BaseQueryableTests<int, SQLiteDbItem>
     {
