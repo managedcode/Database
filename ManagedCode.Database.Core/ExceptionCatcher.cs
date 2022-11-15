@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using ManagedCode.Database.Core.Exceptions;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.Core;
 
 public static class ExceptionCatcher
 {
@@ -14,6 +11,18 @@ public static class ExceptionCatcher
         try
         {
             return await task;
+        }
+        catch (Exception exception)
+        {
+            throw new DatabaseException(exception.Message, exception);
+        }
+    }
+
+    public static async Task ExecuteAsync(Task task)
+    {
+        try
+        {
+            await task;
         }
         catch (Exception exception)
         {

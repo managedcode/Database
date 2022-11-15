@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -32,10 +31,11 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     #region Get
 
-    public async Task<TItem> GetAsync(ObjectId id, CancellationToken cancellationToken = default)
+    public async Task<TItem?> GetAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
         var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: cancellationToken);
-        return cursor.FirstOrDefault();
+
+        return await ExceptionCatcher.ExecuteAsync(cursor.FirstOrDefaultAsync(cancellationToken: cancellationToken));
     }
 
     #endregion
@@ -44,13 +44,17 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await _collection.InsertOneAsync(item, new InsertOneOptions(), cancellationToken);
+        await ExceptionCatcher.ExecuteAsync(_collection.InsertOneAsync(item, new InsertOneOptions(),
+            cancellationToken));
+
         return item;
     }
 
     public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        await _collection.InsertManyAsync(items, new InsertManyOptions(), cancellationToken);
+        await ExceptionCatcher.ExecuteAsync(_collection.InsertManyAsync(items, new InsertManyOptions(),
+            cancellationToken));
+
         return items.Count();
     }
 
@@ -60,10 +64,12 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
+        var task = _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
         {
             IsUpsert = true
         }, cancellationToken);
+
+        await ExceptionCatcher.ExecuteAsync(task);
 
         return item;
     }
@@ -71,6 +77,7 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
+
         foreach (var item in items)
         {
             await InsertOrUpdateAsync(item, cancellationToken);
@@ -86,14 +93,18 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var r = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
+        var task = _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
             cancellationToken: cancellationToken);
+
+        await ExceptionCatcher.ExecuteAsync(task);
+
         return item;
     }
 
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
+
         foreach (var item in items)
         {
             await UpdateAsync(item, cancellationToken);
@@ -109,16 +120,22 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     public async Task<bool> DeleteAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
-        var item = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == id, new FindOneAndDeleteOptions<TItem>(),
+        var task = _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == id, new FindOneAndDeleteOptions<TItem>(),
             cancellationToken);
-        return item != null;
+
+        var item = await ExceptionCatcher.ExecuteAsync(task);
+
+        return item is not null;
     }
 
     public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var i = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == item.Id,
+        var task = _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == item.Id,
             new FindOneAndDeleteOptions<TItem>(), cancellationToken);
-        return i != null;
+
+        var result = await ExceptionCatcher.ExecuteAsync(task);
+
+        return result is not null;
     }
 
     public async Task<int> DeleteAsync(IEnumerable<ObjectId> ids, CancellationToken cancellationToken = default)
@@ -161,7 +178,8 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
 
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        return Convert.ToInt32(await _collection.CountDocumentsAsync(f => true, new CountOptions(), cancellationToken));
+        var task = _collection.CountDocumentsAsync(f => true, new CountOptions(), cancellationToken);
+        return await ExceptionCatcher.ExecuteAsync(task);
     }
 
     #endregion
