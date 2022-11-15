@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,11 +7,11 @@ using ManagedCode.Database.Core.Common;
 
 namespace ManagedCode.Database.Core.InMemory;
 
-public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
+public class InMemoryDataBase : BaseDatabase<ConcurrentDictionary<string, IDisposable>>
 {
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
-        NativeClient = new Dictionary<string, IDisposable>();
+        NativeClient = new ConcurrentDictionary<string, IDisposable>();
 
         return Task.CompletedTask;
     }
@@ -23,15 +24,12 @@ public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
 
     protected override void DisposeInternal()
     {
-        lock (NativeClient)
+        foreach (var item in NativeClient)
         {
-            foreach (var item in NativeClient)
-            {
-                item.Value.Dispose();
-            }
-
-            NativeClient.Clear();
+            item.Value.Dispose();
         }
+
+        NativeClient.Clear();
     }
 
     public InMemoryDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
@@ -45,18 +43,15 @@ public class InMemoryDataBase : BaseDatabase<Dictionary<string, IDisposable>>
         {
             throw new DatabaseNotInitializedException(GetType());
         }
-
-        lock (NativeClient)
+        
+        if (NativeClient.TryGetValue(name, out var table))
         {
-            if (NativeClient.TryGetValue(name, out var table))
-            {
-                return (InMemoryDBCollection<TId, TItem>)table;
-            }
-
-            var db = new InMemoryDBCollection<TId, TItem>();
-            NativeClient[name] = db;
-            return db;
+            return (InMemoryDBCollection<TId, TItem>)table;
         }
+
+        var db = new InMemoryDBCollection<TId, TItem>();
+        NativeClient[name] = db;
+        return db;
     }
 
     public override Task DeleteAsync(CancellationToken token = default)
