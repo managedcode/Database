@@ -34,18 +34,22 @@ public class MongoDbDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TIt
                     break;
 
                 case QueryType.OrderBy:
-                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
+                    /*if (mongoQuery is IOrderedMongoQueryable<TItem>)
                     {
                         throw new InvalidOperationException("After OrderBy call ThenBy.");
-                    }
+                    }*/
+                    // TODO: Maybe need to check is IOrderedMongoQueryable and do throw exception
+
                     mongoQuery = mongoQuery.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 
                 case QueryType.OrderByDescending:
-                    if (mongoQuery is IOrderedMongoQueryable<TItem>)
-                    {
-                        throw new InvalidOperationException("After OrderBy call ThenBy.");
-                    }
+                    /* if (mongoQuery is IOrderedMongoQueryable<TItem>)
+                     {
+                         throw new InvalidOperationException("After OrderBy call ThenBy.");
+                     }*/
+                    // TODO: Maybe need to check is IOrderedMongoQueryable and do throw exception
+
                     mongoQuery = mongoQuery.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
                     break;
 

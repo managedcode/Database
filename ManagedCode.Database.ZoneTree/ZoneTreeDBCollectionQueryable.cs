@@ -1,8 +1,9 @@
 using ManagedCode.Database.Core;
+using System;
 
 namespace ManagedCode.ZoneTree.Cluster.DB;
 
-public class ZoneTreeDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQueryable<TItem> where TItem : IItem<TId>
+public class ZoneTreeDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem> where TItem : IItem<TId>
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 
@@ -11,46 +12,74 @@ public class ZoneTreeDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQuer
         _zoneTree = zoneTree;
     }
 
+    private IEnumerable<TItem> GetItemsInternal()
+    {
+        var zoneTreeQuery = _zoneTree.Enumerate();
+
+        foreach (var query in Predicates)
+        {
+            switch (query.QueryType)
+            {
+                case QueryType.Where:
+                    zoneTreeQuery = zoneTreeQuery.Where(x => query.ExpressionBool.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderBy:
+                    // TODO: Maybe need to check is IOrderedQueryable and do throw exception
+
+                    zoneTreeQuery = zoneTreeQuery.OrderBy(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.OrderByDescending:
+                    // TODO: Maybe need to check is IOrderedQueryable and do throw exception
+
+                    zoneTreeQuery = zoneTreeQuery.OrderByDescending(x => query.ExpressionObject.Compile().Invoke(x));
+                    break;
+
+                case QueryType.ThenBy:
+                    if (zoneTreeQuery is IOrderedQueryable<TItem> orderedItems)
+                    {
+                        zoneTreeQuery = orderedItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
+                case QueryType.ThenByDescending:
+                    if (zoneTreeQuery is IOrderedQueryable<TItem> orderedDescendingItems)
+                    {
+                        zoneTreeQuery = orderedDescendingItems.ThenBy(x => query.ExpressionObject.Compile().Invoke(x));
+                        break;
+                    }
+                    throw new InvalidOperationException("Before ThenBy call first OrderBy.");
+
+                case QueryType.Take:
+                    if (query.Count.HasValue)
+                    {
+                        zoneTreeQuery = zoneTreeQuery.Take(query.Count.Value);
+                    }
+                    break;
+
+                case QueryType.Skip:
+                    if (query.Count.HasValue)
+                    {
+                        zoneTreeQuery = zoneTreeQuery.Skip(query.Count.Value);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        return zoneTreeQuery;
+    }
+
+
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var query = _zoneTree.Enumerate();
-
-        foreach (var predicate in WherePredicates)
+        foreach (var item in GetItemsInternal())
         {
-            query = query.Where(predicate.Compile());
-        }
-
-        if (OrderByPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByPredicates)
-            {
-                query = query.OrderBy(predicate.Compile());
-            }
-        }
-
-        if (OrderByDescendingPredicates.Count > 0)
-        {
-            foreach (var predicate in OrderByDescendingPredicates)
-            {
-                query = query.OrderByDescending(predicate.Compile());
-            }
-        }
-
-        SkipValue ??= 0;
-
-        if (TakeValue.HasValue)
-        {
-            foreach (var item in query.Skip(SkipValue.Value).Take(TakeValue.Value))
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (var item in query.Skip(SkipValue.Value))
-            {
-                yield return item;
-            }
+            yield return item;
         }
     }
 
@@ -61,26 +90,19 @@ public class ZoneTreeDBCollectionQueryable<TId, TItem> : OldBaseDBCollectionQuer
 
     public override Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var conditions = WherePredicates.Select(s => s.Compile()).ToArray();
-        return Task.FromResult(_zoneTree.Enumerate().Where(w => conditions.All(a => a.Invoke(w))).LongCount());
+        return Task.FromResult(GetItemsInternal().LongCount());
     }
 
     public override Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        var query = _zoneTree.Enumerate();
+        var count = 0;
 
-        foreach (var predicate in WherePredicates)
-        {
-            query = query.Where(predicate.Compile());
-        }
-
-        foreach (var item in query)
+        foreach (var item in GetItemsInternal())
         {
             _zoneTree.Delete(item.Id);
-            i++;
+            count++;
         }
 
-        return Task.FromResult(i);
+        return Task.FromResult(count);
     }
 }
