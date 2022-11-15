@@ -17,9 +17,6 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
     public MongoDbDatabase(MongoDbRepositoryOptions options)
     {
         _options = options;
-        var client = new MongoClient(options.ConnectionString);
-        NativeClient = client.GetDatabase(options.DataBaseName);
-        IsInitialized = true;
     }
 
     public override Task DeleteAsync(CancellationToken token = default)
@@ -29,6 +26,9 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        var client = new MongoClient(_options.ConnectionString);
+        NativeClient = client.GetDatabase(_options.DataBaseName);
+
         return Task.CompletedTask;
     }
 
@@ -41,7 +41,7 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
     {
     }
 
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>() where TItem : class, IItem<ObjectId>, new()
+    public MongoDbCollection<TItem> GetCollection<TItem>() where TItem : class, IItem<ObjectId>, new()
     {
         if (!IsInitialized)
         {
@@ -51,17 +51,8 @@ public class MongoDbDatabase : BaseDatabase<IMongoDatabase>
         var collectionName = string.IsNullOrEmpty(_options.CollectionName)
             ? typeof(TItem).Name.Pluralize()
             : _options.CollectionName;
+
         return new MongoDbCollection<TItem>(
             NativeClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
-    }
-
-    public MongoDbCollection<TItem> GetCollection<TId, TItem>(string name) where TItem : class, IItem<ObjectId>, new()
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
-
-        return new MongoDbCollection<TItem>(NativeClient.GetCollection<TItem>(name, new MongoCollectionSettings()));
     }
 }

@@ -19,7 +19,7 @@ public class MongoDbCollection<TItem> : IDBCollection<ObjectId, TItem>
         _collection = collection;
     }
 
-    public IDBCollectionQueryable<TItem> Query => new MongoDbDBCollectionQueryable<TItem>(_collection);
+    public IDBCollectionQueryable<TItem> Query => new MongoDBCollectionQueryable<TItem>(_collection);
 
     public void Dispose()
     {

@@ -48,22 +48,17 @@ public class AzureTableDatabase : BaseDatabase<TableServiceClient>
 
     public AzureTableDBCollection<TItem> GetCollection<TId, TItem>() where TItem : AzureTableItem, IItem<TId>, new()
     {
-        return GetCollection<TId, TItem>(typeof(TItem).FullName);
-    }
-
-    private AzureTableDBCollection<TItem> GetCollection<TId, TItem>(string name)
-        where TItem : AzureTableItem, IItem<TId>, new()
-    {
         if (!IsInitialized)
         {
             throw new DatabaseNotInitializedException(GetType());
         }
 
+        var collectionName = typeof(TItem).FullName;
         var tableName = GetTableName<TItem>();
 
         lock (_collections)
         {
-            if (_collections.TryGetValue(name, out var obj))
+            if (_collections.TryGetValue(collectionName, out var obj))
             {
                 return obj as AzureTableDBCollection<TItem>;
             }
@@ -86,7 +81,7 @@ public class AzureTableDatabase : BaseDatabase<TableServiceClient>
 
             var collection = new AzureTableDBCollection<TItem>(table);
 
-            _collections[name] = collection;
+            _collections[collectionName] = collection;
 
             return collection;
         }

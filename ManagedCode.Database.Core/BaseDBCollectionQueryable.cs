@@ -11,7 +11,7 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBOrderedCollectionQ
 {
     protected readonly List<QueryItem> Predicates = new();
 
-    protected enum QueryType
+    public enum QueryType
     {
         Where,
         OrderBy,
@@ -22,7 +22,7 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBOrderedCollectionQ
         Skip,
     }
 
-    protected struct QueryItem
+    public struct QueryItem
     {
         public QueryType QueryType;
         public Expression<Func<TSource, object>> ExpressionObject;

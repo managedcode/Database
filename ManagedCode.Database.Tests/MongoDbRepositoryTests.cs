@@ -29,7 +29,7 @@ namespace ManagedCode.Database.Tests
         }
 
         protected override IDBCollection<ObjectId, TestMongoDbItem> Collection =>
-            _database.GetCollection<ObjectId, TestMongoDbItem>();
+            _database.GetCollection<TestMongoDbItem>();
 
         protected override ObjectId GenerateId()
         {
