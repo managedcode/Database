@@ -9,11 +9,11 @@ namespace ManagedCode.Database.SQLite;
 
 public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
 {
-    public SqLiteDatabase(
-        SQLiteRepositoryOptions options)
+    private readonly SQLiteRepositoryOptions _options;
+
+    public SqLiteDatabase(SQLiteRepositoryOptions options)
     {
-        NativeClient = options.Connection ?? new SQLiteConnection(options.ConnectionString);
-        IsInitialized = true;
+        _options = options;
     }
 
     public override Task DeleteAsync(CancellationToken token = default)
@@ -38,6 +38,8 @@ public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = _options.Connection ?? new SQLiteConnection(_options.ConnectionString);
+
         return Task.CompletedTask;
     }
 
@@ -49,6 +51,7 @@ public class SqLiteDatabase : BaseDatabase<SQLiteConnection>
         }
 
         NativeClient.CreateTable<TItem>();
+
         return new SQLiteDBCollection<TId, TItem>(NativeClient);
     }
 }
