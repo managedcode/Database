@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests;
 
-public abstract class BaseRepositoryQueryableTests<TId, TItem> : IAsyncLifetime
+public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
     where TItem : IBaseItem<TId>, new()
 {
     protected abstract IDBCollection<TId, TItem> Collection { get; }

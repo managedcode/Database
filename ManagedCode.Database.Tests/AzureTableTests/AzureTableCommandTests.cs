@@ -13,7 +13,7 @@ using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.Tests.AzureTableTests;
 
-public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableItem>
+public class AzureTableCommandTests : BaseCollectionTests<TableId, TestAzureTableItem>
 {
     private readonly AzureTableDatabase _database;
     private readonly TestcontainersContainer _azureTableContainer;
@@ -80,44 +80,20 @@ public class AzureTableCommandTests : BaseCommandTests<TableId, TestAzureTableIt
 
     public override async Task UpdateItem_WhenItem_DoesntExists()
     {
-        var id = GenerateId();
-
-        var updateItemAction = async () => await Collection.UpdateAsync(CreateNewItem(id));
-
-        await updateItemAction.Should().ThrowExactlyAsync<DatabaseException>();
+        var baseMethod = () => base.UpdateItem_WhenItem_DoesntExists();
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    public override async Task InsertItem_WhenItemExsist()
+    public override async Task InsertItem_WhenItemExist()
     {
-        var id = GenerateId();
-        var firstItem = CreateNewItem(id);
-        var secondItem = CreateNewItem(id);
-
-        var insertFirstItem = await Collection.InsertAsync(firstItem);
-        var insertSecondItem = async () => await Collection.InsertAsync(secondItem);
-
-        insertFirstItem.Should().NotBeNull();
-        await insertSecondItem.Should().ThrowExactlyAsync<DatabaseException>();
+        var baseMethod = () => base.InsertItem_WhenItemExist();
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
     public override async Task InsertItems_WhenOneItemAlreadyExists()
     {
-        var id = GenerateId();
-
-        await Collection.InsertAsync(CreateNewItem(id));
-
-        List<TestAzureTableItem> list = new();
-
-        list.Add(CreateNewItem(id));
-        for (var i = 0; i < 4; i++)
-        {
-            list.Add(CreateNewItem());
-        }
-
-        var insertAction = async () => await Collection.InsertAsync(list);
-
-        list.Count.Should().Be(5);
-        await insertAction.Should().ThrowExactlyAsync<DatabaseException>();
+        var baseMethod = () => base.InsertItems_WhenOneItemAlreadyExists();
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
     public override async Task DeleteItemById_WhenItemDoesntExists()

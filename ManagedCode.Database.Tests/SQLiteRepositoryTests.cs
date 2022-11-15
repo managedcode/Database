@@ -10,7 +10,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests
 {
-    public class SQLiteRepositoryTests : BaseRepositoryQueryableTests<int, SQLiteDbItem>
+    public class SQLiteRepositoryTests : BaseCollectionTests<int, SQLiteDbItem>
     {
         private static int _count;
         private readonly SqLiteDatabase _database;
