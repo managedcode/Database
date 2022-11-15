@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Core;
 
-public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryable<TSource>
+public abstract class BaseDBCollectionQueryable<TSource> : IDBOrderedCollectionQueryable<TSource>
 {
     protected readonly List<QueryItem> Predicates = new();
 
@@ -37,29 +37,30 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
 
     public IDBCollectionQueryable<TSource> Where(Expression<Func<TSource, bool>> predicate)
     {
-        Predicates.Add(new QueryItem { QueryType = QueryType.Where, ExpressionBool = predicate});
+        Predicates.Add(new QueryItem { QueryType = QueryType.Where, ExpressionBool = predicate });
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
+    public IDBOrderedCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
     {
         Predicates.Add(new QueryItem { QueryType = QueryType.OrderBy, ExpressionObject = keySelector });
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
+    public IDBOrderedCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
     {
         Predicates.Add(new QueryItem { QueryType = QueryType.OrderByDescending, ExpressionObject = keySelector });
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> ThenBy(Expression<Func<TSource, object>> keySelector)
+
+    public IDBOrderedCollectionQueryable<TSource> ThenBy(Expression<Func<TSource, object>> keySelector)
     {
         Predicates.Add(new QueryItem { QueryType = QueryType.ThenBy, ExpressionObject = keySelector });
         return this;
     }
 
-    public IDBCollectionQueryable<TSource> ThenByDescending(Expression<Func<TSource, object>> keySelector)
+    public IDBOrderedCollectionQueryable<TSource> ThenByDescending(Expression<Func<TSource, object>> keySelector)
     {
         Predicates.Add(new QueryItem { QueryType = QueryType.ThenByDescending, ExpressionObject = keySelector });
         return this;
@@ -67,7 +68,7 @@ public abstract class BaseDBCollectionQueryable<TSource> : IDBCollectionQueryabl
 
     public IDBCollectionQueryable<TSource> Take(int? count)
     {
-        Predicates.Add(new QueryItem {QueryType = QueryType.Take, Count = count });
+        Predicates.Add(new QueryItem { QueryType = QueryType.Take, Count = count });
         return this;
     }
 
