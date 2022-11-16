@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.Common;
 using System;
 using System.Collections.Generic;
@@ -53,17 +54,17 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task InsertItem_WhenItemExist()
+        public virtual async Task InsertItem_WhenItemExist_DatabaseException()
         {
-            var id = GenerateId();
-            var firstItem = CreateNewItem(id);
-            var secondItem = CreateNewItem(id);
+            // Arrange
+            var item = CreateNewItem();
+            await Collection.InsertAsync(CreateNewItem());
 
-            var insertFirstItem = await Collection.InsertAsync(firstItem);
-            var insertSecondItem = await Collection.InsertAsync(secondItem);
+            // Act
+            var insertSecondItemAction = () => Collection.InsertAsync(item);
 
-            insertFirstItem.Should().NotBeNull();
-            insertSecondItem.Should().BeNull();
+            // Assert
+            await insertSecondItemAction.Should().ThrowAsync<DatabaseException>();
         }
 
         [Fact]
@@ -161,13 +162,17 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task UpdateItem_WhenItem_DoesntExists()
+        public virtual async Task UpdateItem_WhenItemDoesntExists()
         {
+            // Arrange
             var id = GenerateId();
-            
-            var updateItem = await Collection.UpdateAsync(CreateNewItem(id));
 
-            updateItem.Should().BeNull();
+            // Act
+            var updateItemAction = () => Collection.UpdateAsync(CreateNewItem(id));
+
+            // Assert
+            await updateItemAction.Should().ThrowAsync<DatabaseException>();
+
         }
 
         [Fact]
@@ -423,5 +428,37 @@ namespace ManagedCode.Database.Tests.BaseTests
             count.Should().Be(expectedCountAfterInsert);
         }
         #endregion
+
+        #region Get
+
+        [Fact]
+        public virtual async Task GetById_ReturnOk()
+        {
+            // Arrange
+            var itemId = GenerateId();
+            await Collection.InsertAsync(CreateNewItem(itemId));
+
+            // Act
+            var getItemResult = await Collection.GetAsync(itemId);
+
+            // Assert
+            getItemResult.Should().NotBeNull();
+        }
+
+        [Fact]
+        public virtual async Task GetById_WrongId_ReturnNull()
+        {
+            // Arrange
+            var itemId = GenerateId();
+
+            // Act
+            var getItemResult = await Collection.GetAsync(itemId);
+
+            // Assert
+            getItemResult.Should().BeNull();
+        }
+        
+        #endregion
+
     }
 }

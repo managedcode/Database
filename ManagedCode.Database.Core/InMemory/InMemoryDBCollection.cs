@@ -40,7 +40,6 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
     {
         var count = 0;
 
-
         foreach (var item in items)
         {
             if (!_storage.TryGetValue(item.Id, out var _))
@@ -49,7 +48,6 @@ public class InMemoryDBCollection<TId, TItem> : IDBCollection<TId, TItem> where 
                 count++;
             }
         }
-
 
         return Task.FromResult(count);
     }
