@@ -48,8 +48,13 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task InsertOneItem_ReturnsInsertedItem()
         {
+            // Arrange
             var item = CreateNewItem();
+
+            // Act
             var insertItem = await Collection.InsertAsync(item);
+
+            // Assert
             insertItem.Should().NotBeNull();
         }
 
