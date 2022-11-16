@@ -32,11 +32,11 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         {
             if (!_splitByType)
             {
-                return new CosmosDBCollectionQueryable<TItem>(_container.GetItemLinqQueryable<TItem>());
+                return new CosmosDBCollectionQueryable<TItem>(_container, _container.GetItemLinqQueryable<TItem>());
             }
 
             var queryable = _container.GetItemLinqQueryable<TItem>().Where(SplitByType());
-            return new CosmosDBCollectionQueryable<TItem>(queryable);
+            return new CosmosDBCollectionQueryable<TItem>(_container, queryable);
         }
     }
 
@@ -49,24 +49,8 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<TItem?> GetAsync(string id, CancellationToken cancellationToken = default)
     {
-        var feedIterator = _container.GetItemLinqQueryable<TItem>()
-            .Where(w => w.Id == id)
-            .ToFeedIterator();
-
-        using (var iterator = feedIterator)
-        {
-            if (iterator.HasMoreResults)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                foreach (var item in await iterator.ReadNextAsync(cancellationToken))
-                {
-                    return item;
-                }
-            }
-        }
-
-        return null;
+        var query = _container.GetItemLinqQueryable<TItem>();
+        return await Task.Run(() => query.FirstOrDefault(w => w.Id == id), cancellationToken);
     }
 
     #endregion
@@ -75,7 +59,9 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
 
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        return await _container.GetItemLinqQueryable<TItem>().Where(SplitByType()).CountAsync(cancellationToken);
+        return await _container.GetItemLinqQueryable<TItem>()
+            .Where(SplitByType())
+            .CountAsync(cancellationToken);
     }
 
     #endregion
@@ -101,33 +87,16 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     {
         var count = 0;
 
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
+        await Parallel.ForEachAsync(items, cancellationToken, async (item, token) =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            batch.Add(_container.CreateItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, cancellationToken));
+            var response =
+                await _container.CreateItemAsync(item, item.PartitionKey, cancellationToken: token);
 
-            if (count == batch.Capacity)
+            if (response is not null)
             {
-                await Task.WhenAll(batch);
-                batch.Clear();
+                Interlocked.Increment(ref count);
             }
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
+        });
 
         return count;
     }
@@ -145,33 +114,17 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            batch.Add(_container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, cancellationToken));
 
-            if (count == batch.Capacity)
+        await Parallel.ForEachAsync(items, cancellationToken, async (item, token) =>
+        {
+            var response =
+                await _container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: token);
+
+            if (response is not null)
             {
-                await Task.WhenAll(batch);
-                batch.Clear();
+                Interlocked.Increment(ref count);
             }
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
+        });
 
         return count;
     }
@@ -189,33 +142,17 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            batch.Add(_container.ReplaceItemAsync(item, item.Id, cancellationToken: cancellationToken)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, cancellationToken));
 
-            if (count == batch.Capacity)
+        await Parallel.ForEachAsync(items, cancellationToken, async (item, token) =>
+        {
+            var response =
+                await _container.ReplaceItemAsync(item, item.Id, cancellationToken: token);
+
+            if (response is not null)
             {
-                await Task.WhenAll(batch);
-                batch.Clear();
+                Interlocked.Increment(ref count);
             }
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
+        });
 
         return count;
     }
@@ -234,19 +171,23 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
         }
 
         var item = await GetAsync(id, cancellationToken);
-        if (item == null)
+
+        if (item is null)
         {
             return false;
         }
 
-        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
-        return result != null;
+        var result =
+            await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
+        return result is not null;
     }
 
     public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
-        return result != null;
+        var result =
+            await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
+
+        return result is not null;
     }
 
     public async Task<int> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
@@ -286,33 +227,17 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
     public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
-        var batch = new List<Task>(Capacity);
-        foreach (var item in items)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            batch.Add(_container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken)
-                .ContinueWith(task =>
-                {
-                    if (task.Result != null)
-                    {
-                        Interlocked.Increment(ref count);
-                    }
-                }, cancellationToken));
 
-            if (count == batch.Capacity)
+        await Parallel.ForEachAsync(items, cancellationToken, async (item, token) =>
+        {
+            var response =
+                await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+
+            if (response is not null)
             {
-                await Task.WhenAll(batch);
-                batch.Clear();
+                Interlocked.Increment(ref count);
             }
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (batch.Count > 0)
-        {
-            await Task.WhenAll(batch);
-            batch.Clear();
-        }
+        });
 
         return count;
     }
@@ -324,7 +249,6 @@ public class CosmosDBCollection<TItem> : IDBCollection<string, TItem>
             var delete = await Query.Where(item => true).DeleteAsync(cancellationToken);
             return delete > 0;
         }
-
 
         var result = await _container.DeleteContainerAsync(cancellationToken: cancellationToken);
         return result != null;

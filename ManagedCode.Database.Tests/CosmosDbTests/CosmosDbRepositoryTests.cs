@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -6,6 +7,7 @@ using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.CosmosDB;
 using ManagedCode.Database.Tests.Common;
+using Microsoft.Azure.Cosmos;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.CosmosDbTests;
@@ -18,7 +20,7 @@ public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbI
     public CosmosDbRepositoryTests()
     {
         _cosmosDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
+            .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
             .WithPortBinding(8081, 8081)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "30")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
@@ -30,8 +32,22 @@ public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosDbI
             ConnectionString =
                 "AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
-            CollectionName = "container",
+            CollectionName = "testContainer",
             AllowTableCreation = true,
+            CosmosClientOptions = new CosmosClientOptions()
+            {
+                HttpClientFactory = () =>
+                {
+                    HttpMessageHandler httpMessageHandler = new HttpClientHandler()
+                    {
+                        ServerCertificateCustomValidationCallback =
+                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
+
+                    return new HttpClient(httpMessageHandler);
+                },
+                ConnectionMode = ConnectionMode.Gateway
+            },
         });
     }
 

@@ -22,13 +22,13 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
     protected override async Task InitializeAsyncInternal(CancellationToken token = default)
     {
-        NativeClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
-        NativeClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
-        NativeClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
+        var cosmosClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
+        cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
+        cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
 
         if (_options.AllowTableCreation)
         {
-            _database = await NativeClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
+            _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
                 cancellationToken: token);
 
             _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, "/id",
@@ -37,7 +37,7 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
             return;
         }
 
-        var database = NativeClient.GetDatabase(_options.DatabaseName);
+        var database = cosmosClient.GetDatabase(_options.DatabaseName);
 
         if (database is null)
         {
@@ -51,6 +51,7 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
             throw new Exception($"Container '{_options.CollectionName}' does not exist.");
         }
 
+        NativeClient = cosmosClient;
         _database = database;
         _container = container;
     }
