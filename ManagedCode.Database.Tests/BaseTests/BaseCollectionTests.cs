@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests
 {
-    public abstract class BaseCommandTests<TId, TItem> : IAsyncLifetime
+    public abstract class BaseCollectionTests<TId, TItem> : IAsyncLifetime
         where TItem : IBaseItem<TId>, new()
     {
         protected abstract IDBCollection<TId, TItem> Collection { get; }
@@ -47,16 +47,13 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task InsertOneItem_ReturnsInsertedItem()
         {
-            var id = GenerateId();
-            var item = CreateNewItem(id);
-
+            var item = CreateNewItem();
             var insertItem = await Collection.InsertAsync(item);
-
             insertItem.Should().NotBeNull();
         }
 
         [Fact]
-        public virtual async Task InsertItem_WhenItemExsist()
+        public virtual async Task InsertItem_WhenItemExist()
         {
             var id = GenerateId();
             var firstItem = CreateNewItem(id);

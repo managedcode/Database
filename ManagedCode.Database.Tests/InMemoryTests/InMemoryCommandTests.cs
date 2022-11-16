@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests.InMemoryTests
 {
-    public class InMemoryCommandTests : BaseCommandTests<int, InMemoryItem>
+    public class InMemoryCommandTests : BaseCollectionTests<int, InMemoryItem>
     {
         private static volatile int _count;
         private InMemoryDataBase _databaseb;

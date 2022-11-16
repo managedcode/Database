@@ -8,7 +8,7 @@ using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests
+namespace ManagedCode.Database.Tests.SQLiteTests
 {
     public class SQLiteRepositoryTests : BaseQueryableTests<int, SQLiteDbItem>
     {
@@ -18,11 +18,12 @@ namespace ManagedCode.Database.Tests
 
         public SQLiteRepositoryTests()
         {
+            var dbPath = Path.Combine(Path.GetTempPath(), "sqlite_test.db");
+
             _database = new SqLiteDatabase(new SQLiteRepositoryOptions
             {
-                ConnectionString = "sqlite_test.db"
+                ConnectionString = dbPath,
             });
-
         }
 
         public override async Task InitializeAsync()

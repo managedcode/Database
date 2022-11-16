@@ -451,7 +451,7 @@ public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
 
         // Assert
         itemsResult.Count.Should().Be(itemsCountToTake);
-        itemsResult.First().IntData.Should().Be(itemsCountToTake);
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
     }
 
     [Fact]
@@ -459,7 +459,7 @@ public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
     {
         // Arrange
         int itemsCountToInsert = 5;
-        int itemsCountToTake = 3;
+        int itemsCountToSkip = 3;
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
@@ -469,11 +469,11 @@ public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
         }
 
         // Act
-        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(itemsCountToTake).ToListAsync();
+        var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
         // Assert
-        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToTake);
-        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToTake);
+        itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
     }
 
     [Fact]

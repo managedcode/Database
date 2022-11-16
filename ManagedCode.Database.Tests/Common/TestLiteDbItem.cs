@@ -3,7 +3,7 @@ using ManagedCode.Database.LiteDB;
 
 namespace ManagedCode.Database.Tests.Common;
 
-public class TestLiteDbItem : LiteDbItem<string>, IBaseItem<string>
+public class TestLiteDbItem : LiteDBItem<string>, IBaseItem<string>
 {
     public TestLiteDbItem()
     {

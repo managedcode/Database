@@ -5,9 +5,9 @@ namespace ManagedCode.Database.LiteDB.Extensions;
 
 public static class ProviderBuilderExtension
 {
-    public static IServiceCollection AddLiteDb(this IServiceCollection serviceCollection, Action<LiteDbRepositoryOptions> action)
+    public static IServiceCollection AddLiteDb(this IServiceCollection serviceCollection, Action<LiteDBOptions> action)
     {
-        var connectionOptions = new LiteDbRepositoryOptions();
+        var connectionOptions = new LiteDBOptions();
         action.Invoke(connectionOptions);
 
         serviceCollection.AddSingleton(connectionOptions);

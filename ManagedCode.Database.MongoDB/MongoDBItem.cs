@@ -4,19 +4,19 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDbItem : IItem<ObjectId>
+public class MongoDBItem : IItem<ObjectId>
 {
-    public MongoDbItem()
+    public MongoDBItem()
     {
         Id = ObjectId.GenerateNewId();
     }
 
-    public MongoDbItem(string id)
+    public MongoDBItem(string id)
     {
         Id = ObjectId.Parse(id);
     }
 
-    public MongoDbItem(ObjectId id)
+    public MongoDBItem(ObjectId id)
     {
         Id = id;
     }
