@@ -1,17 +1,18 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Database.AzureTable.Extensions;
-
-public static class ProviderBuilderExtension
+namespace ManagedCode.Database.AzureTable.Extensions
 {
-    public static IServiceCollection AddAzureTable(this IServiceCollection serviceCollection, Action<AzureTableOptions> action)
+    public static class ProviderBuilderExtension
     {
-        var connectionOptions = new AzureTableOptions();
-        action.Invoke(connectionOptions);
+        public static IServiceCollection AddAzureTable(this IServiceCollection serviceCollection, Action<AzureTableOptions> action)
+        {
+            var connectionOptions = new AzureTableOptions();
+            action.Invoke(connectionOptions);
 
-        serviceCollection.AddSingleton(connectionOptions);
+            serviceCollection.AddSingleton(connectionOptions);
 
-        return serviceCollection;
+            return serviceCollection;
+        }
     }
 }

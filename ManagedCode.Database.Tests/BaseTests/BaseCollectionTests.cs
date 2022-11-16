@@ -13,7 +13,7 @@ namespace ManagedCode.Database.Tests.BaseTests
     public abstract class BaseCollectionTests<TId, TItem> : IAsyncLifetime
         where TItem : IBaseItem<TId>, new()
     {
-        protected abstract IDBCollection<TId, TItem> Collection { get; }
+        protected abstract IDatabaseCollection<TId, TItem> Collection { get; }
 
         protected abstract TId GenerateId();
 
@@ -44,7 +44,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         #region Insert
-        
+
         [Fact]
         public virtual async Task InsertOneItem_ReturnsInsertedItem()
         {
@@ -59,17 +59,17 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task InsertItem_WhenItemExist_DatabaseException()
+        public virtual async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
         {
             // Arrange
             var item = CreateNewItem();
-            await Collection.InsertAsync(CreateNewItem());
 
             // Act
-            var insertSecondItemAction = () => Collection.InsertAsync(item);
+            await Collection.InsertAsync(item);
+            var insertAction = () => Collection.InsertAsync(item);
 
             // Assert
-            await insertSecondItemAction.Should().ThrowAsync<DatabaseException>();
+            await insertAction.Should().ThrowAsync<DatabaseException>();
         }
 
         [Fact]
@@ -123,11 +123,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 insertOneItem.Should().NotBeNull();
             }
         }
-        
+
         [Fact]
         public virtual async Task InsertOrUpdateListOfItems()
         {
-            int itemsCount = 5; 
+            int itemsCount = 5;
             List<TItem> list = new();
 
             for (var i = 0; i < itemsCount; i++)
@@ -144,12 +144,12 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
             //TODO: LiteDB must be 100, but result 0
-            
+
             itemsUpdate.Should().Be(itemsCount);
             itemsInsert.Should().Be(itemsCount);
             list.Count.Should().Be(itemsCount);
         }
-        
+
         #endregion
 
         #region Update
@@ -158,7 +158,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task UpdateOneItem()
         {
             var id = GenerateId();
-            
+
             var insertItem = await Collection.InsertAsync(CreateNewItem(id));
             var updateItem = await Collection.UpdateAsync(CreateNewItem(id));
 
@@ -177,7 +177,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             await updateItemAction.Should().ThrowAsync<DatabaseException>();
-
         }
 
         [Fact]
@@ -238,10 +237,10 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task DeleteItemById()
         {
             var item = CreateNewItem();
-            
+
             await Collection.InsertAsync(item);
             var deleted = await Collection.DeleteAsync(item.Id);
-            
+
             item.Should().NotBeNull();
             deleted.Should().BeTrue();
         }
@@ -250,9 +249,9 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task DeleteItemById_WhenItemDoesntExists()
         {
             var item = CreateNewItem();
-            
+
             var deleted = await Collection.DeleteAsync(item.Id);
-            
+
             item.Should().NotBeNull();
             deleted.Should().BeFalse();
         }
@@ -298,7 +297,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         {
             int itemsCount = 5;
             List<TItem> list = new();
-            
+
             for (var i = 0; i < itemsCount; i++)
             {
                 list.Add(CreateNewItem());
@@ -354,7 +353,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             var queryParam3 = list[2].StringData;
 
             var equalsQueryResult = await Collection.Query.Where(w => w.StringData == queryParam1).DeleteAsync();
-            var orQueryResult = await Collection.Query.Where(w => w.StringData == queryParam2 || w.StringData == queryParam3).DeleteAsync();
+            var orQueryResult = await Collection.Query
+                .Where(w => w.StringData == queryParam2 || w.StringData == queryParam3).DeleteAsync();
 
             equalsQueryResult.Should().Be(equalsQueryItemsCount);
             orQueryResult.Should().Be(orQueryItemsCount);
@@ -432,6 +432,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             insertOneItem.Should().NotBeNull();
             count.Should().Be(expectedCountAfterInsert);
         }
+
         #endregion
 
         #region Get
@@ -462,8 +463,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             getItemResult.Should().BeNull();
         }
-        
-        #endregion
 
+        #endregion
     }
 }

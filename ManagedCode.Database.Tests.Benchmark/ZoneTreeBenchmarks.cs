@@ -1,5 +1,7 @@
 
-namespace Benchmark;
+namespace Benchmark
+{
+}
 
 //[HtmlExporter]
 //[SimpleJob(RunStrategy.ColdStart, targetCount: 1)]

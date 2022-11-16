@@ -1,6 +1,7 @@
-namespace ManagedCode.ZoneTree.Cluster.DB;
-
-public class ZoneTreeItem : IZoneTreeItem<Guid> 
+namespace ManagedCode.Database.ZoneTree
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public class ZoneTreeItem : IZoneTreeItem<Guid> 
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+    }
 }

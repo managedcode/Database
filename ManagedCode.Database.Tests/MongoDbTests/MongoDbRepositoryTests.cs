@@ -11,12 +11,12 @@ namespace ManagedCode.Database.Tests.MongoDbTests
 {
     public class MongoDbRepositoryTests : BaseRepositoryTests<ObjectId, TestMongoDbItem>, IAsyncLifetime
     {
-        private readonly MongoDatabase _database;
+        private readonly MongoDBDatabase _dbDatabase;
         private readonly TestcontainersContainer _mongoDBContainer;
 
         public MongoDbRepositoryTests()
         {
-            _database = new MongoDatabase(new MongoOptions()
+            _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
             {
                 ConnectionString = "mongodb://localhost:27017",
                 DataBaseName = "db"
@@ -28,8 +28,8 @@ namespace ManagedCode.Database.Tests.MongoDbTests
                 .Build();
         }
 
-        protected override IDBCollection<ObjectId, TestMongoDbItem> Collection =>
-            _database.GetCollection<TestMongoDbItem>();
+        protected override IDatabaseCollection<ObjectId, TestMongoDbItem> Collection =>
+            _dbDatabase.GetCollection<TestMongoDbItem>();
 
         protected override ObjectId GenerateId()
         {
@@ -40,12 +40,12 @@ namespace ManagedCode.Database.Tests.MongoDbTests
         public override async Task InitializeAsync()
         {
             await _mongoDBContainer.StartAsync();
-            await _database.InitializeAsync();
+            await _dbDatabase.InitializeAsync();
         }
 
         public override async Task DisposeAsync()
         {
-            await _database.DisposeAsync();
+            await _dbDatabase.DisposeAsync();
             await _mongoDBContainer.StopAsync();
         }
     }

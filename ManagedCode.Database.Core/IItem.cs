@@ -1,6 +1,7 @@
-namespace ManagedCode.Database.Core;
-
-public interface IItem<TId>
+namespace ManagedCode.Database.Core
 {
-    TId Id { get; set; }
+    public interface IItem<TId>
+    {
+        TId Id { get; set; }
+    }
 }

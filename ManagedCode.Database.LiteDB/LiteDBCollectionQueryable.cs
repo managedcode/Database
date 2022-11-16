@@ -8,93 +8,94 @@ using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.LiteDB;
-
-public class LiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<TItem>
-    where TItem : LiteDBItem<TId>, IItem<TId>, new()
+namespace ManagedCode.Database.LiteDB
 {
-    private readonly ILiteCollection<TItem> _collection;
-
-    public LiteDBCollectionQueryable(ILiteCollection<TItem> collection)
+    public class LiteDBCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TItem>
+        where TItem : LiteDBItem<TId>, IItem<TId>, new()
     {
-        _collection = collection;
-    }
+        private readonly ILiteCollection<TItem> _collection;
 
-    public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await Task.Yield();
-
-        foreach (var item in ApplyPredicates(Predicates).ToEnumerable())
+        public LiteDBCollectionQueryable(ILiteCollection<TItem> collection)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return item;
+            _collection = collection;
         }
-    }
 
-    public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
-    {
-        var query = ApplyPredicates(Predicates);
-
-        return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
-    }
-
-    public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
-    {
-        var query = ApplyPredicates(Predicates);
-
-        return await Task.Run(() => query.LongCount(), cancellationToken);
-    }
-
-    public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
-    {
-        var predicates = Predicates
-            .Select(p => p.ExpressionBool)
-            .Aggregate(Combine);
-
-        return await Task.Run(() => _collection.DeleteMany(predicates), cancellationToken);
-    }
-
-    private ILiteQueryableResult<TItem> ApplyPredicates(IEnumerable<QueryItem> predicates)
-    {
-        // TODO: optimize
-        var query = _collection.Query();
-
-        foreach (var predicate in predicates)
+        public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            query = predicate.QueryType switch
+            await Task.Yield();
+
+            foreach (var item in ApplyPredicates(Predicates).ToEnumerable())
             {
-                QueryType.Where => query.Where(predicate.ExpressionBool),
-                QueryType.OrderBy => query.OrderBy(predicate.ExpressionObject),
-                QueryType.OrderByDescending => query.OrderByDescending(predicate.ExpressionObject),
-                QueryType.ThenBy => query.OrderBy(predicate.ExpressionObject),
-                QueryType.ThenByDescending => query.OrderByDescending(predicate.ExpressionObject),
-                _ => query
-            };
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return item;
+            }
         }
 
-        ILiteQueryableResult<TItem> queryableResult = query;
-
-        foreach (var predicate in predicates)
+        public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
         {
-            queryableResult = predicate.QueryType switch
-            {
-                QueryType.Take => predicate.Count.HasValue
-                    ? queryableResult.Limit(predicate.Count.Value)
-                    : queryableResult,
+            var query = ApplyPredicates(Predicates);
 
-                QueryType.Skip => queryableResult.Skip(predicate.Count!.Value),
-                _ => queryableResult
-            };
+            return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
         }
 
-        return queryableResult;
-    }
+        public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
+        {
+            var query = ApplyPredicates(Predicates);
 
-    private static Expression<Func<T, bool>> Combine<T>(Expression<Func<T, bool>> expr1,
-        Expression<Func<T, bool>> expr2)
-    {
-        var body = Expression.AndAlso(expr1.Body, expr2.Body);
-        return Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);
+            return await Task.Run(() => query.LongCount(), cancellationToken);
+        }
+
+        public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+        {
+            var predicates = Predicates
+                .Select(p => p.ExpressionBool)
+                .Aggregate(CombineExpressions);
+
+            return await Task.Run(() => _collection.DeleteMany(predicates), cancellationToken);
+        }
+
+        private ILiteQueryableResult<TItem> ApplyPredicates(IEnumerable<QueryItem> predicates)
+        {
+            // TODO: optimize
+            var query = _collection.Query();
+
+            foreach (var predicate in predicates)
+            {
+                query = predicate.QueryType switch
+                {
+                    QueryType.Where => query.Where(predicate.ExpressionBool),
+                    QueryType.OrderBy => query.OrderBy(predicate.ExpressionObject),
+                    QueryType.OrderByDescending => query.OrderByDescending(predicate.ExpressionObject),
+                    QueryType.ThenBy => query.OrderBy(predicate.ExpressionObject),
+                    QueryType.ThenByDescending => query.OrderByDescending(predicate.ExpressionObject),
+                    _ => query
+                };
+            }
+
+            ILiteQueryableResult<TItem> queryableResult = query;
+
+            foreach (var predicate in predicates)
+            {
+                queryableResult = predicate.QueryType switch
+                {
+                    QueryType.Take => predicate.Count.HasValue
+                        ? queryableResult.Limit(predicate.Count.Value)
+                        : queryableResult,
+
+                    QueryType.Skip => queryableResult.Skip(predicate.Count!.Value),
+                    _ => queryableResult
+                };
+            }
+
+            return queryableResult;
+        }
+
+        private static Expression<Func<T, bool>> CombineExpressions<T>(Expression<Func<T, bool>> expr1,
+            Expression<Func<T, bool>> expr2)
+        {
+            var body = Expression.AndAlso(expr1.Body, expr2.Body);
+            return Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);
+        }
     }
 }

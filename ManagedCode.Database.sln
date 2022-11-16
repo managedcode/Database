@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Core", "ManagedCode.Database.Core\ManagedCode.Database.Core.csproj", "{1B494908-A80A-4EEE-97A7-ABDEAC3EC64F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.CosmosDB", "ManagedCode.Database.CosmosDB\ManagedCode.Database.CosmosDB.csproj", "{03EE6090-7D24-4FF8-97C9-BC7CDFD7E586}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Cosmos", "ManagedCode.Database.Cosmos\ManagedCode.Database.Cosmos.csproj", "{03EE6090-7D24-4FF8-97C9-BC7CDFD7E586}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.AzureTable", "ManagedCode.Database.AzureTable\ManagedCode.Database.AzureTable.csproj", "{0D6304D1-911D-489E-A716-6CBD5D0FE05D}"
 EndProject

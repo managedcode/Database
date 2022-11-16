@@ -1,16 +1,17 @@
 ﻿using System;
 
-namespace ManagedCode.Database.Core.Extensions;
-
-public static class TypeExtensions
+namespace ManagedCode.Database.Core.Extensions
 {
-    public static bool EqualsToGeneric(this Type? type, Type baseType)
+    public static class TypeExtensions
     {
-        if (type != null)
+        public static bool EqualsToGeneric(this Type? type, Type baseType)
         {
-            return type.Name.Equals(baseType.Name);
-        }
+            if (type != null)
+            {
+                return type.Name.Equals(baseType.Name);
+            }
 
-        return false;
+            return false;
+        }
     }
 }

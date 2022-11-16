@@ -5,48 +5,49 @@ using LiteDB;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
 
-namespace ManagedCode.Database.LiteDB;
-
-public class LiteDBDatabase : BaseDatabase<LiteDatabase>
+namespace ManagedCode.Database.LiteDB
 {
-    private readonly LiteDBOptions _options;
-
-    public LiteDBDatabase(LiteDBOptions options)
+    public class LiteDBDatabase : BaseDatabase<LiteDatabase>
     {
-        _options = options;
-    }
+        private readonly LiteDBOptions _options;
 
-    public override Task DeleteAsync(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
-    {
-        NativeClient = _options.Database ?? new LiteDatabase(_options.ConnectionString);
-
-        return Task.CompletedTask;
-    }
-
-    protected override ValueTask DisposeAsyncInternal()
-    {
-        NativeClient.Dispose();
-        return new ValueTask(Task.CompletedTask);
-    }
-
-    protected override void DisposeInternal()
-    {
-        NativeClient.Dispose();
-    }
-
-    public LiteDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDBItem<TId>, new()
-    {
-        if (!IsInitialized)
+        public LiteDBDatabase(LiteDBOptions options)
         {
-            throw new DatabaseNotInitializedException(GetType());
+            _options = options;
         }
 
-        return new LiteDBCollection<TId, TItem>(NativeClient.GetCollection<TItem>());
+        public override Task DeleteAsync(CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        protected override Task InitializeAsyncInternal(CancellationToken token = default)
+        {
+            NativeClient = _options.Database ?? new LiteDatabase(_options.ConnectionString);
+
+            return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            NativeClient.Dispose();
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+            NativeClient.Dispose();
+        }
+
+        public LiteDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : LiteDBItem<TId>, new()
+        {
+            if (!IsInitialized)
+            {
+                throw new DatabaseNotInitializedException(GetType());
+            }
+
+            return new LiteDBCollection<TId, TItem>(NativeClient.GetCollection<TItem>());
+        }
     }
 }

@@ -1,12 +1,13 @@
 using System;
 using Azure.Data.Tables;
 
-namespace ManagedCode.Database.AzureTable;
-
-public class AzureTableOptions
+namespace ManagedCode.Database.AzureTable
 {
-    public string ConnectionString { get; set; }
-    public TableSharedKeyCredential TableSharedKeyCredential { get; set; }
-    public Uri TableStorageUri { get; set; }
-    public bool AllowTableCreation { get; set; }
+    public class AzureTableOptions
+    {
+        public string ConnectionString { get; set; }
+        public TableSharedKeyCredential TableSharedKeyCredential { get; set; }
+        public Uri TableStorageUri { get; set; }
+        public bool AllowTableCreation { get; set; }
+    }
 }

@@ -1,7 +1,8 @@
-namespace ManagedCode.ZoneTree.Cluster.DB;
-
-public enum StorageType
+namespace ManagedCode.Database.ZoneTree
 {
-    File,
-    Blob,
+    public enum StorageType
+    {
+        File,
+        Blob,
+    }
 }
