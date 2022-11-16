@@ -32,7 +32,7 @@ namespace ManagedCode.Database.Tests.AzureTableTests
                 .Build();
         }
 
-        protected override IDBCollection<TableId, TestAzureTableItem> Collection =>
+        protected override IDatabaseCollection<TableId, TestAzureTableItem> Collection =>
             _database.GetCollection<TableId, TestAzureTableItem>();
 
         protected override TableId GenerateId()

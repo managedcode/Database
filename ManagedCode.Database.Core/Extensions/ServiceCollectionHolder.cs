@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Database.Core.Extensions;
-
-public class ServiceCollectionHolder
+namespace ManagedCode.Database.Core.Extensions
 {
-    public ServiceCollectionHolder(IServiceCollection serviceCollection)
+    public class ServiceCollectionHolder
     {
-        ServiceCollection = serviceCollection;
-    }
+        public ServiceCollectionHolder(IServiceCollection serviceCollection)
+        {
+            ServiceCollection = serviceCollection;
+        }
 
-    public IServiceCollection ServiceCollection { get; }
+        public IServiceCollection ServiceCollection { get; }
+    }
 }

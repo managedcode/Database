@@ -36,7 +36,7 @@ namespace ManagedCode.Database.Tests.SQLiteTests
             await _database.DeleteAsync();
         }
 
-        protected override IDBCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
+        protected override IDatabaseCollection<int, SQLiteDbItem> Collection => _database.GetCollection<int, SQLiteDbItem>();
 
         private static string GetTempDbName()
         {

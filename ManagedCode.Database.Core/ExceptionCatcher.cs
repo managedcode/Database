@@ -2,31 +2,32 @@ using System;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core.Exceptions;
 
-namespace ManagedCode.Database.Core;
-
-public static class ExceptionCatcher
+namespace ManagedCode.Database.Core
 {
-    public static async Task<T> ExecuteAsync<T>(Task<T> task)
+    public static class ExceptionCatcher
     {
-        try
+        public static async Task<T> ExecuteAsync<T>(Task<T> task)
         {
-            return await task;
+            try
+            {
+                return await task;
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseException(exception.Message, exception);
+            }
         }
-        catch (Exception exception)
-        {
-            throw new DatabaseException(exception.Message, exception);
-        }
-    }
 
-    public static async Task ExecuteAsync(Task task)
-    {
-        try
+        public static async Task ExecuteAsync(Task task)
         {
-            await task;
-        }
-        catch (Exception exception)
-        {
-            throw new DatabaseException(exception.Message, exception);
+            try
+            {
+                await task;
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseException(exception.Message, exception);
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace ManagedCode.Database.Tests.BaseTests
     public abstract class BaseCollectionTests<TId, TItem> : IAsyncLifetime
         where TItem : IBaseItem<TId>, new()
     {
-        protected abstract IDBCollection<TId, TItem> Collection { get; }
+        protected abstract IDatabaseCollection<TId, TItem> Collection { get; }
 
         protected abstract TId GenerateId();
 

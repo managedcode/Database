@@ -4,30 +4,31 @@ using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.AzureTable;
-
-public class AzureTableItem : ITableEntity, IItem<TableId>
+namespace ManagedCode.Database.AzureTable
 {
-    private TableId _id;
-
-    public AzureTableItem()
+    public class AzureTableItem : ITableEntity, IItem<TableId>
     {
-        _id = new TableId(this);
-    }
+        private TableId _id;
 
-    public string PartitionKey { get; set; } = default!;
-    public string RowKey { get; set; } = default!;
-    public DateTimeOffset? Timestamp { get; set; } = default!;
-    public ETag ETag { get; set; }
-
-    [IgnoreDataMember]
-    public TableId Id
-    {
-        get => _id;
-        set
+        public AzureTableItem()
         {
-            _id = value;
-            _id.SetEntity(this);
+            _id = new TableId(this);
+        }
+
+        public string PartitionKey { get; set; } = default!;
+        public string RowKey { get; set; } = default!;
+        public DateTimeOffset? Timestamp { get; set; } = default!;
+        public ETag ETag { get; set; }
+
+        [IgnoreDataMember]
+        public TableId Id
+        {
+            get => _id;
+            set
+            {
+                _id = value;
+                _id.SetEntity(this);
+            }
         }
     }
 }

@@ -2,65 +2,66 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core.Common;
 
-namespace ManagedCode.Database.Core;
-
-public abstract class BaseDatabase<T> : IDatabase<T>
+namespace ManagedCode.Database.Core
 {
-    private bool _disposed;
-    private T _nativeClient = default!;
-
-    public bool IsInitialized { get; protected set; }
-
-    public T NativeClient
+    public abstract class BaseDatabase<T> : IDatabase<T>
     {
-        get
+        private bool _disposed;
+        private T _nativeClient = default!;
+
+        public bool IsInitialized { get; protected set; }
+
+        public T NativeClient
+        {
+            get
+            {
+                if (!IsInitialized)
+                {
+                    throw new DatabaseNotInitializedException(GetType());
+                }
+
+                return _nativeClient;
+            }
+
+            protected set => _nativeClient = value;
+        }
+
+        public async Task InitializeAsync(CancellationToken token = default)
         {
             if (!IsInitialized)
             {
-                throw new DatabaseNotInitializedException(GetType());
+                await InitializeAsyncInternal(token);
+
+                IsInitialized = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
             }
 
-            return _nativeClient;
+            _disposed = true;
+            DisposeInternal();
         }
 
-        protected set => _nativeClient = value;
-    }
-
-    public async Task InitializeAsync(CancellationToken token = default)
-    {
-        if (!IsInitialized)
+        public ValueTask DisposeAsync()
         {
-            await InitializeAsyncInternal(token);
+            if (_disposed)
+            {
+                return new ValueTask(Task.CompletedTask);
+            }
 
-            IsInitialized = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
+            _disposed = true;
+            return DisposeAsyncInternal();
         }
 
-        _disposed = true;
-        DisposeInternal();
+        protected abstract Task InitializeAsyncInternal(CancellationToken token = default);
+
+        protected abstract ValueTask DisposeAsyncInternal();
+        protected abstract void DisposeInternal();
+        public abstract Task DeleteAsync(CancellationToken token = default);
     }
-
-    public ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        _disposed = true;
-        return DisposeAsyncInternal();
-    }
-
-    protected abstract Task InitializeAsyncInternal(CancellationToken token = default);
-
-    protected abstract ValueTask DisposeAsyncInternal();
-    protected abstract void DisposeInternal();
-    public abstract Task DeleteAsync(CancellationToken token = default);
 }

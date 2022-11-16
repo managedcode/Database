@@ -24,7 +24,7 @@ namespace ManagedCode.Database.Tests.LiteDbTests
             });
         }
 
-        protected override IDBCollection<string, TestLiteDbItem> Collection =>
+        protected override IDatabaseCollection<string, TestLiteDbItem> Collection =>
             _database.GetCollection<string, TestLiteDbItem>();
 
         protected override string GenerateId()

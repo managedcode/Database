@@ -1,57 +1,58 @@
 using Azure.Data.Tables;
 
-namespace ManagedCode.Database.AzureTable;
-
-public class TableId
+namespace ManagedCode.Database.AzureTable
 {
-    private ITableEntity _internalEntity;
-
-    public TableId(ITableEntity entity)
+    public class TableId
     {
-        _internalEntity = entity;
-    }
+        private ITableEntity _internalEntity;
 
-    public TableId(string partitionKey, string rowKey)
-    {
-        _internalEntity = new TableEntity(partitionKey, rowKey);
-    }
-
-    public string PartitionKey
-    {
-        get => _internalEntity.PartitionKey;
-        set => _internalEntity.PartitionKey = value;
-    }
-
-    public string RowKey
-    {
-        get => _internalEntity.RowKey;
-        set => _internalEntity.RowKey = value;
-    }
-
-    public void SetEntity(ITableEntity entity)
-    {
-        entity.PartitionKey = PartitionKey;
-        entity.RowKey = RowKey;
-        _internalEntity = entity;
-    }
-
-    public override string ToString()
-    {
-        return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is TableId tableId)
+        public TableId(ITableEntity entity)
         {
-            return tableId.PartitionKey == PartitionKey && tableId.RowKey == RowKey;
+            _internalEntity = entity;
         }
 
-        return false;
-    }
+        public TableId(string partitionKey, string rowKey)
+        {
+            _internalEntity = new TableEntity(partitionKey, rowKey);
+        }
 
-    public override int GetHashCode()
-    {
-        return PartitionKey.GetHashCode() ^ RowKey.GetHashCode();
+        public string PartitionKey
+        {
+            get => _internalEntity.PartitionKey;
+            set => _internalEntity.PartitionKey = value;
+        }
+
+        public string RowKey
+        {
+            get => _internalEntity.RowKey;
+            set => _internalEntity.RowKey = value;
+        }
+
+        public void SetEntity(ITableEntity entity)
+        {
+            entity.PartitionKey = PartitionKey;
+            entity.RowKey = RowKey;
+            _internalEntity = entity;
+        }
+
+        public override string ToString()
+        {
+            return $"PartitionKey:{PartitionKey};RowKey:{PartitionKey};";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is TableId tableId)
+            {
+                return tableId.PartitionKey == PartitionKey && tableId.RowKey == RowKey;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return PartitionKey.GetHashCode() ^ RowKey.GetHashCode();
+        }
     }
 }

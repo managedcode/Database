@@ -9,14 +9,14 @@ namespace ManagedCode.Database.Tests.InMemoryTests
     public class InMemoryCommandTests : BaseCollectionTests<int, InMemoryItem>
     {
         private static volatile int _count;
-        private InMemoryDataBase _databaseb;
+        private InMemoryDatabase _databaseb;
 
         public InMemoryCommandTests()
         {
-            _databaseb = new InMemoryDataBase();
+            _databaseb = new InMemoryDatabase();
         }
 
-        protected override IDBCollection<int, InMemoryItem> Collection 
+        protected override IDatabaseCollection<int, InMemoryItem> Collection 
             => _databaseb.GetCollection<int, InMemoryItem>();
 
         protected override int GenerateId()

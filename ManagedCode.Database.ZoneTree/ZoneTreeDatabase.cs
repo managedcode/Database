@@ -1,65 +1,66 @@
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
 
-namespace ManagedCode.ZoneTree.Cluster.DB;
-
-public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
+namespace ManagedCode.Database.ZoneTree
 {
-    private readonly string _path;
-    private Dictionary<string, IDisposable> _collection = new();
-
-    public ZoneTreeDatabase(string path)
+    public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
     {
-        _path = path;
-    }
+        private readonly string _path;
+        private Dictionary<string, IDisposable> _collection = new();
 
-    protected override Task InitializeAsyncInternal(CancellationToken token = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override async ValueTask DisposeAsyncInternal()
-    {
-        await Task.Run(Dispose);
-    }
-
-    protected override void DisposeInternal()
-    {
-        foreach (var table in _collection)
+        public ZoneTreeDatabase(string path)
         {
-            table.Value.Dispose();
-        }
-    }
-
-    public override Task DeleteAsync(CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
-    {
-        return GetCollection<TId, TItem>(typeof(TItem).FullName);
-    }
-
-    public ZoneTreeDBCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
-    {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
+            _path = path;
         }
 
-        lock (NativeClient)
+        protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
-            var className = typeof(TItem).FullName;
-            if (_collection.TryGetValue(className, out var collection))
+            return Task.CompletedTask;
+        }
+
+        protected override async ValueTask DisposeAsyncInternal()
+        {
+            await Task.Run(Dispose);
+        }
+
+        protected override void DisposeInternal()
+        {
+            foreach (var table in _collection)
             {
-                return (ZoneTreeDBCollection<TId, TItem>)collection;
+                table.Value.Dispose();
             }
-            else
+        }
+
+        public override Task DeleteAsync(CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ZoneTreeDatabaseCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
+        {
+            return GetCollection<TId, TItem>(typeof(TItem).FullName);
+        }
+
+        public ZoneTreeDatabaseCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
+        {
+            if (!IsInitialized)
             {
-                var newCollection = new ZoneTreeDBCollection<TId, TItem>(Path.Combine(_path, className));
-                _collection.Add(className, newCollection);
-                return newCollection;
+                throw new DatabaseNotInitializedException(GetType());
+            }
+
+            lock (NativeClient)
+            {
+                var className = typeof(TItem).FullName;
+                if (_collection.TryGetValue(className, out var collection))
+                {
+                    return (ZoneTreeDatabaseCollection<TId, TItem>)collection;
+                }
+                else
+                {
+                    var newCollection = new ZoneTreeDatabaseCollection<TId, TItem>(Path.Combine(_path, className));
+                    _collection.Add(className, newCollection);
+                    return newCollection;
+                }
             }
         }
     }

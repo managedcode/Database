@@ -12,7 +12,7 @@
     <!--NuGet-->
     <PropertyGroup>
         <Title>ManagedCode.Repository.CosmosDB</Title>
-        <PackageId>ManagedCode.Database.CosmosDB</PackageId>
+        <PackageId>ManagedCode.Database.Cosmos</PackageId>
         <Description>Repository for CosmosDB</Description>
         <PackageTags>managedcode, repository, CosmosDB</PackageTags>
     </PropertyGroup>

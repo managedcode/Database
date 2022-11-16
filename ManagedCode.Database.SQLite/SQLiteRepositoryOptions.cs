@@ -1,9 +1,10 @@
 using SQLite;
 
-namespace ManagedCode.Database.SQLite;
-
-public class SQLiteRepositoryOptions
+namespace ManagedCode.Database.SQLite
 {
-    public string ConnectionString { get; set; }
-    public SQLiteConnection? Connection { get; set; }
+    public class SQLiteRepositoryOptions
+    {
+        public string ConnectionString { get; set; }
+        public SQLiteConnection? Connection { get; set; }
+    }
 }
