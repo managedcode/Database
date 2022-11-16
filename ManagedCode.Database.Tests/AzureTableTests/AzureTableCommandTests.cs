@@ -78,7 +78,7 @@ public class AzureTableCommandTests : BaseCollectionTests<TableId, TestAzureTabl
         updatedItems.Should().Be(1);
     }
 
-    public override async Task UpdateItem_WhenItem_DoesntExists()
+/*    public override async Task UpdateItem_WhenItem_DoesntExists()
     {
         var baseMethod = () => base.UpdateItem_WhenItem_DoesntExists();
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
@@ -88,7 +88,7 @@ public class AzureTableCommandTests : BaseCollectionTests<TableId, TestAzureTabl
     {
         var baseMethod = () => base.InsertItem_WhenItemExist();
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
+    }*/
 
     public override async Task InsertItems_WhenOneItemAlreadyExists()
     {
