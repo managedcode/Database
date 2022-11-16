@@ -51,54 +51,34 @@ public class AzureTableDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<
         var items = await _tableClient
             .QueryAsync<TItem>(filter, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
 
-        var responses = await _tableClient.SubmitTransactionByChunksAsync<TItem>(items,
+        var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
             TableTransactionActionType.Delete, cancellationToken);
 
         return responses.Count(v => !v.IsError);
     }
 
-    private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> asyncEnumerable,
+    private static IAsyncEnumerable<TItem> ApplyPredicates(IAsyncEnumerable<TItem> enumerable,
         List<QueryItem> predicates)
     {
         // TODO: add warning
         foreach (var predicate in predicates)
         {
-            switch (predicate.QueryType)
+            enumerable = predicate.QueryType switch
             {
-                case QueryType.OrderBy:
-                    asyncEnumerable = asyncEnumerable.OrderBy(x => predicate.ExpressionObject.Compile().Invoke(x));
-                    break;
-
-                case QueryType.OrderByDescending:
-                    asyncEnumerable =
-                        asyncEnumerable.OrderByDescending(x => predicate.ExpressionObject.Compile().Invoke(x));
-                    break;
-
-                case QueryType.ThenBy:
-                    asyncEnumerable = (asyncEnumerable as IOrderedAsyncEnumerable<TItem>)!
-                        .ThenBy(x => predicate.ExpressionObject.Compile().Invoke(x));
-                    break;
-
-                case QueryType.ThenByDescending:
-                    asyncEnumerable = (asyncEnumerable as IOrderedAsyncEnumerable<TItem>)!
-                        .ThenByDescending(x => predicate.ExpressionObject.Compile().Invoke(x));
-                    break;
-
-                case QueryType.Take:
-                    if (predicate.Count.HasValue)
-                    {
-                        asyncEnumerable = asyncEnumerable.Take(predicate.Count.Value);
-                    }
-
-                    break;
-
-                case QueryType.Skip:
-                    asyncEnumerable = asyncEnumerable.Skip(predicate.Count!.Value);
-                    break;
-            }
+                QueryType.OrderBy => enumerable.OrderBy(x => predicate.ExpressionObject.Compile().Invoke(x)),
+                QueryType.OrderByDescending => enumerable
+                    .OrderByDescending(x => predicate.ExpressionObject.Compile().Invoke(x)),
+                QueryType.ThenBy => (enumerable as IOrderedAsyncEnumerable<TItem>)!
+                    .ThenBy(x => predicate.ExpressionObject.Compile().Invoke(x)),
+                QueryType.ThenByDescending => (enumerable as IOrderedAsyncEnumerable<TItem>)!
+                    .ThenByDescending(x => predicate.ExpressionObject.Compile().Invoke(x)),
+                QueryType.Take => predicate.Count.HasValue ? enumerable.Take(predicate.Count.Value) : enumerable,
+                QueryType.Skip => enumerable.Skip(predicate.Count!.Value),
+                _ => enumerable
+            };
         }
 
-        return asyncEnumerable;
+        return enumerable;
     }
 
     private static string ConvertPredicatesToFilter(IEnumerable<QueryItem> predicates)

@@ -66,42 +66,18 @@ public class MongoDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem
 
         foreach (var predicate in predicates)
         {
-            switch (predicate.QueryType)
+            query = predicate.QueryType switch
             {
-                case QueryType.Where:
-                    query = query.Where(predicate.ExpressionBool);
-                    break;
-
-                case QueryType.OrderBy:
-                    query = query.OrderBy(predicate.ExpressionObject);
-                    break;
-
-                case QueryType.OrderByDescending:
-                    query = query.OrderByDescending(predicate.ExpressionObject);
-                    break;
-
-                case QueryType.ThenBy:
-                    query = (query as IOrderedMongoQueryable<TItem>)
-                        .ThenBy(predicate.ExpressionObject);
-                    break;
-
-                case QueryType.ThenByDescending:
-                    query = (query as IOrderedMongoQueryable<TItem>)
-                        .ThenByDescending(predicate.ExpressionObject);
-                    break;
-
-                case QueryType.Take:
-                    if (predicate.Count.HasValue)
-                    {
-                        query = query.Take(predicate.Count.Value);
-                    }
-
-                    break;
-
-                case QueryType.Skip:
-                    query = query.Skip(predicate.Count!.Value);
-                    break;
-            }
+                QueryType.Where => query.Where(predicate.ExpressionBool),
+                QueryType.OrderBy => query.OrderBy(predicate.ExpressionObject),
+                QueryType.OrderByDescending => query.OrderByDescending(predicate.ExpressionObject),
+                QueryType.ThenBy => (query as IOrderedMongoQueryable<TItem>).ThenBy(predicate.ExpressionObject),
+                QueryType.ThenByDescending => (query as IOrderedMongoQueryable<TItem>)
+                    .ThenByDescending(predicate.ExpressionObject),
+                QueryType.Take => predicate.Count.HasValue ? query.Take(predicate.Count.Value) : query,
+                QueryType.Skip => query.Skip(predicate.Count!.Value),
+                _ => query
+            };
         }
 
         return query;
