@@ -57,17 +57,14 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task InsertItem_WhenItemExist_DatabaseException()
         {
             // Arrange
-            var id = GenerateId();
-            var firstItem = CreateNewItem(id);
-            var secondItem = CreateNewItem(id);
+            var item = CreateNewItem();
+            await Collection.InsertAsync(CreateNewItem());
 
             // Act
-            var insertFirstItemResult = await Collection.InsertAsync(firstItem);
-            var insertSecondItemResult = () => Collection.InsertAsync(secondItem);
+            var insertSecondItemAction = () => Collection.InsertAsync(item);
 
             // Assert
-            insertFirstItemResult.Should().NotBeNull();
-            await insertSecondItemResult.Should().ThrowAsync<DatabaseException>();
+            await insertSecondItemAction.Should().ThrowAsync<DatabaseException>();
         }
 
         [Fact]
@@ -171,10 +168,10 @@ namespace ManagedCode.Database.Tests.BaseTests
             var id = GenerateId();
 
             // Act
-            var updateItemResult = () => Collection.UpdateAsync(CreateNewItem(id));
+            var updateItemAction = () => Collection.UpdateAsync(CreateNewItem(id));
 
             // Assert
-            await updateItemResult.Should().ThrowAsync<DatabaseException>();
+            await updateItemAction.Should().ThrowAsync<DatabaseException>();
 
         }
 
@@ -439,9 +436,9 @@ namespace ManagedCode.Database.Tests.BaseTests
         {
             // Arrange
             var itemId = GenerateId();
+            await Collection.InsertAsync(CreateNewItem(itemId));
 
             // Act
-            await Collection.InsertAsync(CreateNewItem(itemId));
             var getItemResult = await Collection.GetAsync(itemId);
 
             // Assert
