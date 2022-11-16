@@ -50,7 +50,7 @@ namespace ManagedCode.Database.LiteDB
         {
             var predicates = Predicates
                 .Select(p => p.ExpressionBool)
-                .Aggregate(Combine);
+                .Aggregate(CombineExpressions);
 
             return await Task.Run(() => _collection.DeleteMany(predicates), cancellationToken);
         }
@@ -91,7 +91,7 @@ namespace ManagedCode.Database.LiteDB
             return queryableResult;
         }
 
-        private static Expression<Func<T, bool>> Combine<T>(Expression<Func<T, bool>> expr1,
+        private static Expression<Func<T, bool>> CombineExpressions<T>(Expression<Func<T, bool>> expr1,
             Expression<Func<T, bool>> expr2)
         {
             var body = Expression.AndAlso(expr1.Body, expr2.Body);

@@ -29,5 +29,29 @@ namespace ManagedCode.Database.Core
                 throw new DatabaseException(exception.Message, exception);
             }
         }
+
+        public static void Execute(Action action)
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseException(exception.Message, exception);
+            }
+        }
+
+        public static T Execute<T>(Func<T> action)
+        {
+            try
+            {
+                return action.Invoke();
+            }
+            catch (Exception exception)
+            {
+                throw new DatabaseException(exception.Message, exception);
+            }
+        }
     }
 }

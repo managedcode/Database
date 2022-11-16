@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.Core.InMemory
 {
@@ -33,7 +34,7 @@ namespace ManagedCode.Database.Core.InMemory
                 return Task.FromResult(item);
             }
 
-            return Task.FromResult<TItem>(default);
+            throw new DatabaseException("The specified entity already exists.");
         }
 
         public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
