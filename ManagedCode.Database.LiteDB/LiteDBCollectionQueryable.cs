@@ -34,14 +34,14 @@ public class LiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<T
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.LongCount(), cancellationToken);
     }
@@ -49,7 +49,6 @@ public class LiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<T
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
         var predicates = Predicates
-            .Where(p => p.QueryType is QueryType.Where)
             .Select(p => p.ExpressionBool)
             .Aggregate(Combine);
 
@@ -92,7 +91,8 @@ public class LiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable<T
         return queryableResult;
     }
 
-    private static Expression<Func<T, bool>> Combine<T>(Expression<Func<T, bool>> expr1, Expression<Func<T, bool>> expr2)
+    private static Expression<Func<T, bool>> Combine<T>(Expression<Func<T, bool>> expr1,
+        Expression<Func<T, bool>> expr2)
     {
         var body = Expression.AndAlso(expr1.Body, expr2.Body);
         return Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);

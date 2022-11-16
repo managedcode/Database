@@ -32,14 +32,14 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.LongCount(), cancellationToken);
     }
@@ -50,7 +50,7 @@ public class SQLiteDBCollectionQueryable<TId, TItem> : BaseDBCollectionQueryable
 
         int count = 0;
 
-        foreach (var item in ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where)))
+        foreach (var item in ApplyPredicates(Predicates))
         {
             cancellationToken.ThrowIfCancellationRequested();
 

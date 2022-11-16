@@ -35,14 +35,14 @@ public class MongoDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where));
+        var query = ApplyPredicates(Predicates);
 
         return await Task.Run(() => query.LongCount(), cancellationToken);
     }
@@ -50,7 +50,7 @@ public class MongoDBCollectionQueryable<TItem> : BaseDBCollectionQueryable<TItem
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
         var ids =
-            ApplyPredicates(Predicates.Where(p => p.QueryType is QueryType.Where))
+            ApplyPredicates(Predicates)
                 .Select(d => d.Id);
 
         var filter = Builders<TItem>.Filter.In(d => d.Id, ids);
