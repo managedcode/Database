@@ -8,7 +8,7 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class AzureTablesTestContainer
+public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
     private static int _port = 10000;
     private readonly AzureTablesDatabase _database;
@@ -39,16 +39,14 @@ public class AzureTablesTestContainer
         await _database.InitializeAsync();
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
         await _azureTablesContainer.StopAsync();
     }
 
-    public IDatabaseCollection<TableId, TestAzureTablesItem> GetCollection()
-    {
-        return _database.GetCollection<TableId, TestAzureTablesItem>();
-    }
+    public IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
+        _database.GetCollection<TableId, TestAzureTablesItem>();
 
     public TableId GenerateId()
     {

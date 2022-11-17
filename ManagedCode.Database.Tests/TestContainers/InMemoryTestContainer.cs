@@ -6,7 +6,7 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class InMemoryTestContainer
+public class InMemoryTestContainer : ITestContainer<int, InMemoryItem>
 {
     private static volatile int _count;
     private InMemoryDatabase _database;

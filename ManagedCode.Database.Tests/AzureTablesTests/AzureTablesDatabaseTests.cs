@@ -9,32 +9,10 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests
 {
-    public class AzureTablesDatabaseTests : BaseDatabaseTests<TableId, TestAzureTablesItem>, IAsyncLifetime
+    public class AzureTablesDatabaseTests : BaseDatabaseTests<TableId, TestAzureTablesItem>
     {
-        private readonly AzureTablesTestContainer _azureTablesContainer;
-
-        public AzureTablesDatabaseTests()
+        public AzureTablesDatabaseTests() : base(new AzureTablesTestContainer())
         {
-            _azureTablesContainer = new AzureTablesTestContainer();
-        }
-
-
-        protected override IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
-            _azureTablesContainer.GetCollection();
-
-        protected override TableId GenerateId()
-        {
-            return _azureTablesContainer.GenerateId();
-        }
-
-        public override async Task DisposeAsync()
-        {
-            await _azureTablesContainer.DisposeAsync();
-        }
-
-        public override async Task InitializeAsync()
-        {
-            await _azureTablesContainer.InitializeAsync();
         }
 
         [Fact]

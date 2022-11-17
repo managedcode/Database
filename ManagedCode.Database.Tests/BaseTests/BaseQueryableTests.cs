@@ -5,20 +5,16 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
+using ManagedCode.Database.Tests.TestContainers;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests
 {
-    public abstract class BaseQueryableTests<TId, TItem> : IAsyncLifetime
-        where TItem : IBaseItem<TId>, new()
+    public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> where TItem : IBaseItem<TId>, new()
     {
-        protected abstract IDatabaseCollection<TId, TItem> Collection { get; }
-
-        protected abstract TId GenerateId();
-
-        public abstract Task InitializeAsync();
-
-        public abstract Task DisposeAsync();
+        protected BaseQueryableTests(ITestContainer<TId, TItem> testContainer) : base(testContainer)
+        {
+        }
 
         protected TItem CreateNewItem()
         {
@@ -45,6 +41,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #region WhereQuery
 
         #region Where
+
         [Fact]
         public virtual async Task Where_ReturnOk()
         {
@@ -90,11 +87,13 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(0);
         }
+
         #endregion
 
         #region WhereOrderBy
 
         #region WhereOrderBy
+
         [Fact]
         public virtual async Task WhereOrderBy_ReturnOk()
         {
@@ -112,7 +111,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
@@ -179,6 +179,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereOrderBySkip
+
         [Fact]
         public virtual async Task WhereOrderBySkip_ReturnOk()
         {
@@ -239,6 +240,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #region WhereOrderByDescending
 
         #region WhereOrderByDescending
+
         [Fact]
         public virtual async Task WhereOrderByDescending_ReturnOk()
         {
@@ -256,7 +258,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
@@ -266,6 +269,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereOrderByDescendingTake
+
         [Fact]
         public virtual async Task WhereOrderByDescendingTake_ReturnOk()
         {
@@ -322,6 +326,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereOrderByDescendingSkip
+
         [Fact]
         public virtual async Task WhereOrderByDescendingSkip_ReturnOk()
         {
@@ -382,6 +387,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #region WhereTake
 
         #region WhereTake
+
         [Fact]
         public virtual async Task WhereTake_ReturnOk()
         {
@@ -400,7 +406,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(itemsCountToTake).ToListAsync();
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(itemsCountToTake)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake);
@@ -410,6 +417,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereTakeOrderby
+
         [Fact]
         public virtual async Task WhereTakeOrderBy_ReturnOk()
         {
@@ -464,6 +472,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereTakeOrderbyDescending
+
         [Fact]
         public virtual async Task WhereTakeOrderByDescending_ReturnOk()
         {
@@ -514,9 +523,11 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
+
         #endregion
 
         #region WhereTakeSkip
+
         [Fact]
         public virtual async Task WhereTakeSkipOrderBy_ReturnOk()
         {
@@ -568,6 +579,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
+
         #endregion
 
         #endregion
@@ -593,7 +605,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(itemsCountToSkip).ToListAsync();
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(itemsCountToSkip)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
@@ -602,6 +615,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         #endregion
 
         #region WhereSkipOrderBy
+
         [Fact]
         public virtual async Task WhereSkipOrderBy_ReturnOk()
         {
@@ -652,9 +666,11 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake);
         }
+
         #endregion
 
         #region WhereSkipOrderByDescending
+
         [Fact]
         public virtual async Task WhereSkipOrderByDescending_ReturnOk()
         {
@@ -705,9 +721,11 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake);
         }
+
         #endregion
 
         #region WhereSkipTake
+
         [Fact]
         public virtual async Task WhereSkipTakeOrderBy_ReturnOk()
         {
@@ -759,6 +777,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake);
         }
+
         #endregion
 
         #endregion
@@ -958,7 +977,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
         }
 
-       
+
         [Fact]
         public virtual async Task OrderByTake_ReturnOk()
         {
@@ -999,7 +1018,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             var itemsResult = await Collection.Query.OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert  - itemsCountToSkip);
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
             itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
@@ -1018,7 +1037,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
+            var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Take(itemsCountToTake)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake);
@@ -1040,7 +1060,8 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             // Act
-            var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
+            var itemsResult = await Collection.Query.OrderByDescending(o => o.IntData).Skip(itemsCountToSkip)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
@@ -1066,7 +1087,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-
         }
 
         [Fact]

@@ -6,20 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ManagedCode.Database.Tests.TestContainers;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests
 {
-    public abstract class BaseCollectionTests<TId, TItem> : IAsyncLifetime
-        where TItem : IBaseItem<TId>, new()
+    public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> where TItem : IBaseItem<TId>, new()
     {
-        protected abstract IDatabaseCollection<TId, TItem> Collection { get; }
-
-        protected abstract TId GenerateId();
-
-        public abstract Task InitializeAsync();
-
-        public abstract Task DisposeAsync();
+        protected BaseCollectionTests(ITestContainer<TId, TItem> testContainer) : base(testContainer)
+        {
+        }
 
         protected TItem CreateNewItem()
         {
@@ -206,7 +202,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             await Collection.InsertAsync(list);
-            
+
             // Act
             var updatedItems = await Collection.UpdateAsync(list.ToArray());
 
@@ -293,7 +289,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             await Collection.InsertAsync(list);
-            
+
             // Act
             var deletedItems = await Collection.DeleteAsync(list);
 
@@ -337,7 +333,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             var ids = list.Select(item => item.Id);
 
             await Collection.InsertAsync(list);
-            
+
             // Act
             var deletedItems = await Collection.DeleteAsync(ids);
 
@@ -419,7 +415,8 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Act
             var equalsQueryResult = await Collection.Query.Where(w => w.StringData == query1).DeleteAsync();
-            var orQueryResult = await Collection.Query.Where(w => w.StringData == query2 || w.StringData == query3).DeleteAsync();
+            var orQueryResult = await Collection.Query.Where(w => w.StringData == query2 || w.StringData == query3)
+                .DeleteAsync();
 
             // Assert
             equalsQueryResult.Should().Be(0);
@@ -439,7 +436,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             }
 
             await Collection.InsertAsync(list);
-            
+
             // Act
             var deletedItems = await Collection.DeleteCollectionAsync();
             var count = await Collection.CountAsync();
@@ -454,7 +451,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         {
             // Arrange & Act
             var deletedItems = await Collection.DeleteCollectionAsync();
-            
+
             var count = await Collection.CountAsync();
 
             // Assert
