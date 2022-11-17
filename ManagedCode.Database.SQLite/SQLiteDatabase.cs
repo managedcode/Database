@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
@@ -19,7 +19,7 @@ public class SQLiteDatabase : BaseDatabase<SQLiteConnection>
     public override Task DeleteAsync(CancellationToken token = default)
     {
         DisposeInternal();
-        System.IO.File.Delete(NativeClient.DatabasePath);
+        File.Delete(NativeClient.DatabasePath);
         return Task.CompletedTask;
     }
 
@@ -45,10 +45,7 @@ public class SQLiteDatabase : BaseDatabase<SQLiteConnection>
 
     public SQLiteDatabaseCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : class, IItem<TId>, new()
     {
-        if (!IsInitialized)
-        {
-            throw new DatabaseNotInitializedException(GetType());
-        }
+        if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
         NativeClient.CreateTable<TItem>();
 

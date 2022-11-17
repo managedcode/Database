@@ -1,7 +1,6 @@
-namespace ManagedCode.Database.ZoneTree
+namespace ManagedCode.Database.ZoneTree;
+
+public interface IZoneTreeItem<T>
 {
-    public interface IZoneTreeItem<T> 
-    {
-        public new T Id { get; set; }
-    }
+    public T Id { get; set; }
 }

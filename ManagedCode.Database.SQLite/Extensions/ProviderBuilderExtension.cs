@@ -5,7 +5,8 @@ namespace ManagedCode.Database.SQLite.Extensions;
 
 public static class ProviderBuilderExtension
 {
-    public static IServiceCollection AddSQLite(this IServiceCollection serviceCollection, Action<SQLiteRepositoryOptions> action)
+    public static IServiceCollection AddSQLite(this IServiceCollection serviceCollection,
+        Action<SQLiteRepositoryOptions> action)
     {
         var connectionOptions = new SQLiteRepositoryOptions();
         action.Invoke(connectionOptions);

@@ -9,78 +9,75 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-namespace ManagedCode.Database.MongoDB
+namespace ManagedCode.Database.MongoDB;
+
+public class MongoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
 {
-    public class MongoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<ObjectId>
+    private readonly IMongoCollection<TItem> _collection;
+
+    public MongoDBCollectionQueryable(IMongoCollection<TItem> collection)
     {
-        private readonly IMongoCollection<TItem> _collection;
+        _collection = collection;
+    }
 
-        public MongoDBCollectionQueryable(IMongoCollection<TItem> collection)
+    public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+
+        foreach (var item in ApplyPredicates(Predicates))
         {
-            _collection = collection;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            yield return item;
         }
+    }
 
-        public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
+    public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        var query = ApplyPredicates(Predicates);
 
-            foreach (var item in ApplyPredicates(Predicates))
+        return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
+    }
+
+    public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    {
+        var query = ApplyPredicates(Predicates);
+
+        return await Task.Run(() => query.LongCount(), cancellationToken);
+    }
+
+    public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        var ids =
+            ApplyPredicates(Predicates)
+                .Select(d => d.Id);
+
+        var filter = Builders<TItem>.Filter.In(d => d.Id, ids);
+
+        var result = await _collection.DeleteManyAsync(filter, cancellationToken);
+
+        return Convert.ToInt32(result.DeletedCount);
+    }
+
+    private IMongoQueryable<TItem> ApplyPredicates(IEnumerable<QueryItem> predicates)
+    {
+        var query = _collection.AsQueryable();
+
+        foreach (var predicate in predicates)
+            query = predicate.QueryType switch
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                QueryType.Where => query.Where(predicate.ExpressionBool),
+                QueryType.OrderBy => query.OrderBy(predicate.ExpressionObject),
+                QueryType.OrderByDescending => query.OrderByDescending(predicate.ExpressionObject),
+                QueryType.ThenBy => (query as IOrderedMongoQueryable<TItem>).ThenBy(predicate.ExpressionObject),
+                QueryType.ThenByDescending => (query as IOrderedMongoQueryable<TItem>)
+                    .ThenByDescending(predicate.ExpressionObject),
+                QueryType.Take => predicate.Count.HasValue ? query.Take(predicate.Count.Value) : query,
+                QueryType.Skip => query.Skip(predicate.Count!.Value),
+                _ => query
+            };
 
-                yield return item;
-            }
-        }
-
-        public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
-        {
-            var query = ApplyPredicates(Predicates);
-
-            return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
-        }
-
-        public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            var query = ApplyPredicates(Predicates);
-
-            return await Task.Run(() => query.LongCount(), cancellationToken);
-        }
-
-        public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
-        {
-            var ids =
-                ApplyPredicates(Predicates)
-                    .Select(d => d.Id);
-
-            var filter = Builders<TItem>.Filter.In(d => d.Id, ids);
-
-            var result = await _collection.DeleteManyAsync(filter, cancellationToken);
-
-            return Convert.ToInt32(result.DeletedCount);
-        }
-
-        private IMongoQueryable<TItem> ApplyPredicates(IEnumerable<QueryItem> predicates)
-        {
-            var query = _collection.AsQueryable();
-
-            foreach (var predicate in predicates)
-            {
-                query = predicate.QueryType switch
-                {
-                    QueryType.Where => query.Where(predicate.ExpressionBool),
-                    QueryType.OrderBy => query.OrderBy(predicate.ExpressionObject),
-                    QueryType.OrderByDescending => query.OrderByDescending(predicate.ExpressionObject),
-                    QueryType.ThenBy => (query as IOrderedMongoQueryable<TItem>).ThenBy(predicate.ExpressionObject),
-                    QueryType.ThenByDescending => (query as IOrderedMongoQueryable<TItem>)
-                        .ThenByDescending(predicate.ExpressionObject),
-                    QueryType.Take => predicate.Count.HasValue ? query.Take(predicate.Count.Value) : query,
-                    QueryType.Skip => query.Skip(predicate.Count!.Value),
-                    _ => query
-                };
-            }
-
-            return query;
-        }
+        return query;
     }
 }

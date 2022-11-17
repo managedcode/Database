@@ -19,10 +19,7 @@ public static class ExpressionExtensions
             _ => lambdaExpression.Body as MemberExpression
         };
 
-        if (memberExpression is null)
-        {
-            throw new NotSupportedException("Order By does not support: " + orderExpr);
-        }
+        if (memberExpression is null) throw new NotSupportedException("Order By does not support: " + orderExpr);
 
         const string parameterName = "x";
 

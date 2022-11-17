@@ -6,31 +6,30 @@ using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.AzureTable.Extensions
+namespace ManagedCode.Database.AzureTable.Extensions;
+
+public static class TableClientExtensions
 {
-    public static class TableClientExtensions
+    private const int MaxItemsPerRequest = 100;
+
+    public static async Task<List<Response>> SubmitTransactionByChunksAsync<TItem>(this TableClient tableClient,
+        IEnumerable<TItem> items,
+        TableTransactionActionType actionType, CancellationToken cancellationToken) where TItem : ITableEntity, new()
     {
-        private const int MaxItemsPerRequest = 100;
+        var chunks = items.Select(item =>
+            new TableTransactionAction(actionType, item, item.ETag)).Chunk(MaxItemsPerRequest);
 
-        public static async Task<List<Response>> SubmitTransactionByChunksAsync<TItem>(this TableClient tableClient,
-            IEnumerable<TItem> items,
-            TableTransactionActionType actionType, CancellationToken cancellationToken) where TItem : ITableEntity, new()
+        List<Response> responses = new();
+
+        foreach (var chunk in chunks)
         {
-            var chunks = items.Select(item =>
-                new TableTransactionAction(actionType, item, item.ETag)).Chunk(MaxItemsPerRequest);
+            var response =
+                await ExceptionCatcher.ExecuteAsync(tableClient.SubmitTransactionAsync(chunk, cancellationToken));
 
-            List<Response> responses = new();
-
-            foreach (var chunk in chunks)
-            {
-                var response =
-                    await ExceptionCatcher.ExecuteAsync(tableClient.SubmitTransactionAsync(chunk, cancellationToken));
-
-                var list = response?.Value.Select(i => i) ?? new List<Response>();
-                responses.AddRange(list);
-            }
-
-            return responses;
+            var list = response?.Value.Select(i => i) ?? new List<Response>();
+            responses.AddRange(list);
         }
+
+        return responses;
     }
 }

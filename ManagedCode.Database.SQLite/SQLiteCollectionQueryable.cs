@@ -49,7 +49,7 @@ public class SQLiteCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TIt
     {
         await Task.Yield();
 
-        int count = 0;
+        var count = 0;
 
         foreach (var item in ApplyPredicates(Predicates))
         {
@@ -68,7 +68,6 @@ public class SQLiteCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TIt
         var query = _connection.Table<TItem>();
 
         foreach (var predicate in predicates)
-        {
             query = predicate.QueryType switch
             {
                 QueryType.Where => query.Where(predicate.ExpressionBool),
@@ -80,7 +79,6 @@ public class SQLiteCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TIt
                 QueryType.Skip => query.Skip(predicate.Count!.Value),
                 _ => query
             };
-        }
 
         return query;
     }

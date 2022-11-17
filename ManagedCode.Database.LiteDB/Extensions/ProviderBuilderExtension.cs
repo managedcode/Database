@@ -1,18 +1,17 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Database.LiteDB.Extensions
+namespace ManagedCode.Database.LiteDB.Extensions;
+
+public static class ProviderBuilderExtension
 {
-    public static class ProviderBuilderExtension
+    public static IServiceCollection AddLiteDb(this IServiceCollection serviceCollection, Action<LiteDBOptions> action)
     {
-        public static IServiceCollection AddLiteDb(this IServiceCollection serviceCollection, Action<LiteDBOptions> action)
-        {
-            var connectionOptions = new LiteDBOptions();
-            action.Invoke(connectionOptions);
+        var connectionOptions = new LiteDBOptions();
+        action.Invoke(connectionOptions);
 
-            serviceCollection.AddSingleton(connectionOptions);
+        serviceCollection.AddSingleton(connectionOptions);
 
-            return serviceCollection;
-        }
+        return serviceCollection;
     }
 }

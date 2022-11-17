@@ -18,13 +18,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-        <PackageReference Include="LiteDB" Version="5.0.12" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+        <PackageReference Include="LiteDB" Version="5.0.12"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
     </ItemGroup>
 
 </Project>

@@ -1,11 +1,9 @@
 using ManagedCode.Database.Core;
 using Newtonsoft.Json;
 
-namespace ManagedCode.Database.LiteDB
+namespace ManagedCode.Database.LiteDB;
+
+public class LiteDBItem<TId> : IItem<TId>
 {
-    public class LiteDBItem<TId> : IItem<TId>
-    {
-        [JsonProperty("_id")]
-        public TId Id { get; set; }
-    }
+    [JsonProperty("_id")] public TId Id { get; set; }
 }

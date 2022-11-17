@@ -5,81 +5,72 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
 using Microsoft.Azure.Cosmos;
 
-namespace ManagedCode.Database.Cosmos
+namespace ManagedCode.Database.Cosmos;
+
+public class CosmosDatabase : BaseDatabase<CosmosClient>
 {
-    public class CosmosDatabase : BaseDatabase<CosmosClient>
+    private const int RetryCount = 25;
+    private readonly CosmosOptions _options;
+
+    private Container? _container;
+    private Microsoft.Azure.Cosmos.Database? _database;
+
+    public CosmosDatabase(CosmosOptions options)
     {
-        private const int RetryCount = 25;
+        _options = options;
+    }
 
-        private Container? _container;
-        private Microsoft.Azure.Cosmos.Database? _database;
-        private readonly CosmosOptions _options;
+    protected override async Task InitializeAsyncInternal(CancellationToken token = default)
+    {
+        var cosmosClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
+        cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
+        cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
 
-        public CosmosDatabase(CosmosOptions options)
+        if (_options.AllowTableCreation)
         {
-            _options = options;
+            _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
+                cancellationToken: token);
+
+            _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, "/id",
+                cancellationToken: token);
+
+            return;
         }
 
-        protected override async Task InitializeAsyncInternal(CancellationToken token = default)
-        {
-            var cosmosClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
-            cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
-            cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
+        var database = cosmosClient.GetDatabase(_options.DatabaseName);
 
-            if (_options.AllowTableCreation)
-            {
-                _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
-                    cancellationToken: token);
+        if (database is null)
+            throw new InvalidOperationException($"Database '{_options.DatabaseName}' does not exist.");
 
-                _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, "/id",
-                    cancellationToken: token);
+        var container = database.GetContainer(_options.CollectionName);
 
-                return;
-            }
+        if (container is null) throw new Exception($"Container '{_options.CollectionName}' does not exist.");
 
-            var database = cosmosClient.GetDatabase(_options.DatabaseName);
+        NativeClient = cosmosClient;
+        _database = database;
+        _container = container;
+    }
 
-            if (database is null)
-            {
-                throw new InvalidOperationException($"Database '{_options.DatabaseName}' does not exist.");
-            }
+    protected override ValueTask DisposeAsyncInternal()
+    {
+        DisposeInternal();
+        return new ValueTask(Task.CompletedTask);
+    }
 
-            var container = database.GetContainer(_options.CollectionName);
+    protected override void DisposeInternal()
+    {
+        NativeClient.Dispose();
+    }
 
-            if (container is null)
-            {
-                throw new Exception($"Container '{_options.CollectionName}' does not exist.");
-            }
+    public CosmosCollection<TItem> GetCollection<TItem>() where TItem : CosmosItem, new()
+    {
+        if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
-            NativeClient = cosmosClient;
-            _database = database;
-            _container = container;
-        }
+        return new CosmosCollection<TItem>(_options, _container!);
+    }
 
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            DisposeInternal();
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            NativeClient.Dispose();
-        }
-
-        public CosmosCollection<TItem> GetCollection<TItem>() where TItem : CosmosItem, new()
-        {
-            if (!IsInitialized)
-            {
-                throw new DatabaseNotInitializedException(GetType());
-            }
-
-            return new CosmosCollection<TItem>(_options, _container!);
-        }
-
-        public override async Task DeleteAsync(CancellationToken token = default)
-        {
-            await _database.DeleteAsync(cancellationToken: token);
-        }
+    public override async Task DeleteAsync(CancellationToken token = default)
+    {
+        await _database.DeleteAsync(cancellationToken: token);
     }
 }

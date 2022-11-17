@@ -1,9 +1,8 @@
-namespace ManagedCode.Database.MongoDB
+namespace ManagedCode.Database.MongoDB;
+
+public class MongoDBOptions
 {
-    public class MongoDBOptions
-    {
-        public string ConnectionString { get; set; }
-        public string DataBaseName { get; set; }
-        public string CollectionName { get; set; }
-    }
+    public string ConnectionString { get; set; }
+    public string DataBaseName { get; set; }
+    public string CollectionName { get; set; }
 }
