@@ -13,14 +13,14 @@ namespace ManagedCode.Database.Tests.SQLiteTests
     public class SQLiteRepositoryTests : BaseQueryableTests<int, SQLiteDbItem>
     {
         private static int _count;
-        private readonly SqLiteDatabase _database;
+        private readonly SQLiteDatabase _database;
 
 
         public SQLiteRepositoryTests()
         {
             var dbPath = Path.Combine(Path.GetTempPath(), "sqlite_test.db");
 
-            _database = new SqLiteDatabase(new SQLiteRepositoryOptions
+            _database = new SQLiteDatabase(new SQLiteRepositoryOptions
             {
                 ConnectionString = dbPath,
             });
