@@ -42,8 +42,11 @@ namespace ManagedCode.Database.Tests.BaseTests
             return item;
         }
 
+        #region WhereQuery
+
+        #region Where
         [Fact]
-        public virtual async Task WhereQuery_ReturnOk()
+        public virtual async Task Where_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -66,7 +69,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task WhereQuery_ReturnNull()
+        public virtual async Task Where_ReturnNull()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -87,9 +90,683 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(0);
         }
+        #endregion
+
+        #region WhereOrderBy
+
+        #region WhereOrderBy
+        [Fact]
+        public virtual async Task WhereOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(0);
+        }
+
+        #endregion
+
+        #region WhereOrderByTake
 
         [Fact]
-        public virtual async Task OrderByQuery_ReturnOk()
+        public virtual async Task WhereOrderByTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.First().IntData.Should().Be(0);
+        }
+
+        [Fact]
+        public virtual async Task WhereOrderByTakeSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderBy(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
+        }
+
+        #endregion
+
+        #region WhereOrderBySkip
+        [Fact]
+        public virtual async Task WhereOrderBySkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task WhereOrderBySkipTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderBy(o => o.IntData).Skip(itemsCountToSkip).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region WhereOrderByDescending
+
+        #region WhereOrderByDescending
+        [Fact]
+        public virtual async Task WhereOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+        }
+
+        #endregion
+
+        #region WhereOrderByDescendingTake
+        [Fact]
+        public virtual async Task WhereOrderByDescendingTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+        }
+
+        [Fact]
+        public virtual async Task WhereOrderByDescendingTakeSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
+        }
+
+        #endregion
+
+        #region WhereOrderByDescendingSkip
+        [Fact]
+        public virtual async Task WhereOrderByDescendingSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
+        }
+
+        [Fact]
+        public virtual async Task WhereOrderByDescendingSkipTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region WhereTake
+
+        #region WhereTake
+        [Fact]
+        public virtual async Task WhereTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.First().StringData.Should().Be(guid);
+        }
+
+        #endregion
+
+        #region WhereTakeOrderby
+        [Fact]
+        public virtual async Task WhereTakeOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).OrderBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+
+        [Fact]
+        public virtual async Task WhereTakeOrderBySkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        }
+
+        #endregion
+
+        #region WhereTakeOrderbyDescending
+        [Fact]
+        public virtual async Task WhereTakeOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).OrderByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+
+        [Fact]
+        public virtual async Task WhereTakeOrderByDescendingSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        }
+        #endregion
+
+        #region WhereTakeSkip
+        [Fact]
+        public virtual async Task WhereTakeSkipOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).Skip(itemsCountToSkip).OrderBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task WhereTakeSkipOrderByDescendingSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Take(itemsCountToTake).Skip(itemsCountToSkip).OrderByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+        }
+        #endregion
+
+        #endregion
+
+        #region WhereSkip
+
+        #region WhereSkip
+
+        public virtual async Task WhereSkip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(itemsCountToSkip).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        }
+
+        #endregion
+
+        #region WhereSkipOrderBy
+        [Fact]
+        public virtual async Task WhereSkipOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).OrderBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task WhereSkipOrderByTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+        #endregion
+
+        #region WhereSkipOrderByDescending
+        [Fact]
+        public virtual async Task WhereSkipOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).OrderByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task WhereSkipOrderByDescendingTake_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+        #endregion
+
+        #region WhereSkipTake
+        [Fact]
+        public virtual async Task WhereSkipTakeOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).Take(itemsCountToTake).OrderBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+
+        [Fact]
+        public virtual async Task WhereSkipTakeOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 3;
+            int itemsCountToSkip = 2; //Take + Skip <= count
+
+            var guid = Guid.NewGuid().ToString();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip).Take(itemsCountToTake).OrderByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToTake);
+        }
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        [Fact]
+        public virtual async Task OrderBy_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -110,7 +787,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task OrderByDescendingQuery_ReturnOk()
+        public virtual async Task OrderByDescending_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -131,7 +808,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task ThenByQuery_AfterOrderBy_ReturnOk()
+        public virtual async Task ThenBy_AfterOrderBy_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -153,7 +830,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task ThenByDescendingQuery_AfterOrderBy_ReturnOk()
+        public virtual async Task ThenByDescending_AfterOrderBy_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -175,7 +852,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task ThenByQuery_AfterOrderByDescending_ReturnOk()
+        public virtual async Task ThenBy_AfterOrderByDescending_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -197,7 +874,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task ThenByDescendingQuery_AfterOrderByDescending_ReturnOk()
+        public virtual async Task ThenByDescending_AfterOrderByDescending_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -219,7 +896,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task TakeQuery_ReturnOk()
+        public virtual async Task Take_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -261,7 +938,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task SkipQuery_ReturnOk()
+        public virtual async Task Skip_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -281,203 +958,9 @@ namespace ManagedCode.Database.Tests.BaseTests
             itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
         }
 
+       
         [Fact]
-        public virtual async Task WhereOrderByQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).OrderBy(o => o.IntData).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).OrderByDescending(o => o.IntData).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereTakeQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
-            itemsResult.First().StringData.Should().Be(guid);
-        }
-
-
-        [Fact]
-        public virtual async Task WhereTakeQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        public virtual async Task WhereSkipQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
-        }
-
-        [Fact]
-        public virtual async Task WhereSkipQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task OrderByTakeQuery_ReturnOk()
+        public virtual async Task OrderByTake_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -499,7 +982,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task OrderBySkipQuery_ReturnOk()
+        public virtual async Task OrderBySkip_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -521,7 +1004,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task OrderByDescendingTakeQuery_ReturnOk()
+        public virtual async Task OrderByDescendingTake_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -543,7 +1026,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task OrderByDescendingSkipQuery_ReturnOk()
+        public virtual async Task OrderByDescendingSkip_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -565,7 +1048,7 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
-        public virtual async Task TakeSkipQuery_ReturnOk()
+        public virtual async Task TakeSkip_ReturnOk()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -604,322 +1087,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByTakeQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
-            itemsResult.First().IntData.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByTakeQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderBy(o => o.IntData).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingTakeQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingTakeQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderBySkipQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderBySkipQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderBy(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingSkipQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingSkipQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderByDescending(o => o.IntData).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByTakeSkipQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderBy(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByTakeSkipQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderBy(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingTakeSkipQuery_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == guid)
-                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
-        }
-
-        [Fact]
-        public virtual async Task WhereOrderByDescendingTakeSkipQuery_ReturnNull()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
-            int itemsCountToSkip = 2;
-
-            var guid = Guid.NewGuid().ToString();
-            var unfaithfulGuid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Where(w => w.StringData == unfaithfulGuid)
-                .OrderByDescending(o => o.IntData).Take(itemsCountToTake).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(0);
         }
     }
 }
