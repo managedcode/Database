@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Exceptions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -106,7 +107,12 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
         var task = _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
             cancellationToken: cancellationToken);
 
-        await ExceptionCatcher.ExecuteAsync(task);
+        var result = await ExceptionCatcher.ExecuteAsync(task);
+
+        if (result.ModifiedCount == 0)
+        {
+            throw new DatabaseException("Entity not found in collection.");
+        }
 
         return item;
     }

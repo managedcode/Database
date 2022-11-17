@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Exceptions;
 using SQLite;
 
 namespace ManagedCode.Database.SQLite;
@@ -98,7 +99,13 @@ public class SQLiteDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TIt
 
         return ExceptionCatcher.Execute(() =>
         {
-            _database.Update(item);
+            var count = _database.Update(item);
+
+            if (count == 0)
+            {
+                throw new DatabaseException("Entity not found in collection.");
+            }
+
             return _database.Find<TItem>(item.Id);
         });
     }

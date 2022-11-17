@@ -90,7 +90,7 @@ namespace ManagedCode.Database.Core.InMemory
                 return Task.FromResult(item);
             }
 
-            return Task.FromResult<TItem>(default);
+            throw new DatabaseException("Entity not found in collection.");
         }
 
         public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
