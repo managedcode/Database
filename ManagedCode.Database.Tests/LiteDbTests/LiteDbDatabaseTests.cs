@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.LiteDB;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.LiteDbTests
 {
-    public class LiteDbRepositoryTests : BaseRepositoryTests<string, TestLiteDbItem>
+    public class LiteDbDatabaseTests : BaseDatabaseTests<string, TestLiteDbItem>
     {
         private readonly LiteDBDatabase _database;
         private readonly string _databasePath;
 
-        public LiteDbRepositoryTests()
+        public LiteDbDatabaseTests()
         {
             _databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
 

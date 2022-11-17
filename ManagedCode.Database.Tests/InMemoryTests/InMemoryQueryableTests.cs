@@ -1,3 +1,4 @@
+using System.Threading;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.InMemory;
 using ManagedCode.Database.Tests.BaseTests;
@@ -11,25 +12,24 @@ namespace ManagedCode.Database.Tests.InMemoryTests
         private static volatile int _count;
         private InMemoryDatabase _database;
 
-        public InMemoryQueryableTests()
-        {
-            _database = new InMemoryDatabase();
-        }
-
-        protected override IDatabaseCollection<int, InMemoryItem> Collection => _database.GetCollection<int, InMemoryItem>();
-
+        protected override IDatabaseCollection<int, InMemoryItem> Collection =>
+            _database.GetCollection<int, InMemoryItem>();
+        
         protected override int GenerateId()
         {
-            _count++;
+            Interlocked.Increment(ref _count);
             return _count;
         }
-    
-        public override async Task InitializeAsync() =>
+
+        public override async Task InitializeAsync()
+        {
+            _database = new InMemoryDatabase();
             await _database.InitializeAsync();
+        }
 
-        public override async Task DisposeAsync() =>
-            await _database.DeleteAsync();
-
+        public override async Task DisposeAsync()
+        {
+            await _database.DisposeAsync();
+        }
     }
 }
-

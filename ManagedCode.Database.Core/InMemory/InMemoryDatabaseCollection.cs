@@ -7,7 +7,8 @@ using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.Core.InMemory
 {
-    public class InMemoryDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TItem> where TItem : IItem<TId> where TId : notnull
+    public class InMemoryDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TItem>
+        where TItem : IItem<TId> where TId : notnull
     {
         private readonly ConcurrentDictionary<TId, TItem> _storage = new();
 
@@ -98,7 +99,7 @@ namespace ManagedCode.Database.Core.InMemory
 
             foreach (var item in items)
             {
-                if (_storage.TryGetValue(item.Id, out var _))
+                if (_storage.TryGetValue(item.Id, out _))
                 {
                     _storage[item.Id] = item;
                     count++;

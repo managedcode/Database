@@ -5,17 +5,18 @@ using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using ManagedCode.Database.AzureTable;
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.AzureTableTests
 {
-    public class AzureTableRepositoryTests : BaseRepositoryTests<TableId, TestAzureTableItem>, IAsyncLifetime
+    public class AzureTableDatabaseTests : BaseDatabaseTests<TableId, TestAzureTableItem>, IAsyncLifetime
     {
         private readonly AzureTableDatabase _database;
         private readonly TestcontainersContainer _azureTableContainer;
 
-        public AzureTableRepositoryTests()
+        public AzureTableDatabaseTests()
         {
             _database = new AzureTableDatabase(new AzureTableOptions
             {

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
@@ -56,7 +55,7 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 
     protected override string GenerateId()
     {
-        return Guid.NewGuid().ToString();
+        return $"{Guid.NewGuid():N}";
     }
 
     public override async Task InitializeAsync()

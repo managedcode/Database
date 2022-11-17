@@ -6,18 +6,19 @@ using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Cosmos;
+using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Microsoft.Azure.Cosmos;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.CosmosDbTests
 {
-    public class CosmosDbRepositoryTests : BaseRepositoryTests<string, TestCosmosItem>
+    public class CosmosDatabaseTests : BaseDatabaseTests<string, TestCosmosItem>
     {
         private readonly CosmosDatabase _database;
         private readonly TestcontainersContainer _cosmosDBContainer;
 
-        public CosmosDbRepositoryTests()
+        public CosmosDatabaseTests()
         {
             _cosmosDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
                 .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
