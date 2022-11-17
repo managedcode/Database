@@ -131,6 +131,94 @@ namespace ManagedCode.Database.Tests.BaseTests
         }
 
         [Fact]
+        public virtual async Task ThenByQuery_AfterOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.OrderBy(o => o.StringData)
+                .ThenBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(0);
+        }
+
+        [Fact]
+        public virtual async Task ThenByDescendingQuery_AfterOrderBy_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.OrderBy(o => o.StringData)
+                .ThenByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+        }
+
+        [Fact]
+        public virtual async Task ThenByQuery_AfterOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.OrderByDescending(o => o.StringData)
+                .ThenBy(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(0);
+        }
+
+        [Fact]
+        public virtual async Task ThenByDescendingQuery_AfterOrderByDescending_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                await Collection.InsertAsync(item);
+            }
+
+            // Act
+            var itemsResult = await Collection.Query.OrderByDescending(o => o.StringData)
+                .ThenByDescending(o => o.IntData).ToListAsync();
+
+            // Assert
+            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+        }
+
+        [Fact]
         public virtual async Task TakeQuery_ReturnOk()
         {
             // Arrange
