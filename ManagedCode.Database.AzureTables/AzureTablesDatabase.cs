@@ -7,14 +7,14 @@ using Humanizer;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
-public class AzureTableDatabase : BaseDatabase<TableServiceClient>
+public class AzureTablesDatabase : BaseDatabase<TableServiceClient>
 {
     private readonly Dictionary<string, object> _collections = new();
-    private readonly AzureTableOptions _options;
+    private readonly AzureTablesOptions _options;
 
-    public AzureTableDatabase(AzureTableOptions options)
+    public AzureTablesDatabase(AzureTablesOptions options)
     {
         _options = options;
     }
@@ -46,8 +46,8 @@ public class AzureTableDatabase : BaseDatabase<TableServiceClient>
         _collections.Clear();
     }
 
-    public AzureTableDatabaseCollection<TItem> GetCollection<TId, TItem>()
-        where TItem : AzureTableItem, IItem<TId>, new()
+    public AzureTablesDatabaseCollection<TItem> GetCollection<TId, TItem>()
+        where TItem : AzureTablesItem, IItem<TId>, new()
     {
         if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
@@ -57,7 +57,7 @@ public class AzureTableDatabase : BaseDatabase<TableServiceClient>
         lock (_collections)
         {
             if (_collections.TryGetValue(collectionName, out var obj))
-                return obj as AzureTableDatabaseCollection<TItem>;
+                return obj as AzureTablesDatabaseCollection<TItem>;
 
             var table = NativeClient.GetTableClient(tableName);
 
@@ -72,7 +72,7 @@ public class AzureTableDatabase : BaseDatabase<TableServiceClient>
             // {
             //     throw new InvalidOperationException($"Table '{tableName}' does not exist");
             // }
-            var collection = new AzureTableDatabaseCollection<TItem>(table);
+            var collection = new AzureTablesDatabaseCollection<TItem>(table);
 
             _collections[collectionName] = collection;
 

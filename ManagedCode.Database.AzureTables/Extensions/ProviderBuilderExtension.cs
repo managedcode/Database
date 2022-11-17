@@ -1,14 +1,14 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ManagedCode.Database.AzureTable.Extensions;
+namespace ManagedCode.Database.AzureTables.Extensions;
 
 public static class ProviderBuilderExtension
 {
-    public static IServiceCollection AddAzureTable(this IServiceCollection serviceCollection,
-        Action<AzureTableOptions> action)
+    public static IServiceCollection AddAzureTables(this IServiceCollection serviceCollection,
+        Action<AzureTablesOptions> action)
     {
-        var connectionOptions = new AzureTableOptions();
+        var connectionOptions = new AzureTablesOptions();
         action.Invoke(connectionOptions);
 
         serviceCollection.AddSingleton(connectionOptions);

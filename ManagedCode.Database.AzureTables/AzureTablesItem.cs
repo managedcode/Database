@@ -4,13 +4,13 @@ using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
-public class AzureTableItem : ITableEntity, IItem<TableId>
+public class AzureTablesItem : ITableEntity, IItem<TableId>
 {
     private TableId _id;
 
-    public AzureTableItem()
+    public AzureTablesItem()
     {
         _id = new TableId(this);
     }

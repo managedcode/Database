@@ -1,9 +1,9 @@
 using System;
 using Azure.Data.Tables;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
-public class AzureTableOptions
+public class AzureTablesOptions
 {
     public string ConnectionString { get; set; }
     public TableSharedKeyCredential TableSharedKeyCredential { get; set; }

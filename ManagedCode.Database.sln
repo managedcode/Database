@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Core",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Cosmos", "ManagedCode.Database.Cosmos\ManagedCode.Database.Cosmos.csproj", "{03EE6090-7D24-4FF8-97C9-BC7CDFD7E586}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.AzureTable", "ManagedCode.Database.AzureTable\ManagedCode.Database.AzureTable.csproj", "{0D6304D1-911D-489E-A716-6CBD5D0FE05D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.AzureTables", "ManagedCode.Database.AzureTables\ManagedCode.Database.AzureTables.csproj", "{0D6304D1-911D-489E-A716-6CBD5D0FE05D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Tests", "ManagedCode.Database.Tests\ManagedCode.Database.Tests.csproj", "{F9DA9E52-2DDF-40E3-B0A4-4EC7B118FE8F}"
 EndProject

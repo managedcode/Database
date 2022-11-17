@@ -2,30 +2,30 @@ using System;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using ManagedCode.Database.AzureTable;
+using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 
-namespace ManagedCode.Database.Tests.AzureTableTests;
+namespace ManagedCode.Database.Tests.AzureTablesTests;
 
-public class AzureTableTestContainer : IAsyncDisposable
+public class AzureTablesTestContainer : IAsyncDisposable
 {
     private static int _port = 10000;
-    private readonly AzureTableDatabase _database;
-    private readonly TestcontainersContainer _azureTableContainer;
+    private readonly AzureTablesDatabase _database;
+    private readonly TestcontainersContainer _azureTablesContainer;
 
-    public AzureTableTestContainer()
+    public AzureTablesTestContainer()
     {
         int[] ports = { ++_port, ++_port, ++_port };
 
-        _database = new AzureTableDatabase(new AzureTableOptions
+        _database = new AzureTablesDatabase(new AzureTablesOptions
         {
             ConnectionString =
                 $"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:{ports[0]}/devstoreaccount1;QueueEndpoint=http://localhost:{ports[1]}/devstoreaccount1;TableEndpoint=http://localhost:{ports[2]}/devstoreaccount1;",
             AllowTableCreation = true,
         });
 
-        _azureTableContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
             .WithPortBinding(ports[0], 10000)
             .WithPortBinding(ports[1], 10001)
@@ -35,19 +35,19 @@ public class AzureTableTestContainer : IAsyncDisposable
 
     public async Task InitializeAsync()
     {
-        await _azureTableContainer.StartAsync();
+        await _azureTablesContainer.StartAsync();
         await _database.InitializeAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         await _database.DisposeAsync();
-        await _azureTableContainer.StopAsync();
+        await _azureTablesContainer.StopAsync();
     }
 
-    public IDatabaseCollection<TableId, TestAzureTableItem> GetCollection()
+    public IDatabaseCollection<TableId, TestAzureTablesItem> GetCollection()
     {
-        return _database.GetCollection<TableId, TestAzureTableItem>();
+        return _database.GetCollection<TableId, TestAzureTablesItem>();
     }
 
     public TableId GenerateId()

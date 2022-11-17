@@ -1,9 +1,9 @@
 using System;
-using ManagedCode.Database.AzureTable;
+using ManagedCode.Database.AzureTables;
 
 namespace ManagedCode.Database.Tests.Common
 {
-    public class TestAzureTableItem : AzureTableItem, IBaseItem<TableId>
+    public class TestAzureTablesItem : AzureTablesItem, IBaseItem<TableId>
     {
         public string StringData { get; set; }
         public int IntData { get; set; }

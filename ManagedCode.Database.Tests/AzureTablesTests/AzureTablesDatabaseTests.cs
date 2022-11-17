@@ -1,39 +1,39 @@
 using System.Threading.Tasks;
 using FluentAssertions;
-using ManagedCode.Database.AzureTable;
+using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
 
-namespace ManagedCode.Database.Tests.AzureTableTests
+namespace ManagedCode.Database.Tests.AzureTablesTests
 {
-    public class AzureTableDatabaseTests : BaseDatabaseTests<TableId, TestAzureTableItem>, IAsyncLifetime
+    public class AzureTablesDatabaseTests : BaseDatabaseTests<TableId, TestAzureTablesItem>, IAsyncLifetime
     {
-        private readonly AzureTableTestContainer _azureTableContainer;
+        private readonly AzureTablesTestContainer _azureTablesContainer;
 
-        public AzureTableDatabaseTests()
+        public AzureTablesDatabaseTests()
         {
-            _azureTableContainer = new AzureTableTestContainer();
+            _azureTablesContainer = new AzureTablesTestContainer();
         }
 
 
-        protected override IDatabaseCollection<TableId, TestAzureTableItem> Collection =>
-            _azureTableContainer.GetCollection();
+        protected override IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
+            _azureTablesContainer.GetCollection();
 
         protected override TableId GenerateId()
         {
-            return _azureTableContainer.GenerateId();
+            return _azureTablesContainer.GenerateId();
         }
 
         public override async Task DisposeAsync()
         {
-            await _azureTableContainer.DisposeAsync();
+            await _azureTablesContainer.DisposeAsync();
         }
 
         public override async Task InitializeAsync()
         {
-            await _azureTableContainer.InitializeAsync();
+            await _azureTablesContainer.InitializeAsync();
         }
 
         [Fact]

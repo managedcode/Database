@@ -1,6 +1,6 @@
 using Azure.Data.Tables;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
 public class TableId
 {

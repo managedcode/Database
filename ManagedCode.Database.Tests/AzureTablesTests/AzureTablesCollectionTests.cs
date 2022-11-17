@@ -1,47 +1,47 @@
-﻿using FluentAssertions;
-using ManagedCode.Database.AzureTable;
-using ManagedCode.Database.Core;
-using ManagedCode.Database.Tests.BaseTests;
-using ManagedCode.Database.Tests.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using ManagedCode.Database.AzureTables;
+using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Exceptions;
+using ManagedCode.Database.Tests.BaseTests;
+using ManagedCode.Database.Tests.Common;
 
-namespace ManagedCode.Database.Tests.AzureTableTests;
+namespace ManagedCode.Database.Tests.AzureTablesTests;
 
-public class AzureTableCollectionTests : BaseCollectionTests<TableId, TestAzureTableItem>
+public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzureTablesItem>
 {
-    private readonly AzureTableTestContainer _azureTableContainer;
+    private readonly AzureTablesTestContainer _azureTablesContainer;
 
-    public AzureTableCollectionTests()
+    public AzureTablesCollectionTests()
     {
-        _azureTableContainer = new AzureTableTestContainer();
+        _azureTablesContainer = new AzureTablesTestContainer();
     }
 
 
-    protected override IDatabaseCollection<TableId, TestAzureTableItem> Collection =>
-        _azureTableContainer.GetCollection();
+    protected override IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
+        _azureTablesContainer.GetCollection();
 
     protected override TableId GenerateId()
     {
-        return _azureTableContainer.GenerateId();
+        return _azureTablesContainer.GenerateId();
     }
 
     public override async Task DisposeAsync()
     {
-        await _azureTableContainer.DisposeAsync();
+        await _azureTablesContainer.DisposeAsync();
     }
 
     public override async Task InitializeAsync()
     {
-        await _azureTableContainer.InitializeAsync();
+        await _azureTablesContainer.InitializeAsync();
     }
 
     public override async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
     {
-        List<TestAzureTableItem> list = new();
+        List<TestAzureTablesItem> list = new();
 
         var id = GenerateId();
 
@@ -95,7 +95,7 @@ public class AzureTableCollectionTests : BaseCollectionTests<TableId, TestAzureT
     public override async Task DeleteListOfItemsById_WhenItemsDontExist()
     {
         int itemsCount = 5;
-        List<TestAzureTableItem> list = new();
+        List<TestAzureTablesItem> list = new();
 
         for (var i = 0; i < itemsCount; i++)
         {
@@ -112,7 +112,7 @@ public class AzureTableCollectionTests : BaseCollectionTests<TableId, TestAzureT
     public override async Task DeleteListOfItems_WhenItemsDontExist()
     {
         int itemsCount = 5;
-        List<TestAzureTableItem> list = new();
+        List<TestAzureTablesItem> list = new();
 
         for (var i = 0; i < itemsCount; i++)
         {

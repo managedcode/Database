@@ -6,7 +6,7 @@ using Azure;
 using Azure.Data.Tables;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.AzureTable.Extensions;
+namespace ManagedCode.Database.AzureTables.Extensions;
 
 public static class TableClientExtensions
 {

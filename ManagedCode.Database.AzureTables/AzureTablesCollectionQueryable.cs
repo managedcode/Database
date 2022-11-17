@@ -3,17 +3,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using ManagedCode.Database.AzureTable.Extensions;
+using ManagedCode.Database.AzureTables.Extensions;
 using ManagedCode.Database.Core;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
-public class AzureTableCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
+public class AzureTablesCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
     where TItem : class, ITableEntity, new()
 {
     private readonly TableClient _tableClient;
 
-    public AzureTableCollectionQueryable(TableClient tableClient)
+    public AzureTablesCollectionQueryable(TableClient tableClient)
     {
         _tableClient = tableClient;
     }

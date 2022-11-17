@@ -5,23 +5,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using ManagedCode.Database.AzureTable.Extensions;
+using ManagedCode.Database.AzureTables.Extensions;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Exceptions;
 
-namespace ManagedCode.Database.AzureTable;
+namespace ManagedCode.Database.AzureTables;
 
-public class AzureTableDatabaseCollection<TItem> : IDatabaseCollection<TableId, TItem>
-    where TItem : AzureTableItem, new()
+public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId, TItem>
+    where TItem : AzureTablesItem, new()
 {
     private readonly TableClient _tableClient;
 
-    public AzureTableDatabaseCollection(TableClient tableClient)
+    public AzureTablesDatabaseCollection(TableClient tableClient)
     {
         _tableClient = tableClient;
     }
 
-    public ICollectionQueryable<TItem> Query => new AzureTableCollectionQueryable<TItem>(_tableClient);
+    public ICollectionQueryable<TItem> Query => new AzureTablesCollectionQueryable<TItem>(_tableClient);
 
     #region Get
 

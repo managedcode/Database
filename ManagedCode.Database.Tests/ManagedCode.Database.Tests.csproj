@@ -30,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ManagedCode.Database.AzureTable\ManagedCode.Database.AzureTable.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.AzureTables\ManagedCode.Database.AzureTables.csproj" />
         <ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
         <ProjectReference Include="..\ManagedCode.Database.Cosmos\ManagedCode.Database.Cosmos.csproj" />
         <ProjectReference Include="..\ManagedCode.Database.LiteDB\ManagedCode.Database.LiteDB.csproj" />
