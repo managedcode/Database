@@ -4,31 +4,33 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using System.Threading.Tasks;
+using ManagedCode.Database.Tests.TestContainers;
 
 namespace ManagedCode.Database.Tests.InMemoryTests;
 
 public class InMemoryCollectionTests : BaseCollectionTests<int, InMemoryItem>
 {
-    private static volatile int _count;
-    private InMemoryDatabase _database;
+    private readonly InMemoryTestContainer _testContainer;
 
-    protected override IDatabaseCollection<int, InMemoryItem> Collection =>
-        _database.GetCollection<int, InMemoryItem>();
+    public InMemoryCollectionTests()
+    {
+        _testContainer = new InMemoryTestContainer();
+    }
+
+    protected override IDatabaseCollection<int, InMemoryItem> Collection => _testContainer.Collection;
 
     protected override int GenerateId()
     {
-        Interlocked.Increment(ref _count);
-        return _count;
+        return _testContainer.GenerateId();
     }
 
     public override async Task InitializeAsync()
     {
-        _database = new InMemoryDatabase();
-        await _database.InitializeAsync();
+        await _testContainer.InitializeAsync();
     }
-         
+
     public override async Task DisposeAsync()
     {
-        await _database.DisposeAsync();
+        await _testContainer.DisposeAsync();
     }
 }

@@ -6,9 +6,9 @@ using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 
-namespace ManagedCode.Database.Tests.AzureTablesTests;
+namespace ManagedCode.Database.Tests.TestContainers;
 
-public class AzureTablesTestContainer : IAsyncDisposable
+public class AzureTablesTestContainer
 {
     private static int _port = 10000;
     private readonly AzureTablesDatabase _database;
