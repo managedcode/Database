@@ -3181,115 +3181,147 @@ namespace ManagedCode.Database.Tests.BaseTests
 
         #region ThenBy
 
-        #region Where
-
-        #endregion
-
-        #region OrderBy
-
-        #endregion
-
-        #region OrderByDescending
-
-        #endregion
-
-        #region Take
-
-        #endregion
-
-        #region Skip
-
-        #endregion
-
-        #endregion
-
         [Fact]
         public virtual async Task ThenBy_AfterOrderBy_ReturnOk()
         {
             // Arrange
-            int itemsCountToInsert = 5;
+            var rand = new Random();
+            int itemsCountToInsert = 10;
+
+            List<TItem> list = new();
 
             for (var i = 0; i < itemsCountToInsert; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
-                await Collection.InsertAsync(item);
+                item.LongData = rand.Next(5);
+                list.Add(item);
             }
 
+            await Collection.InsertAsync(list);
+
+            var listOredered = list
+                .OrderBy(o => o.IntData)
+                .ThenBy(o => o.LongData);
+
             // Act
-            var itemsResult = await Collection.Query.OrderBy(o => o.StringData)
-                .ThenBy(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query
+                .OrderBy(o => o.IntData)
+                .ThenBy(o => o.LongData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(0);
+            itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
+            itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
 
         [Fact]
         public virtual async Task ThenByDescending_AfterOrderBy_ReturnOk()
         {
             // Arrange
-            int itemsCountToInsert = 5;
+            var rand = new Random();
+            int itemsCountToInsert = 10;
+
+            List<TItem> list = new();
 
             for (var i = 0; i < itemsCountToInsert; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
-                await Collection.InsertAsync(item);
+                item.LongData = rand.Next(5);
+                list.Add(item);
             }
 
+            await Collection.InsertAsync(list);
+
+            var listOredered = list
+                .OrderBy(o => o.IntData)
+                .ThenByDescending(o => o.LongData);
+
             // Act
-            var itemsResult = await Collection.Query.OrderBy(o => o.StringData)
-                .ThenByDescending(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query
+                .OrderBy(o => o.IntData)
+                .ThenByDescending(o => o.LongData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+            itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
+            itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
 
         [Fact]
         public virtual async Task ThenBy_AfterOrderByDescending_ReturnOk()
         {
             // Arrange
-            int itemsCountToInsert = 5;
+            var rand = new Random();
+            int itemsCountToInsert = 10;
+
+            List<TItem> list = new();
 
             for (var i = 0; i < itemsCountToInsert; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
-                await Collection.InsertAsync(item);
+                item.LongData = rand.Next(5);
+                list.Add(item);
             }
 
+            await Collection.InsertAsync(list);
+
+            var listOredered = list
+                .OrderByDescending(o => o.IntData)
+                .ThenBy(o => o.LongData);
+
             // Act
-            var itemsResult = await Collection.Query.OrderByDescending(o => o.StringData)
-                .ThenBy(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query
+                .OrderByDescending(o => o.IntData)
+                .ThenBy(o => o.LongData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(0);
+            itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
+            itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
 
         [Fact]
         public virtual async Task ThenByDescending_AfterOrderByDescending_ReturnOk()
         {
             // Arrange
-            int itemsCountToInsert = 5;
+            var rand = new Random();
+            int itemsCountToInsert = 10;
+
+            List<TItem> list = new();
 
             for (var i = 0; i < itemsCountToInsert; i++)
             {
                 var item = CreateNewItem();
                 item.IntData = i;
-                await Collection.InsertAsync(item);
+                item.LongData = rand.Next(5);
+                list.Add(item);
             }
 
+            await Collection.InsertAsync(list);
+
+            var listOredered = list
+                .OrderByDescending(o => o.IntData)
+                .ThenByDescending(o => o.LongData);
+
             // Act
-            var itemsResult = await Collection.Query.OrderByDescending(o => o.StringData)
-                .ThenByDescending(o => o.IntData).ToListAsync();
+            var itemsResult = await Collection.Query
+                .OrderByDescending(o => o.IntData)
+                .ThenByDescending(o => o.LongData)
+                .ToListAsync();
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToInsert);
-            itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
+            itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
+            itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
+
+        #endregion
 
         [Fact]
         public virtual async Task TakeQueryBeyond_ReturnOk()
