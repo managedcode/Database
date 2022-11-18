@@ -3,7 +3,7 @@ using Tenray.ZoneTree.Serializers;
 
 namespace ManagedCode.Database.ZoneTree;
 
-public class JsonSerializer<T> : ISerializer<T>
+internal class JsonSerializer<T> : ISerializer<T>
 {
     public T Deserialize(byte[] bytes)
     {

@@ -5,12 +5,12 @@ namespace ManagedCode.Database.ZoneTree;
 
 public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
 {
-    private readonly string _path;
+    private readonly ZoneTreeOptions _options;
     private readonly Dictionary<string, IDisposable> _collection = new();
 
-    public ZoneTreeDatabase(string path)
+    public ZoneTreeDatabase(ZoneTreeOptions options)
     {
-        _path = path;
+        _options = options;
     }
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
@@ -25,33 +25,45 @@ public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
 
     protected override void DisposeInternal()
     {
-        foreach (var table in _collection) table.Value.Dispose();
+        lock (NativeClient)
+        {
+            foreach (var table in _collection)
+            {
+                table.Value.Dispose();
+            }
+        }
     }
 
-    public override Task DeleteAsync(CancellationToken token = default)
+    public override async Task DeleteAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        await Task.Yield();
+        Directory.Delete(_options.Path, true);
     }
 
-    public ZoneTreeDatabaseCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
-    {
-        return GetCollection<TId, TItem>(typeof(TItem).FullName);
-    }
-
-    public ZoneTreeDatabaseCollection<TId, TItem> GetCollection<TId, TItem>(string name) where TItem : IItem<TId>
+    public ZoneTreeCollection<TId, TItem> GetCollection<TId, TItem>() where TItem : IItem<TId>
     {
         if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
         lock (NativeClient)
         {
-            var className = typeof(TItem).FullName;
-            if (_collection.TryGetValue(className, out var collection))
+            var collectionName = typeof(TItem).FullName!;
+
+            if (_collection.TryGetValue(collectionName, out var collection))
             {
-                return (ZoneTreeDatabaseCollection<TId, TItem>)collection;
+                return (ZoneTreeCollection<TId, TItem>)collection;
             }
 
-            var newCollection = new ZoneTreeDatabaseCollection<TId, TItem>(Path.Combine(_path, className));
-            _collection.Add(className, newCollection);
+            ZoneTreeCollectionOptions<TId, TItem> collectionOptions = new()
+            {
+                Path = Path.Combine(_options.Path, collectionName),
+                WALMode = _options.WALMode,
+                DiskSegmentMode = _options.DiskSegmentMode,
+                StorageType = _options.StorageType,
+                ValueSerializer = new JsonSerializer<TItem>()
+            };
+
+            var newCollection = new ZoneTreeCollection<TId, TItem>(collectionOptions);
+            _collection.Add(collectionName, newCollection);
             return newCollection;
         }
     }

@@ -4,39 +4,25 @@ using Tenray.ZoneTree.Options;
 
 namespace ManagedCode.Database.ZoneTree;
 
-public class ZoneTreeWrapper<TKey, TValue> : IDisposable
+internal class ZoneTreeWrapper<TKey, TValue> : IDisposable
 {
-    private readonly string _path;
-    private IMaintainer _maintainer;
-    private IZoneTree<TKey, TValue?> _zoneTree;
+    private readonly IMaintainer _maintainer;
+    private readonly IZoneTree<TKey, TValue?> _zoneTree;
 
-    public ZoneTreeWrapper(string path)
-    {
-        _path = path;
-    }
-
-    public void Dispose()
-    {
-        _maintainer?.CompleteRunningTasks();
-        _maintainer?.Dispose();
-        _zoneTree?.Dispose();
-    }
-
-    public void Open(ZoneTreeOptions<TKey, TValue?> options)
+    public ZoneTreeWrapper(ZoneTreeCollectionOptions<TKey, TValue> options)
     {
         /*IFileStreamProvider streamProvider = options.StorageType switch
-        {
-            StorageType.Blob => new BlobFileStreamProvider(options.ConnectionString, options.Path),
-            StorageType.File => new LocalFileStreamProvider(),
-            _ => throw new ArgumentOutOfRangeException(nameof(options.StorageType), options.StorageType, null)
-        };*/
-
+    {
+        StorageType.Blob => new BlobFileStreamProvider(options.ConnectionString, options.Path),
+        StorageType.File => new LocalFileStreamProvider(),
+        _ => throw new ArgumentOutOfRangeException(nameof(options.StorageType), options.StorageType, null)
+    };*/
         var factory = new ZoneTreeFactory<TKey, TValue?>(new LocalFileStreamProvider())
             //.SetKeySerializer(options.KeySerializer)
             .SetValueSerializer(options.ValueSerializer)
             //.SetComparer(options.Comparer) //StringOrdinalComparerAscending()
-            .SetDataDirectory(_path)
-            .SetWriteAheadLogDirectory(_path)
+            .SetDataDirectory(options.Path)
+            .SetWriteAheadLogDirectory(options.Path)
             .SetIsValueDeletedDelegate((in TValue? value) => value == null)
             .SetMarkValueDeletedDelegate((ref TValue? value) => value = default)
 
@@ -62,11 +48,18 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
         _maintainer = _zoneTree.CreateMaintainer();
     }
 
+    public void Dispose()
+    {
+        _maintainer.CompleteRunningTasks();
+        _maintainer.Dispose();
+        _zoneTree.Dispose();
+    }
 
     public void Maintenance()
     {
         _maintainer.CompleteRunningTasks();
-        _zoneTree.Maintenance.MoveSegmentZeroForward();
+        // TODO: check
+        _zoneTree.Maintenance.MoveMutableSegmentForward();
         _zoneTree.Maintenance.StartMergeOperation()?.Join();
     }
 
@@ -82,7 +75,7 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
 
     public void InsertOrUpdate(TKey key, TValue value)
     {
-        _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? val) => true);
+        _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? _) => true);
     }
 
     public void Upsert(TKey key, TValue value)
@@ -90,11 +83,11 @@ public class ZoneTreeWrapper<TKey, TValue> : IDisposable
         _zoneTree.Upsert(key, value);
     }
 
-    public TValue Get(TKey key)
+    public TValue? Get(TKey key)
     {
-        if (_zoneTree.TryGet(in key, out var value)) return value;
-
-        return default;
+        return _zoneTree.TryGet(in key, out var value)
+            ? value
+            : default;
     }
 
     public bool Contains(TKey key)

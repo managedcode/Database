@@ -6,7 +6,7 @@ public class ZoneTreeCollectionQueryable<TId, TItem> : BaseCollectionQueryable<T
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 
-    public ZoneTreeCollectionQueryable(ZoneTreeWrapper<TId, TItem> zoneTree)
+    internal ZoneTreeCollectionQueryable(ZoneTreeWrapper<TId, TItem> zoneTree)
     {
         _zoneTree = zoneTree;
     }

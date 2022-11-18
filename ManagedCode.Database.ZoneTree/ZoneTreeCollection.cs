@@ -3,21 +3,13 @@ using Tenray.ZoneTree.Options;
 
 namespace ManagedCode.Database.ZoneTree;
 
-public class ZoneTreeDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TItem> where TItem : IItem<TId>
+public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> where TItem : IItem<TId>
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 
-    public ZoneTreeDatabaseCollection(string path)
+    internal ZoneTreeCollection(ZoneTreeCollectionOptions<TId, TItem> options)
     {
-        _zoneTree = new ZoneTreeWrapper<TId, TItem>(path);
-        _zoneTree.Open(new ZoneTreeOptions<TId, TItem?>
-        {
-            Path = path,
-            WALMode = WriteAheadLogMode.Sync,
-            DiskSegmentMode = DiskSegmentMode.SingleDiskSegment,
-            StorageType = StorageType.File,
-            ValueSerializer = new JsonSerializer<TItem?>()
-        });
+        _zoneTree = new ZoneTreeWrapper<TId, TItem>(options);
     }
 
     public ICollectionQueryable<TItem> Query => new ZoneTreeCollectionQueryable<TId, TItem>(_zoneTree);
@@ -130,7 +122,7 @@ public class ZoneTreeDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, T
         return Task.FromResult(i);
     }
 
-    public Task<TItem> GetAsync(TId id, CancellationToken cancellationToken = default)
+    public Task<TItem?> GetAsync(TId id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_zoneTree.Get(id));
     }
