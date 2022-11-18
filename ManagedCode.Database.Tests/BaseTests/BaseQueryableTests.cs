@@ -1754,7 +1754,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
         [Fact]
@@ -1781,7 +1780,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
         [Fact]
@@ -1919,7 +1917,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
-            itemsResult.First().IntData.Should().Be(itemsCountToTake - itemsCountToSkip - 1);
         }
 
         [Fact]
@@ -1945,8 +1942,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .Skip(itemsCountToSkip).Where(w => w.StringData == guid).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
-            itemsResult.First().IntData.Should().Be(itemsCountToTake - itemsCountToSkip - 1);
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
 
         #endregion
@@ -2206,7 +2202,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .OrderBy(o => o.IntData).Where(w => w.StringData == guid).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
 
         [Fact]
@@ -2258,7 +2254,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .OrderByDescending(o => o.IntData).Where(w => w.StringData == guid).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
 
 
@@ -2285,7 +2281,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                .Where(w => w.StringData == guid).OrderBy(o => o.IntData).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
 
         [Fact]
@@ -2311,7 +2307,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .Where(w => w.StringData == guid).OrderByDescending(o => o.IntData).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
         }
         
         #endregion
