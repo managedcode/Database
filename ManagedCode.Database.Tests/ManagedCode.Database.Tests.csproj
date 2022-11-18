@@ -36,6 +36,7 @@
         <ProjectReference Include="..\ManagedCode.Database.LiteDB\ManagedCode.Database.LiteDB.csproj" />
         <ProjectReference Include="..\ManagedCode.Database.MongoDB\ManagedCode.Database.MongoDB.csproj" />
         <ProjectReference Include="..\ManagedCode.Database.SQLite\ManagedCode.Database.SQLite.csproj" />
+        <ProjectReference Include="..\ManagedCode.Database.ZoneTree\ManagedCode.Database.ZoneTree.csproj" />
     </ItemGroup>
 
     <ItemGroup>

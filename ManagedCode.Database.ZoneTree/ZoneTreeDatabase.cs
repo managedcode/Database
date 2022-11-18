@@ -15,6 +15,9 @@ public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
+        NativeClient = this;
+        Directory.CreateDirectory(_options.Path);
+
         return Task.CompletedTask;
     }
 
