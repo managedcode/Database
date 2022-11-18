@@ -26,7 +26,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 LongData = rnd.Next(),
                 FloatData = Convert.ToSingle(rnd.NextDouble()),
                 DoubleData = rnd.NextDouble(),
-                DateTimeData = DateTime.Now,
+                DateTimeData = DateTime.UtcNow,
             };
         }
 
@@ -35,6 +35,44 @@ namespace ManagedCode.Database.Tests.BaseTests
             var item = CreateNewItem();
             item.Id = id;
             return item;
+        }
+
+        protected async void CreateItems(int itemsCountToInsert, string guid)
+        {
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.StringData = guid;
+                await Collection.InsertAsync(item);
+            }
+        }
+
+        protected async void CreateItems(int itemsCountToInsert)
+        {
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                await Collection.InsertAsync(item);
+            }
+        }
+
+        protected async Task<List<TItem>> CreateListItems_WithRandLongData(int itemsCountToInsert)
+        {
+            var rand = new Random();
+            
+            List<TItem> list = new();
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                var item = CreateNewItem();
+                item.IntData = i;
+                item.LongData = rand.Next(5);
+                list.Add(await Collection.InsertAsync(item));
+            }
+
+            return list;
         }
 
         #region WhereQuery
@@ -49,12 +87,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -78,13 +111,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -106,13 +133,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -122,7 +143,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(0);
         }
 
@@ -136,13 +162,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -153,7 +173,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
@@ -166,13 +191,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -182,7 +201,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
@@ -196,13 +220,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -213,7 +231,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
@@ -229,13 +252,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -244,7 +261,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
         }
 
@@ -257,13 +279,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -273,7 +289,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
         }
 
@@ -287,13 +308,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -304,7 +319,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
 
@@ -317,13 +337,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -333,7 +347,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                 .Should()
+                 .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                 .And
+                 .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
 
@@ -347,13 +366,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -364,7 +377,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
 
@@ -381,13 +399,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -404,18 +416,12 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task WhereTakeOrderBy_ReturnOk()
         {
             // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTake = 3;
+            int itemsCountToInsert = 10;
+            int itemsCountToTake = 5;
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -425,7 +431,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -438,13 +448,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -455,7 +459,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -467,13 +475,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -483,7 +485,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -496,13 +502,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -513,7 +513,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -526,13 +530,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -543,7 +541,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -556,13 +558,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -573,7 +569,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -588,13 +588,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -617,13 +611,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -633,7 +621,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -646,13 +638,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -663,7 +649,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -676,13 +666,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -693,7 +677,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -706,13 +694,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -723,7 +705,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -742,12 +728,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Arrange
             int itemsCountToInsert = 5;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -755,7 +736,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(0);
         }
 
@@ -770,12 +756,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTake = 3;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -784,7 +765,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(0);
         }
 
@@ -796,14 +782,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -813,14 +792,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
-            itemsResult.First().IntData.Should().Be(itemsCountToSkip);
-
             itemsResult
                 .Should()
-                .HaveCount(itemsCountToTake)
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
                 .And
-                .BeInAscendingOrder();
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -834,14 +810,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -862,14 +831,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -879,7 +841,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToSkip);
         }
 
@@ -897,12 +864,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Arrange
             int itemsCountToInsert = 5;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -910,7 +872,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
         }
 
@@ -925,12 +892,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTake = 3;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -939,7 +901,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - 1);
         }
 
@@ -951,14 +918,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -968,7 +928,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
 
@@ -983,12 +948,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToSkip = 3;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -997,7 +957,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
 
@@ -1009,14 +974,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1026,7 +984,12 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
+
             itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
         }
         
@@ -1045,12 +1008,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTake = 3;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1072,15 +1030,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTake = 3;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1089,7 +1039,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1101,13 +1055,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1117,7 +1065,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1130,13 +1082,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1147,7 +1093,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1158,15 +1108,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1176,7 +1118,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1189,13 +1135,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1206,7 +1146,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1220,15 +1164,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTake = 3;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1237,7 +1173,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1249,13 +1189,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1265,7 +1199,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1278,13 +1216,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1295,7 +1227,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1306,15 +1242,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1324,7 +1252,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1337,13 +1269,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1354,7 +1280,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1370,13 +1300,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1398,13 +1322,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1414,7 +1332,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1427,13 +1349,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1444,7 +1360,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1456,13 +1376,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1472,7 +1386,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                 .Should()
+                 .HaveCount(itemsCountToTake)
+                 .And
+                 .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1485,13 +1403,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1501,7 +1413,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .Skip(itemsCountToSkip).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1514,13 +1430,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1531,7 +1441,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1544,13 +1458,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1561,7 +1469,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1599,15 +1511,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1617,7 +1521,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1630,13 +1538,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1647,7 +1549,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1658,15 +1564,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1676,7 +1574,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1689,13 +1591,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1706,7 +1602,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1719,13 +1619,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1736,7 +1630,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1749,13 +1647,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1766,7 +1658,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake - itemsCountToSkip);
+            itemsResult
+                 .Should()
+                 .HaveCount(itemsCountToTake - itemsCountToSkip)
+                 .And
+                 .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1784,12 +1680,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToSkip = 2;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1811,16 +1702,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToSkip = 2;
 
-
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1829,7 +1711,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1841,13 +1727,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1857,7 +1737,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -1868,15 +1752,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1886,7 +1762,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1900,15 +1780,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1917,7 +1789,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
         [Fact]
         public virtual async Task SkipOrderByDescendingTake_ReturnOk()
@@ -1927,15 +1803,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1945,7 +1813,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -1961,13 +1833,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -1989,13 +1855,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2005,7 +1865,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2018,13 +1882,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2035,7 +1893,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2047,13 +1909,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2063,7 +1919,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2076,13 +1936,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2093,7 +1947,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2106,13 +1964,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2123,7 +1975,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2136,13 +1992,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2153,7 +2003,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -2191,15 +2045,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2209,7 +2055,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2222,13 +2072,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2239,7 +2083,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2250,15 +2098,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToTake = 3;
             int itemsCountToSkip = 2;
 
-            var guid = Guid.NewGuid().ToString();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2268,7 +2108,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2281,13 +2125,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2298,7 +2136,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
 
@@ -2312,13 +2154,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2328,7 +2164,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .OrderBy(o => o.IntData).ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInAscendingOrder(o => o.IntData);
         }
 
         [Fact]
@@ -2341,13 +2181,7 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
@@ -2358,7 +2192,11 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToTake);
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToTake)
+                .And
+                .BeInDescendingOrder(o => o.IntData);
         }
 
         #endregion
@@ -2371,18 +2209,9 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task ThenBy_AfterOrderBy_ReturnOk()
         {
             // Arrange
-            var rand = new Random();
             int itemsCountToInsert = 10;
 
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.LongData = rand.Next(5);
-                list.Add(item);
-            }
+            List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
 
             await Collection.InsertAsync(list);
 
@@ -2397,7 +2226,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.Should().HaveCount(itemsCountToInsert);
             itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
             itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
@@ -2406,18 +2235,9 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task ThenByDescending_AfterOrderBy_ReturnOk()
         {
             // Arrange
-            var rand = new Random();
             int itemsCountToInsert = 10;
 
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.LongData = rand.Next(5);
-                list.Add(item);
-            }
+            List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
 
             await Collection.InsertAsync(list);
 
@@ -2432,7 +2252,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.Should().HaveCount(itemsCountToInsert);
             itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
             itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
@@ -2440,19 +2260,10 @@ namespace ManagedCode.Database.Tests.BaseTests
         [Fact]
         public virtual async Task ThenBy_AfterOrderByDescending_ReturnOk()
         {
-            // Arrange
-            var rand = new Random();
+            // Arrange/
             int itemsCountToInsert = 10;
 
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.LongData = rand.Next(5);
-                list.Add(item);
-            }
+            List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
 
             await Collection.InsertAsync(list);
 
@@ -2467,7 +2278,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.Should().HaveCount(itemsCountToInsert);
             itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
             itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
@@ -2476,18 +2287,9 @@ namespace ManagedCode.Database.Tests.BaseTests
         public virtual async Task ThenByDescending_AfterOrderByDescending_ReturnOk()
         {
             // Arrange
-            var rand = new Random();
             int itemsCountToInsert = 10;
 
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                item.LongData = rand.Next(5);
-                list.Add(item);
-            }
+            List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
 
             await Collection.InsertAsync(list);
 
@@ -2502,7 +2304,7 @@ namespace ManagedCode.Database.Tests.BaseTests
                 .ToListAsync();
 
             // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
+            itemsResult.Should().HaveCount(itemsCountToInsert);
             itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
             itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
         }
@@ -2516,12 +2318,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             int itemsCountToInsert = 5;
             int itemsCountToTakeBeyond = itemsCountToInsert + 3;
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.IntData = i;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert);
 
             // Act
             var itemsResult = await Collection.Query.Take(itemsCountToTakeBeyond).ToListAsync();
@@ -2559,12 +2356,7 @@ namespace ManagedCode.Database.Tests.BaseTests
             var guid = Guid.NewGuid().ToString();
             var unfaithfulGuid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                var item = CreateNewItem();
-                item.StringData = guid;
-                await Collection.InsertAsync(item);
-            }
+            CreateItems(itemsCountToInsert, guid);
 
             // Act
             var itemsResult = await Collection.Query
