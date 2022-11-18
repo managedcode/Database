@@ -1,4 +1,5 @@
 using ManagedCode.Database.Core;
+using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.ZoneTree;
 
@@ -25,80 +26,64 @@ public class ZoneTreeCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
         return ValueTask.CompletedTask;
     }
 
-    protected override Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        _zoneTree.Insert(item.Id, item);
-        return Task.FromResult(item);
-    }
+        await Task.Yield();
 
-    protected override Task<int> InsertInternalAsync(IEnumerable<TItem> items,
-        CancellationToken cancellationToken = default)
-    {
-        var i = 0;
-        foreach (var item in items)
+        if (!_zoneTree.Insert(item.Id, item))
         {
-            i++;
-            _zoneTree.Insert(item.Id, item);
+            throw new DatabaseException("The specified entity already exists.");
         }
 
-        return Task.FromResult(i);
+        return _zoneTree.Get(item.Id)!;
     }
 
-    protected override Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
-    {
-        _zoneTree.Update(item.Id, item);
-        return Task.FromResult(item);
-    }
-
-    protected override Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        foreach (var item in items)
+        return await Task.Run(() => items.Count(item => _zoneTree.Insert(item.Id, item)), cancellationToken);
+    }
+
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+
+        if (!_zoneTree.Update(item.Id, item))
         {
-            _zoneTree.Update(item.Id, item);
-            i++;
+            throw new DatabaseException("Entity not found in collection.");
         }
 
-        return Task.FromResult(i);
+        return _zoneTree.Get(item.Id)!;
     }
 
-    protected override Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
-    {
-        _zoneTree.Delete(id);
-        return Task.FromResult(true);
-    }
-
-    protected override Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
-    {
-        _zoneTree.Delete(item.Id);
-        return Task.FromResult(true);
-    }
-
-    protected override Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        foreach (var id in ids)
-        {
-            _zoneTree.Delete(id);
-            i++;
-        }
-
-        return Task.FromResult(i);
+        return await Task.Run(() => items.Count(item => _zoneTree.Update(item.Id, item)), cancellationToken);
     }
 
-    protected override Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+    protected override async Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        return _zoneTree.Delete(id);
+    }
+
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        return _zoneTree.Delete(item.Id);
+    }
+
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
         CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        foreach (var item in items)
-        {
-            _zoneTree.Delete(item.Id);
-            i++;
-        }
+        return await Task.Run(() => ids.Count(id => _zoneTree.Delete(id)), cancellationToken);
+    }
 
-        return Task.FromResult(i);
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() => items.Count(item => _zoneTree.Delete(item.Id)), cancellationToken);
     }
 
     protected override Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
@@ -107,33 +92,29 @@ public class ZoneTreeCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
         return Task.FromResult(true);
     }
 
-    protected override Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
         _zoneTree.Upsert(item.Id, item);
-        return Task.FromResult(item);
+        return _zoneTree.Get(item.Id)!;
     }
 
-    protected override Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        foreach (var item in items)
-        {
-            _zoneTree.Upsert(item.Id, item);
-            i++;
-        }
-
-        return Task.FromResult(i);
+        return await Task.Run(() => items.Count(item => _zoneTree.InsertOrUpdate(item.Id, item)), cancellationToken);
     }
 
-    protected override Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_zoneTree.Get(id));
+        await Task.Yield();
+        return _zoneTree.Get(id);
     }
 
-    protected override Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_zoneTree.Count());
+        return await Task.Run(() => _zoneTree.Count(), cancellationToken);
     }
 }

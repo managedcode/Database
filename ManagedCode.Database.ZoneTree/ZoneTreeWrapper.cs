@@ -68,14 +68,14 @@ internal class ZoneTreeWrapper<TKey, TValue> : IDisposable
         return _zoneTree.TryAtomicAdd(key, value);
     }
 
-    public void Update(TKey key, TValue value)
+    public bool Update(TKey key, TValue value)
     {
-        _zoneTree.TryAtomicUpdate(key, value);
+        return _zoneTree.TryAtomicUpdate(key, value);
     }
 
-    public void InsertOrUpdate(TKey key, TValue value)
+    public bool InsertOrUpdate(TKey key, TValue value)
     {
-        _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? _) => true);
+        return _zoneTree.TryAtomicAddOrUpdate(key, value, (ref TValue? _) => true);
     }
 
     public void Upsert(TKey key, TValue value)
@@ -95,9 +95,9 @@ internal class ZoneTreeWrapper<TKey, TValue> : IDisposable
         return _zoneTree.ContainsKey(key);
     }
 
-    public void Delete(TKey key)
+    public bool Delete(TKey key)
     {
-        _zoneTree.ForceDelete(in key);
+        return _zoneTree.TryDelete(in key);
     }
 
     public void DeleteAll()
