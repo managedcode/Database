@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ManagedCode.Database.Core.Exceptions;
+using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 using Xunit;
@@ -2311,44 +2313,10 @@ namespace ManagedCode.Database.Tests.BaseTests
 
         #endregion
 
-        [Fact]
-        public virtual async Task TakeQueryBeyond_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTakeBeyond = itemsCountToInsert + 3;
-
-            CreateItems(itemsCountToInsert);
-
-            // Act
-            var itemsResult = await Collection.Query.Take(itemsCountToTakeBeyond).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert);
-        }
+        #region Exceptional Situations
 
         [Fact]
-        public virtual async Task TakeSkipQueryBeyond_ReturnOk()
-        {
-            // Arrange
-            int itemsCountToInsert = 5;
-            int itemsCountToTakeBeyond = itemsCountToInsert + 3;
-            int itemsCountToSkip = 2;
-
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                await Collection.InsertAsync(CreateNewItem());
-            }
-
-            // Act
-            var itemsResult = await Collection.Query.Take(itemsCountToTakeBeyond).Skip(itemsCountToSkip).ToListAsync();
-
-            // Assert
-            itemsResult.Count.Should().Be(itemsCountToInsert - itemsCountToSkip);
-        }
-
-        [Fact]
-        public virtual async Task Where_ReturnNull()
+        public virtual async Task Where_ReturnZero()
         {
             // Arrange
             int itemsCountToInsert = 5;
@@ -2366,5 +2334,559 @@ namespace ManagedCode.Database.Tests.BaseTests
             // Assert
             itemsResult.Count.Should().Be(0);
         }
+
+        [Fact]
+        public virtual async Task Where_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .Where(null)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public virtual async Task OrderBy_AfterIOrdered_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderBy(o => o.IntData)
+                .OrderBy(o => o.StringData)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<InvalidOperationException>();
+        }
+
+        [Fact]
+        public virtual async Task OrderBy_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderBy(null)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public virtual async Task OrderByDescending_AfterIOrdered_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderBy(o => o.IntData)
+                .OrderByDescending(o => o.StringData)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<InvalidOperationException>();
+        }
+
+        [Fact]
+        public virtual async Task OrderByDescending_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            var guid = Guid.NewGuid().ToString();
+            var unfaithfulGuid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderByDescending(null)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public virtual async Task ThenBy_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderBy(o => o.StringData)
+                .ThenBy(null)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public virtual async Task ThenByDescending_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = () => Collection.Query
+                .OrderBy(o => o.StringData)
+                .ThenByDescending(null)
+                .ToListAsync();
+
+            // Assert
+            await itemsResult
+                .Should()
+                .ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public virtual async Task Take_TakeNull_ReturnException()
+        {
+            // Arrange
+            int itemsCountToInsert = 1;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Take(null)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert);
+        }
+
+        [Fact]
+        public virtual async Task Take_Beyond_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = itemsCountToInsert + 3;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Take(itemsCountToTake)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert);
+        }
+
+        [Fact]
+        public virtual async Task TakeSkip_Beyond_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = itemsCountToInsert + 3;
+            int itemsCountToSkip = 2;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                await Collection.InsertAsync(CreateNewItem());
+            }
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Take(itemsCountToTake)
+                .Skip(itemsCountToSkip)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert - itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task Skip_Beyond_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = itemsCountToInsert + 2;
+
+            for (var i = 0; i < itemsCountToInsert; i++)
+            {
+                await Collection.InsertAsync(CreateNewItem());
+            }
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Skip(itemsCountToSkip)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(0);
+        }
+
+        [Fact]
+        public virtual async Task Take_NegativeNumber_ReturnZero()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = -3;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Take(itemsCountToTake)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(0);
+        }
+
+        [Fact]
+        public virtual async Task Skip_NegativeNumber_ReturnZero()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = -3;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Skip(itemsCountToSkip)
+                .ToListAsync();
+
+            // Assert
+            itemsResult
+                .Should()
+                .HaveCount(itemsCountToInsert);
+        }
+
+        #endregion
+
+        #region FirstOrDefaultAsync 
+        [Fact]
+        public virtual async Task FirstOrDefault_Skip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip)
+                .FirstOrDefaultAsync();
+
+            // Assert
+            itemsResult.StringData.Should().Be(guid);
+        }
+
+        [Fact]
+        public virtual async Task FirstOrDefault_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int intData = 0;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .Where(w => w.IntData == intData)
+                .FirstOrDefaultAsync();
+
+            // Assert
+            itemsResult.IntData.Should().Be(intData);
+        }
+
+        [Fact]
+        public virtual async Task FirstOrDefault_WithoutAnyQuery_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var itemsResult = await Collection.Query
+                .FirstOrDefaultAsync();
+
+            // Assert
+            itemsResult.StringData.Should().Be(guid);
+        }
+
+        [Fact]
+        public virtual async Task FirstOrDefault_EmptyCollection_ReturnNull()
+        {
+            // Arrange
+            var guid = Guid.NewGuid().ToString();
+
+
+            // Act
+            var itemsResult = await Collection.Query
+                .FirstOrDefaultAsync();
+
+            // Assert
+            itemsResult.Should().BeNull();
+        }
+
+        #endregion
+
+        #region CountAsync  
+
+        [Fact]
+        public virtual async Task Count_Skip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var countResult = await Collection.Query
+                .Where(w => w.StringData == guid)
+                .Skip(itemsCountToSkip)
+                .CountAsync();
+
+            // Assert
+            countResult.Should().Be(itemsCountToInsert - itemsCountToSkip);
+        }
+
+        [Fact]
+        public virtual async Task Count_Take_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 2;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var countResult = await Collection.Query
+                .Where(w => w.StringData == guid)
+                .Take(itemsCountToTake)
+                .CountAsync();
+
+            // Assert
+            countResult.Should().Be(itemsCountToTake);
+        }
+
+        [Fact]
+        public virtual async Task Count_WithoutAnyQuery_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            countResult.Should().Be(itemsCountToInsert);
+        }
+
+        [Fact]
+        public virtual async Task Count_EmptyCollection_ReturnZero()
+        {
+            // Arrange
+            var guid = Guid.NewGuid().ToString();
+
+
+            // Act
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            countResult.Should().Be(0);
+        }
+
+        #endregion
+
+        #region DeleteAsync 
+
+        [Fact]
+        public virtual async Task Delete_WhereOneItem_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int intData = 0;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var deleteResult = await Collection.Query
+                .Where(w => w.IntData == intData)
+                .DeleteAsync();
+
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            deleteResult.Should().Be(1);
+            countResult.Should().Be(itemsCountToInsert - deleteResult);
+
+        }
+
+        [Fact]
+        public virtual async Task Delete_WhereAllItens_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            var guid = Guid.NewGuid().ToString();
+
+            CreateItems(itemsCountToInsert, guid);
+
+            // Act
+            var deleteResult = await Collection.Query
+                .Where(w => w.StringData == guid)
+                .DeleteAsync();
+
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            deleteResult.Should().Be(itemsCountToInsert);
+            countResult.Should().Be(itemsCountToInsert - deleteResult);
+        }
+
+        [Fact]
+        public virtual async Task Delete_WithoutAnyQuery_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var deleteResult = await Collection.Query
+                .DeleteAsync();
+
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            deleteResult.Should().Be(itemsCountToInsert);
+        }
+
+        public virtual async Task Delete_Skip_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToSkip = 2;
+
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var deleteResult = await Collection.Query
+                .Skip(itemsCountToSkip)
+                .DeleteAsync();
+
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            deleteResult.Should().Be(itemsCountToInsert - itemsCountToSkip);
+            countResult.Should().Be(itemsCountToInsert - deleteResult);
+        }
+
+        public virtual async Task Delete_Take_ReturnOk()
+        {
+            // Arrange
+            int itemsCountToInsert = 5;
+            int itemsCountToTake = 2;
+
+
+            CreateItems(itemsCountToInsert);
+
+            // Act
+            var deleteResult = await Collection.Query
+                .Take(itemsCountToTake)
+                .DeleteAsync();
+
+            var countResult = await Collection.Query
+                .CountAsync();
+
+            // Assert
+            deleteResult.Should().Be(itemsCountToTake);
+            countResult.Should().Be(itemsCountToInsert - deleteResult);
+        }
+
+        [Fact]
+        public virtual async Task Delete_EmptyCollection_ReturnZero()
+        {
+            // Arrange
+            var guid = Guid.NewGuid().ToString();
+
+
+            // Act
+            var deleteResult = await Collection.Query
+                .DeleteAsync();
+
+            // Assert
+            deleteResult.Should().Be(0);
+        }
+
+        #endregion
     }
 }
