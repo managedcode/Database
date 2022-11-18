@@ -1,9 +1,8 @@
 using ManagedCode.Database.Core;
-using Tenray.ZoneTree.Options;
 
 namespace ManagedCode.Database.ZoneTree;
 
-public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> where TItem : IItem<TId>
+public class ZoneTreeCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem> where TItem : IItem<TId>
 {
     private readonly ZoneTreeWrapper<TId, TItem> _zoneTree;
 
@@ -12,27 +11,28 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         _zoneTree = new ZoneTreeWrapper<TId, TItem>(options);
     }
 
-    public ICollectionQueryable<TItem> Query => new ZoneTreeCollectionQueryable<TId, TItem>(_zoneTree);
+    public override ICollectionQueryable<TItem> Query => new ZoneTreeCollectionQueryable<TId, TItem>(_zoneTree);
 
 
-    public void Dispose()
+    public override void Dispose()
     {
         _zoneTree.Dispose();
     }
 
-    public ValueTask DisposeAsync()
+    public override ValueTask DisposeAsync()
     {
         _zoneTree.Dispose();
         return ValueTask.CompletedTask;
     }
 
-    public Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Insert(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -44,13 +44,14 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         return Task.FromResult(i);
     }
 
-    public Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Update(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -62,19 +63,20 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         return Task.FromResult(i);
     }
 
-    public Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
+    protected override Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         _zoneTree.Delete(id);
         return Task.FromResult(true);
     }
 
-    public Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         _zoneTree.Delete(item.Id);
         return Task.FromResult(true);
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
+    protected override Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
+        CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var id in ids)
@@ -86,7 +88,8 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         return Task.FromResult(i);
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -98,19 +101,21 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         return Task.FromResult(i);
     }
 
-    public Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
         _zoneTree.DeleteAll();
         return Task.FromResult(true);
     }
 
-    public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
         _zoneTree.Upsert(item.Id, item);
         return Task.FromResult(item);
     }
 
-    public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var i = 0;
         foreach (var item in items)
@@ -122,12 +127,12 @@ public class ZoneTreeCollection<TId, TItem> : IDatabaseCollection<TId, TItem> wh
         return Task.FromResult(i);
     }
 
-    public Task<TItem?> GetAsync(TId id, CancellationToken cancellationToken = default)
+    protected override Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_zoneTree.Get(id));
     }
 
-    public Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_zoneTree.Count());
     }

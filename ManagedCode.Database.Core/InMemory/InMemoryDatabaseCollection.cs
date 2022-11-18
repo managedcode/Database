@@ -7,19 +7,19 @@ using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.Core.InMemory
 {
-    public class InMemoryDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TItem>
+    public class InMemoryDatabaseCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
         where TItem : IItem<TId> where TId : notnull
     {
         private readonly ConcurrentDictionary<TId, TItem> _storage = new();
 
-        public ICollectionQueryable<TItem> Query => new InMemoryCollectionQueryable<TId, TItem>(_storage);
+        public override ICollectionQueryable<TItem> Query => new InMemoryCollectionQueryable<TId, TItem>(_storage);
 
-        public void Dispose()
+        public override void Dispose()
         {
             _storage.Clear();
         }
 
-        public ValueTask DisposeAsync()
+        public override ValueTask DisposeAsync()
         {
             Dispose();
             return new ValueTask(Task.CompletedTask);
@@ -27,7 +27,7 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region Insert
 
-        public Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+        protected override Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
         {
             if (!_storage.TryGetValue(item.Id, out _))
             {
@@ -38,7 +38,8 @@ namespace ManagedCode.Database.Core.InMemory
             throw new DatabaseException("The specified entity already exists.");
         }
 
-        public Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+        protected override Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+            CancellationToken cancellationToken = default)
         {
             var count = 0;
 
@@ -58,13 +59,14 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region InsertOrUpdate
 
-        public Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+        protected override Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+            CancellationToken cancellationToken = default)
         {
             _storage[item.Id] = item;
             return Task.FromResult(item);
         }
 
-        public Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
+        protected override Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
             CancellationToken cancellationToken = default)
         {
             var count = 0;
@@ -82,7 +84,7 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region Update
 
-        public Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+        protected override Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
         {
             if (_storage.TryGetValue(item.Id, out _))
             {
@@ -93,7 +95,8 @@ namespace ManagedCode.Database.Core.InMemory
             throw new DatabaseException("Entity not found in collection.");
         }
 
-        public Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+        protected override Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+            CancellationToken cancellationToken = default)
         {
             var count = 0;
 
@@ -113,31 +116,33 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region Delete
 
-        public Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
+        protected override Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_storage.TryRemove(id, out _));
         }
 
-        public Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+        protected override Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_storage.TryRemove(item.Id, out _));
         }
 
-        public Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
+        protected override Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
+            CancellationToken cancellationToken = default)
         {
             var count = ids.Count(id => _storage.TryRemove(id, out _));
 
             return Task.FromResult(count);
         }
 
-        public Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+        protected override Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+            CancellationToken cancellationToken = default)
         {
             var count = items.Count(item => _storage.TryRemove(item.Id, out _));
 
             return Task.FromResult(count);
         }
 
-        public Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+        protected override Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
         {
             _storage.Clear();
             return Task.FromResult(_storage.Count == 0);
@@ -147,7 +152,7 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region Get
 
-        public Task<TItem> GetAsync(TId id, CancellationToken cancellationToken = default)
+        protected override Task<TItem> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
         {
             if (_storage.TryGetValue(id, out var item))
             {
@@ -162,7 +167,7 @@ namespace ManagedCode.Database.Core.InMemory
 
         #region Count
 
-        public Task<long> CountAsync(CancellationToken cancellationToken = default)
+        protected override Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult((long)_storage.Count);
         }

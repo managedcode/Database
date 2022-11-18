@@ -10,7 +10,7 @@ using Microsoft.Azure.Cosmos.Linq;
 
 namespace ManagedCode.Database.Cosmos;
 
-public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
+public class CosmosCollection<TItem> : BaseDatabaseCollection<string, TItem>
     where TItem : CosmosItem, IItem<string>, new()
 {
     private const int Capacity = 50;
@@ -26,7 +26,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         _useItemIdAsPartitionKey = options.UseItemIdAsPartitionKey;
     }
 
-    public ICollectionQueryable<TItem> Query
+    public override ICollectionQueryable<TItem> Query
     {
         get
         {
@@ -38,9 +38,18 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         }
     }
 
+    public override void Dispose()
+    {
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
+    }
+
     #region Get
 
-    public async Task<TItem?> GetAsync(string id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(string id, CancellationToken cancellationToken = default)
     {
         var query = _container.GetItemLinqQueryable<TItem>();
         return await Task.Run(() => query.FirstOrDefault(w => w.Id == id), cancellationToken);
@@ -50,7 +59,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
         return await _container.GetItemLinqQueryable<TItem>()
             .Where(SplitByType())
@@ -66,22 +75,14 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
 
     #region Insert
 
-    public void Dispose()
-    {
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        return new ValueTask(Task.CompletedTask);
-    }
-
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var result = await _container.CreateItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -100,13 +101,15 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
         var result = await _container.UpsertItemAsync(item, item.PartitionKey, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -125,13 +128,14 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var result = await _container.ReplaceItemAsync(item, item.Id, cancellationToken: cancellationToken);
         return result.Resource;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -150,7 +154,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(string id, CancellationToken cancellationToken = default)
     {
         if (_useItemIdAsPartitionKey)
         {
@@ -159,7 +163,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
             return deleteItemResult != null;
         }
 
-        var item = await GetAsync(id, cancellationToken);
+        var item = await GetInternalAsync(id, cancellationToken);
 
         if (item is null) return false;
 
@@ -168,7 +172,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         return result is not null;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var result =
             await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: cancellationToken);
@@ -176,14 +180,15 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         return result is not null;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<string> ids,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
         var batch = new List<Task>(Capacity);
         foreach (var item in ids)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            batch.Add(DeleteAsync(item, cancellationToken)
+            batch.Add(DeleteInternalAsync(item, cancellationToken)
                 .ContinueWith(task =>
                 {
                     if (task.Result) Interlocked.Increment(ref count);
@@ -207,7 +212,8 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
@@ -222,7 +228,7 @@ public class CosmosCollection<TItem> : IDatabaseCollection<string, TItem>
         return count;
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
         if (_splitByType)
         {

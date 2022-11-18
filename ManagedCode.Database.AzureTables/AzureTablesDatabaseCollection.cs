@@ -11,7 +11,7 @@ using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.AzureTables;
 
-public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId, TItem>
+public class AzureTablesDatabaseCollection<TItem> : BaseDatabaseCollection<TableId, TItem>
     where TItem : AzureTablesItem, new()
 {
     private readonly TableClient _tableClient;
@@ -21,16 +21,25 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
         _tableClient = tableClient;
     }
 
-    public ICollectionQueryable<TItem> Query => new AzureTablesCollectionQueryable<TItem>(_tableClient);
+    public override ICollectionQueryable<TItem> Query => new AzureTablesCollectionQueryable<TItem>(_tableClient);
+
+    public override void Dispose()
+    {
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        return new ValueTask(Task.CompletedTask);
+    }
 
     #region Get
 
-    public async Task<TItem?> GetAsync(TableId id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(TableId id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await ExceptionCatcher.ExecuteAsync(_tableClient.GetEntityAsync<TItem>(id.PartitionKey,
-                id.RowKey, cancellationToken: cancellationToken));
+            var response = await _tableClient.GetEntityAsync<TItem>(id.PartitionKey,
+                id.RowKey, cancellationToken: cancellationToken);
 
             return response.HasValue ? response.Value : null;
         }
@@ -44,7 +53,7 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
         var query = _tableClient.QueryAsync<TItem>(cancellationToken: cancellationToken);
         return await query.LongCountAsync(cancellationToken);
@@ -52,25 +61,17 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
 
     #endregion
 
-    public void Dispose()
-    {
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        return new ValueTask(Task.CompletedTask);
-    }
-
     #region Insert
 
-    public async Task<TItem?> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var response = await ExceptionCatcher.ExecuteAsync(_tableClient.AddEntityAsync(item, cancellationToken));
+        var response = await _tableClient.AddEntityAsync(item, cancellationToken);
 
         return response.IsError ? null : item;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
             TableTransactionActionType.Add, cancellationToken);
@@ -82,16 +83,17 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
 
     #region InsertOrUpdate
 
-    public async Task<TItem?> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
         var response =
-            await ExceptionCatcher.ExecuteAsync(
-                _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken));
+            await
+                _tableClient.UpsertEntityAsync(item, cancellationToken: cancellationToken);
 
         return response.IsError ? null : item;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
@@ -104,17 +106,18 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
 
     #region Update
 
-    public async Task<TItem?> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         if (item.ETag != ETag.All) item.ETag = ETag.All;
 
-        var response = await ExceptionCatcher.ExecuteAsync(_tableClient.UpdateEntityAsync(item, item.ETag,
-            cancellationToken: cancellationToken));
+        var response = await _tableClient.UpdateEntityAsync(item, item.ETag,
+            cancellationToken: cancellationToken);
 
         return response.IsError ? null : item;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
             TableTransactionActionType.UpdateMerge, cancellationToken);
@@ -126,7 +129,7 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TableId id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TableId id, CancellationToken cancellationToken = default)
     {
         var response = await _tableClient
             .DeleteEntityAsync(id.PartitionKey, id.RowKey, ETag.All, cancellationToken);
@@ -134,7 +137,7 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
         return response?.IsError is not true;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         var response = await _tableClient
             .DeleteEntityAsync(item.PartitionKey, item.RowKey, ETag.All, cancellationToken);
@@ -142,12 +145,14 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
         return response?.IsError is not true;
     }
 
-    public Task<int> DeleteAsync(IEnumerable<TableId> ids, CancellationToken cancellationToken = default)
+    protected override Task<int> DeleteInternalAsync(IEnumerable<TableId> ids,
+        CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
             TableTransactionActionType.Delete, cancellationToken);
@@ -155,7 +160,7 @@ public class AzureTablesDatabaseCollection<TItem> : IDatabaseCollection<TableId,
         return responses.Count(v => !v.IsError);
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
         var response = await _tableClient.DeleteAsync(cancellationToken);
 

@@ -9,7 +9,7 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TItem>
+public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId, TItem>
     where TItem : class, IItem<ObjectId>
 {
     private readonly IMongoCollection<TItem> _collection;
@@ -19,52 +19,52 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
         _collection = collection;
     }
 
-    public ICollectionQueryable<TItem> Query => new MongoDBCollectionQueryable<TItem>(_collection);
+    public override ICollectionQueryable<TItem> Query => new MongoDBCollectionQueryable<TItem>(_collection);
 
-    public void Dispose()
+    public override void Dispose()
     {
     }
 
-    public ValueTask DisposeAsync()
+    public override ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
     }
 
     #region Get
 
-    public async Task<TItem?> GetAsync(ObjectId id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
         var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: cancellationToken);
 
-        return await ExceptionCatcher.ExecuteAsync(cursor.FirstOrDefaultAsync(cancellationToken));
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
     #endregion
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
         var task = _collection.CountDocumentsAsync(f => true, new CountOptions(), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await task;
     }
 
     #endregion
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await ExceptionCatcher.ExecuteAsync(_collection.InsertOneAsync(item, new InsertOneOptions(),
-            cancellationToken));
+        await _collection.InsertOneAsync(item, new InsertOneOptions(), cancellationToken);
 
         return item;
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        await ExceptionCatcher.ExecuteAsync(_collection.InsertManyAsync(items, new InsertManyOptions(),
-            cancellationToken));
+        await _collection.InsertManyAsync(items, new InsertManyOptions(),
+            cancellationToken);
 
         return items.Count();
     }
@@ -73,25 +73,25 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
-        var task = _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
+        await _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
         {
             IsUpsert = true
         }, cancellationToken);
 
-        await ExceptionCatcher.ExecuteAsync(task);
-
         return item;
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
         foreach (var item in items)
         {
-            await InsertOrUpdateAsync(item, cancellationToken);
+            await InsertOrUpdateInternalAsync(item, cancellationToken);
             count++;
         }
 
@@ -102,12 +102,10 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var task = _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
+        var result = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
             cancellationToken: cancellationToken);
-
-        var result = await ExceptionCatcher.ExecuteAsync(task);
 
         if (result.ModifiedCount == 0)
         {
@@ -117,13 +115,14 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
         return item;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
 
         foreach (var item in items)
         {
-            await UpdateAsync(item, cancellationToken);
+            await UpdateInternalAsync(item, cancellationToken);
             count++;
         }
 
@@ -134,47 +133,45 @@ public class MongoDBDatabaseCollection<TItem> : IDatabaseCollection<ObjectId, TI
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(ObjectId id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
-        var task = _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == id, new FindOneAndDeleteOptions<TItem>(),
+        var item = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == id, new FindOneAndDeleteOptions<TItem>(),
             cancellationToken);
-
-        var item = await ExceptionCatcher.ExecuteAsync(task);
 
         return item is not null;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var task = _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == item.Id,
+        var result = await _collection.FindOneAndDeleteAsync<TItem>(w => w.Id == item.Id,
             new FindOneAndDeleteOptions<TItem>(), cancellationToken);
-
-        var result = await ExceptionCatcher.ExecuteAsync(task);
 
         return result is not null;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<ObjectId> ids, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<ObjectId> ids,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in ids)
-            if (await DeleteAsync(item, cancellationToken))
+            if (await DeleteInternalAsync(item, cancellationToken))
                 count++;
 
         return count;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         var count = 0;
         foreach (var item in items)
-            if (await DeleteAsync(item, cancellationToken))
+            if (await DeleteInternalAsync(item, cancellationToken))
                 count++;
 
         return count;
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
         var result = await _collection.DeleteManyAsync(w => true, cancellationToken);
         return result.DeletedCount > 0;

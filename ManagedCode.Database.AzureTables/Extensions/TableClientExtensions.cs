@@ -23,8 +23,7 @@ public static class TableClientExtensions
 
         foreach (var chunk in chunks)
         {
-            var response =
-                await ExceptionCatcher.ExecuteAsync(tableClient.SubmitTransactionAsync(chunk, cancellationToken));
+            var response = await tableClient.SubmitTransactionAsync(chunk, cancellationToken);
 
             var list = response?.Value.Select(i => i) ?? new List<Response>();
             responses.AddRange(list);

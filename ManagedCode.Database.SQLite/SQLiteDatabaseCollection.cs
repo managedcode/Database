@@ -8,7 +8,7 @@ using SQLite;
 
 namespace ManagedCode.Database.SQLite;
 
-public class SQLiteDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TItem>
+public class SQLiteDatabaseCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
     where TItem : class, IItem<TId>, new()
 {
     private readonly SQLiteConnection _database;
@@ -18,136 +18,126 @@ public class SQLiteDatabaseCollection<TId, TItem> : IDatabaseCollection<TId, TIt
         _database = database;
     }
 
-    public ICollectionQueryable<TItem> Query => new SQLiteCollectionQueryable<TId, TItem>(_database);
+    public override ICollectionQueryable<TItem> Query => new SQLiteCollectionQueryable<TId, TItem>(_database);
 
-    public ValueTask DisposeAsync()
+    public override ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
     }
 
     #region Get
 
-    public async Task<TItem?> GetAsync(TId id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _database.Find<TItem>(id));
+        return _database.Find<TItem>(id);
     }
 
     #endregion
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _database.Table<TItem>().LongCount(), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _database.Table<TItem>().LongCount(), cancellationToken);
     }
 
     #endregion
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
 
-        return ExceptionCatcher.Execute(() =>
-        {
-            _database.Insert(item);
-            return _database.Find<TItem>(item.Id);
-        });
+        _database.Insert(item);
+        return _database.Find<TItem>(item.Id);
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _database.InsertAll(items), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _database.InsertAll(items), cancellationToken);
     }
 
     #endregion
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
         await Task.Yield();
 
-        return ExceptionCatcher.Execute(() =>
-        {
-            _database.InsertOrReplace(item);
-            return _database.Find<TItem>(item.Id);
-        });
+        _database.InsertOrReplace(item);
+        return _database.Find<TItem>(item.Id);
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => items.Sum(item => _database.InsertOrReplace(item)), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => items.Sum(item => _database.InsertOrReplace(item)), cancellationToken);
     }
 
     #endregion
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
 
-        return ExceptionCatcher.Execute(() =>
+        var count = _database.Update(item);
+
+        if (count == 0)
         {
-            var count = _database.Update(item);
+            throw new DatabaseException("Entity not found in collection.");
+        }
 
-            if (count == 0)
-            {
-                throw new DatabaseException("Entity not found in collection.");
-            }
-
-            return _database.Find<TItem>(item.Id);
-        });
+        return _database.Find<TItem>(item.Id);
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _database.UpdateAll(items), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _database.UpdateAll(items), cancellationToken);
     }
 
     #endregion
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _database.Delete<TItem>(id) != 0);
+        return _database.Delete<TItem>(id) != 0;
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _database.Delete<TItem>(item) != 0);
+        return _database.Delete<TItem>(item) != 0;
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => ids.Sum(id => _database.Delete<TItem>(id)), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => ids.Sum(id => _database.Delete<TItem>(id)), cancellationToken);
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => items.Sum(item => _database.Delete<TItem>(item.Id)), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => items.Sum(item => _database.Delete<TItem>(item.Id)), cancellationToken);
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _database.DeleteAll<TItem>() != 0, cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _database.DeleteAll<TItem>() != 0, cancellationToken);
     }
 
     #endregion

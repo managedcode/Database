@@ -8,7 +8,7 @@ using ManagedCode.Database.Core.Exceptions;
 
 namespace ManagedCode.Database.LiteDB;
 
-public class LiteDBCollection<TId, TItem> : IDatabaseCollection<TId, TItem>
+public class LiteDBCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
     where TItem : LiteDBItem<TId>, IItem<TId>, new()
 {
     private readonly ILiteCollection<TItem> _collection;
@@ -18,131 +18,128 @@ public class LiteDBCollection<TId, TItem> : IDatabaseCollection<TId, TItem>
         _collection = collection;
     }
 
-    public ICollectionQueryable<TItem> Query => new LiteDBCollectionQueryable<TId, TItem>(_collection);
+    public override ICollectionQueryable<TItem> Query => new LiteDBCollectionQueryable<TId, TItem>(_collection);
 
-    public ValueTask DisposeAsync()
+    public override ValueTask DisposeAsync()
     {
         return new ValueTask(Task.CompletedTask);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
     }
 
     #region Get
 
-    public async Task<TItem?> GetAsync(TId id, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _collection.FindById(new BsonValue(id)));
+        return _collection.FindById(new BsonValue(id));
     }
 
     #endregion
 
     #region Count
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default)
+    protected override async Task<long> CountInternalAsync(CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _collection.Count(), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _collection.Count(), cancellationToken);
     }
 
     #endregion
 
     #region Insert
 
-    public async Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() =>
-        {
-            var bson = _collection.Insert(item);
-            return _collection.FindById(bson);
-        });
+
+        var bson = _collection.Insert(item);
+        return _collection.FindById(bson);
     }
 
-    public async Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _collection.InsertBulk(items), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _collection.InsertBulk(items), cancellationToken);
     }
 
     #endregion
 
     #region InsertOrUpdate
 
-    public async Task<TItem> InsertOrUpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() =>
+        return await Task.Run(() =>
         {
             _collection.Upsert(item);
             return _collection.FindById(new BsonValue(item.Id));
         }, cancellationToken);
-
-        return await ExceptionCatcher.ExecuteAsync(task);
     }
 
-    public async Task<int> InsertOrUpdateAsync(IEnumerable<TItem> items,
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _collection.Upsert(items), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => _collection.Upsert(items), cancellationToken);
     }
 
     #endregion
 
     #region Update
 
-    public async Task<TItem> UpdateAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        var isUpdated = ExceptionCatcher.Execute(() => _collection.Update(item));
+        var isUpdated = _collection.Update(item);
 
-        if (!isUpdated) throw new DatabaseException("Entity not found in collection.");
+        if (!isUpdated)
+        {
+            throw new DatabaseException("Entity not found in collection.");
+        }
 
         return _collection.FindById(new BsonValue(item.Id));
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _collection.Update(items));
+        return _collection.Update(items);
     }
 
     #endregion
 
     #region Delete
 
-    public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _collection.Delete(new BsonValue(id)));
+        return _collection.Delete(new BsonValue(id));
     }
 
-    public async Task<bool> DeleteAsync(TItem item, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return ExceptionCatcher.Execute(() => _collection.Delete(new BsonValue(item.Id)));
+        return _collection.Delete(new BsonValue(item.Id));
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TId> ids,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => ids.Count(id => _collection.Delete(new BsonValue(id))), cancellationToken);
-        return await ExceptionCatcher.ExecuteAsync(task);
+        return await Task.Run(() => ids.Count(id => _collection.Delete(new BsonValue(id))), cancellationToken);
     }
 
-    public async Task<int> DeleteAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
+        CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => items.Count(item => _collection.Delete(new BsonValue(item.Id))),
+        return await Task.Run(() => items.Count(item => _collection.Delete(new BsonValue(item.Id))),
             cancellationToken);
-
-        return await ExceptionCatcher.ExecuteAsync(task);
     }
 
-    public async Task<bool> DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        var task = Task.Run(() => _collection.DeleteAll(), cancellationToken);
-        var count = await ExceptionCatcher.ExecuteAsync(task);
+        var count = await Task.Run(() => _collection.DeleteAll(), cancellationToken);
         return count > 0;
     }
 
