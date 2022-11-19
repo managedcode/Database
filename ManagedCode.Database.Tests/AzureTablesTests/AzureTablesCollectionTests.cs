@@ -43,17 +43,17 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
         updatedItems.Should().Be(1);
     }
 
-/*    public override async Task UpdateItem_WhenItem_DoesntExists()
+    public override async Task UpdateItem_WhenItemDoesntExists()
     {
-        var baseMethod = () => base.UpdateItem_WhenItem_DoesntExists();
+        var baseMethod = () => base.UpdateItem_WhenItemDoesntExists();
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    public override async Task InsertItem_WhenItemExist()
+    public override async Task DeleteListOfItemsById()
     {
-        var baseMethod = () => base.InsertItem_WhenItemExist();
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }*/
+        var baseMethod = () => base.DeleteListOfItemsById();
+        await baseMethod.Should().ThrowExactlyAsync<NotSupportedException>();
+    }
 
     public override async Task InsertItems_WhenOneItemAlreadyExists()
     {
@@ -61,35 +61,15 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    public override async Task DeleteItemById_WhenItemDoesntExists()
-    {
-        var item = CreateNewItem();
-
-        var deleteAction = async () => await Collection.DeleteAsync(item.Id);
-
-        item.Should().NotBeNull();
-        await deleteAction.Should().ThrowExactlyAsync<Exception>();
-    }
-
-    public override async Task DeleteListOfItemsById_WhenItemsDontExist()
-    {
-        int itemsCount = 5;
-        List<TestAzureTablesItem> list = new();
-
-        for (var i = 0; i < itemsCount; i++)
-        {
-            list.Add(CreateNewItem());
-        }
-
-        var ids = list.Select(item => item.Id);
-
-        var deletedItemsAction = async () => await Collection.DeleteAsync(ids);
-
-        // await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
-    }
-
     public override async Task DeleteListOfItems_WhenItemsDontExist()
     {
+        var baseMethod = () => base.DeleteListOfItems_WhenItemsDontExist();
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+    }
+
+    public override async Task DeleteAll()
+    {
+        // Arrange
         int itemsCount = 5;
         List<TestAzureTablesItem> list = new();
 
@@ -98,9 +78,20 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
             list.Add(CreateNewItem());
         }
 
-        var deletedItemsAction = async () => await Collection.DeleteAsync(list);
+        await Collection.InsertAsync(list);
 
-        // await deletedItemsAction.Should().ThrowExactlyAsync<StorageException>();
-        list.Count.Should().Be(itemsCount);
+        // Act
+        var deletedItems = await Collection.DeleteCollectionAsync();
+        var countAction = async () => await Collection.CountAsync();
+
+        // Assert
+        deletedItems.Should().BeTrue();
+        await countAction.Should().ThrowExactlyAsync<DatabaseException>();
+    }
+
+    public override async Task DeleteAll_WhenNoItems()
+    {
+        var baseMethod = () => base.DeleteAll_WhenNoItems();
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
 }
