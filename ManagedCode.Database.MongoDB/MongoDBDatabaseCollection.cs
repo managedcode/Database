@@ -174,7 +174,7 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
         var result = await _collection.DeleteManyAsync(w => true, cancellationToken);
-        return result.DeletedCount > 0;
+        return await CountInternalAsync(cancellationToken) == 0;
     }
 
     #endregion
