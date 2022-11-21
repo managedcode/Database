@@ -139,8 +139,8 @@ public class LiteDBCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
 
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        var count = await Task.Run(() => _collection.DeleteAll(), cancellationToken);
-        return count > 0;
+        await Task.Run(() => _collection.DeleteAll(), cancellationToken);
+        return await CountInternalAsync(cancellationToken) == 0;
     }
 
     #endregion
