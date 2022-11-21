@@ -43,7 +43,7 @@ public class AzureTablesDatabaseCollection<TItem> : BaseDatabaseCollection<Table
 
             return response.HasValue ? response.Value : null;
         }
-        catch (DatabaseException e) when (e.InnerException is RequestFailedException { Status: 404 })
+        catch (RequestFailedException e) when (e.Status == 404) 
         {
             return null;
         }

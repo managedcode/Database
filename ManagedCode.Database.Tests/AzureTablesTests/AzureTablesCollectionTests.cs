@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Azure;
+using FluentAssertions;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
@@ -7,6 +8,7 @@ using ManagedCode.Database.Tests.TestContainers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
@@ -25,6 +27,12 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
     public override async Task DeleteListOfItemsById()
     {
         var baseMethod = () => base.DeleteListOfItemsById();
+        await baseMethod.Should().ThrowExactlyAsync<NotSupportedException>();
+    }
+
+    public override async Task DeleteListOfItemsById_WhenItemsDontExist()
+    {
+        var baseMethod = () => base.DeleteListOfItemsById_WhenItemsDontExist();
         await baseMethod.Should().ThrowExactlyAsync<NotSupportedException>();
     }
 
