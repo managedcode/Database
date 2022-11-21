@@ -1,10 +1,15 @@
 using System;
-using ManagedCode.Database.Cosmos;
+using ManagedCode.Database.LiteDB;
 
 namespace ManagedCode.Database.Tests.Common;
 
-public class TestCosmosItem : CosmosItem, IBaseItem<string>
+public class TestLiteDBItem : LiteDBItem<string>, IBaseItem<string>
 {
+    public TestLiteDBItem()
+    {
+        Id = Guid.NewGuid().ToString();
+    }
+
     public string StringData { get; set; }
     public int IntData { get; set; }
     public long LongData { get; set; }

@@ -4,7 +4,7 @@ using ManagedCode.Database.Tests.TestContainers;
 
 namespace ManagedCode.Database.Tests.SQLiteTests;
 
-public class SQLiteDatabaseTests : BaseDatabaseTests<int, SQLiteDbItem>
+public class SQLiteDatabaseTests : BaseDatabaseTests<int, TestSQLiteItem>
 {
     public SQLiteDatabaseTests() : base(new SQLiteTestContainer())
     {
