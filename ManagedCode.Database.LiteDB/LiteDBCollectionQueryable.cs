@@ -48,6 +48,15 @@ public class LiteDBCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TIt
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
+        var wherePredicates = Predicates
+            .Where(p => p.QueryType is QueryType.Where)
+            .ToList();
+
+        if (!wherePredicates.Any())
+        {
+            return await Task.Run(() => _collection.DeleteAll(), cancellationToken);
+        }
+
         var predicates = Predicates
             .Select(p => p.ExpressionBool)
             .Aggregate(CombineExpressions);

@@ -7,7 +7,7 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class LiteDBTestContainer : ITestContainer<string, TestLiteDbItem>
+public class LiteDBTestContainer : ITestContainer<string, TestLiteDBItem>
 {
     private readonly LiteDBDatabase _database;
     private readonly string _databasePath;
@@ -22,8 +22,8 @@ public class LiteDBTestContainer : ITestContainer<string, TestLiteDbItem>
         });
     }
 
-    public IDatabaseCollection<string, TestLiteDbItem> Collection =>
-        _database.GetCollection<string, TestLiteDbItem>();
+    public IDatabaseCollection<string, TestLiteDBItem> Collection =>
+        _database.GetCollection<string, TestLiteDBItem>();
 
     public string GenerateId()
     {

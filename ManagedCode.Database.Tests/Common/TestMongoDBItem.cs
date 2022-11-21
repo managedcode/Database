@@ -1,9 +1,10 @@
 using System;
-using ManagedCode.Database.Cosmos;
+using ManagedCode.Database.MongoDB;
+using MongoDB.Bson;
 
 namespace ManagedCode.Database.Tests.Common;
 
-public class TestCosmosItem : CosmosItem, IBaseItem<string>
+public class TestMongoDBItem : MongoDBItem, IBaseItem<ObjectId>
 {
     public string StringData { get; set; }
     public int IntData { get; set; }

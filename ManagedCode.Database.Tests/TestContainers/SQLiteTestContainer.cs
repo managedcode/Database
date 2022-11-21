@@ -8,7 +8,7 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class SQLiteTestContainer : ITestContainer<int, SQLiteDbItem>
+public class SQLiteTestContainer : ITestContainer<int, TestSQLiteItem>
 {
     private static volatile int _count;
     private readonly SQLiteDatabase _database;
@@ -23,8 +23,8 @@ public class SQLiteTestContainer : ITestContainer<int, SQLiteDbItem>
         });
     }
 
-    public IDatabaseCollection<int, SQLiteDbItem> Collection =>
-        _database.GetCollection<int, SQLiteDbItem>();
+    public IDatabaseCollection<int, TestSQLiteItem> Collection =>
+        _database.GetCollection<int, TestSQLiteItem>();
 
     public async Task InitializeAsync()
     {

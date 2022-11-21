@@ -1,10 +1,13 @@
 using System;
-using ManagedCode.Database.Cosmos;
+using SQLite;
 
 namespace ManagedCode.Database.Tests.Common;
 
-public class TestCosmosItem : CosmosItem, IBaseItem<string>
+public class TestSQLiteItem : IBaseItem<int>
 {
+    [PrimaryKey]
+    public int Id { get; set; }
+
     public string StringData { get; set; }
     public int IntData { get; set; }
     public long LongData { get; set; }

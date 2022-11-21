@@ -137,7 +137,9 @@ public class SQLiteDatabaseCollection<TId, TItem> : BaseDatabaseCollection<TId, 
 
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => _database.DeleteAll<TItem>() != 0, cancellationToken);
+        await Task.Run(() => _database.DeleteAll<TItem>(), cancellationToken);
+
+        return await CountInternalAsync(cancellationToken) == 0;
     }
 
     #endregion

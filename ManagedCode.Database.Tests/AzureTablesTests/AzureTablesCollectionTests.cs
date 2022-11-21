@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using ManagedCode.Database.AzureTables;
-using ManagedCode.Database.Core;
-using ManagedCode.Database.Core.Exceptions;
+﻿using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;

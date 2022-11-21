@@ -8,7 +8,7 @@ using MongoDB.Bson;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDbItem>
+public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
     private static int _port = 27017;
     private readonly MongoDBDatabase _dbDatabase;
@@ -29,8 +29,8 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDbItem>
             .Build();
     }
 
-    public IDatabaseCollection<ObjectId, TestMongoDbItem> Collection =>
-        _dbDatabase.GetCollection<TestMongoDbItem>();
+    public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
+        _dbDatabase.GetCollection<TestMongoDBItem>();
 
     public ObjectId GenerateId()
     {
