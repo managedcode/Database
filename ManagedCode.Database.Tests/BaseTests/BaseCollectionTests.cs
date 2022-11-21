@@ -87,31 +87,6 @@ namespace ManagedCode.Database.Tests.BaseTests
             insertedItems.Should().Be(list.Count);
         }
 
-        [Fact]
-        public virtual async Task InsertItems_WhenOneItemAlreadyExists()
-        {
-            // Arrange
-            var id = GenerateId();
-            int itemsCountToInsert = 4;
-            int expectedItemsCount = 5;
-
-            await Collection.InsertAsync(CreateNewItem(id));
-
-            List<TItem> list = new();
-
-            list.Add(CreateNewItem(id));
-            for (var i = 0; i < itemsCountToInsert; i++)
-            {
-                list.Add(CreateNewItem());
-            }
-
-            // Act
-            var insertedItems = await Collection.InsertAsync(list);
-
-            // Assert
-            list.Count.Should().Be(expectedItemsCount);
-            insertedItems.Should().Be(itemsCountToInsert);
-        }
 
         [Fact]
         public virtual async Task InsertOrUpdateOneItem()
@@ -208,40 +183,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             updatedItems.Should().Be(itemsCount);
-        }
-
-        [Fact]
-        public virtual async Task UpdateListOfItems_WhenOnlyOneItemUpdated() //TODO Fix test
-        {
-            // Arrange
-            int expectedItemsCount = 10;
-            int itemsCountToAdd = 9;
-            int expectedUpdatedItemsCount = 1;
-            List<TItem> list = new();
-
-            var id = GenerateId();
-
-            list.Add(CreateNewItem(id));
-            for (var i = 0; i < itemsCountToAdd; i++)
-            {
-                list.Add(CreateNewItem());
-            }
-
-            await Collection.InsertAsync(list);
-            list.Clear();
-
-            list.Add(CreateNewItem(id));
-            for (var i = 0; i < itemsCountToAdd; i++)
-            {
-                list.Add(CreateNewItem());
-            }
-
-            // Act
-            var updatedItems = await Collection.UpdateAsync(list);
-
-            // Assert
-            list.Count.Should().Be(expectedItemsCount);
-            updatedItems.Should().Be(expectedUpdatedItemsCount);
         }
 
         #endregion
@@ -362,65 +303,6 @@ namespace ManagedCode.Database.Tests.BaseTests
 
             // Assert
             deletedItems.Should().Be(expectedDeletedItemsCount);
-        }
-
-        [Fact]
-        public virtual async Task DeleteByQuery()
-        {
-            // Arrange
-            int itemsCount = 6;
-            int equalsQueryItemsCount = 1;
-            int orQueryItemsCount = 2;
-
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCount; i++)
-            {
-                list.Add(CreateNewItem());
-            }
-
-            await Collection.InsertOrUpdateAsync(list);
-
-            var queryParam1 = list[0].StringData;
-            var queryParam2 = list[1].StringData;
-            var queryParam3 = list[2].StringData;
-
-            // Act
-            var equalsQueryResult = await Collection.Query.Where(w => w.StringData == queryParam1).DeleteAsync();
-            var orQueryResult = await Collection.Query
-                .Where(w => w.StringData == queryParam2 || w.StringData == queryParam3).DeleteAsync();
-
-            // Assert
-            equalsQueryResult.Should().Be(equalsQueryItemsCount);
-            orQueryResult.Should().Be(orQueryItemsCount);
-        }
-
-        [Fact]
-        public virtual async Task DeleteByQuery_WhenItemsDontExist()
-        {
-            // Arrange
-            int itemsCount = 5;
-            List<TItem> list = new();
-
-            for (var i = 0; i < itemsCount; i++)
-            {
-                list.Add(CreateNewItem());
-            }
-
-            await Collection.InsertOrUpdateAsync(list);
-
-            var query1 = "test0";
-            var query2 = "test1";
-            var query3 = "test2";
-
-            // Act
-            var equalsQueryResult = await Collection.Query.Where(w => w.StringData == query1).DeleteAsync();
-            var orQueryResult = await Collection.Query.Where(w => w.StringData == query2 || w.StringData == query3)
-                .DeleteAsync();
-
-            // Assert
-            equalsQueryResult.Should().Be(0);
-            orQueryResult.Should().Be(0);
         }
 
         [Fact]

@@ -18,31 +18,6 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
     {
     }
 
-    public override async Task UpdateListOfItems_WhenOnlyOneItemUpdated()
-    {
-        List<TestAzureTablesItem> list = new();
-
-        var id = GenerateId();
-
-        list.Add(CreateNewItem(id));
-        for (var i = 0; i < 9; i++)
-        {
-            list.Add(CreateNewItem());
-        }
-
-        var items = await Collection.InsertAsync(list);
-        list.Clear();
-
-        list.Add(CreateNewItem(id));
-
-        //  ᓚᘏᗢ It throws exception if item with that Id doesn't exists
-        var updatedItems = await Collection.UpdateAsync(list);
-
-        list.Count.Should().Be(1);
-        items.Should().Be(10);
-        updatedItems.Should().Be(1);
-    }
-
 /*    public override async Task UpdateItem_WhenItem_DoesntExists()
     {
         var baseMethod = () => base.UpdateItem_WhenItem_DoesntExists();
@@ -54,12 +29,6 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
         var baseMethod = () => base.InsertItem_WhenItemExist();
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }*/
-
-    public override async Task InsertItems_WhenOneItemAlreadyExists()
-    {
-        var baseMethod = () => base.InsertItems_WhenOneItemAlreadyExists();
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
 
     public override async Task DeleteItemById_WhenItemDoesntExists()
     {
