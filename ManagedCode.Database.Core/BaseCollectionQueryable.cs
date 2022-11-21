@@ -43,12 +43,22 @@ namespace ManagedCode.Database.Core
 
         public IOrderedCollectionQueryable<TSource> OrderBy(Expression<Func<TSource, object>> keySelector)
         {
+            if (Predicates.Exists(i => i.QueryType is QueryType.OrderBy))
+            {
+                Predicates.RemoveAll(i => i.QueryType is QueryType.OrderBy);
+            }
+
             Predicates.Add(new QueryItem { QueryType = QueryType.OrderBy, ExpressionObject = keySelector });
             return this;
         }
 
         public IOrderedCollectionQueryable<TSource> OrderByDescending(Expression<Func<TSource, object>> keySelector)
         {
+            if (Predicates.Exists(i => i.QueryType is QueryType.OrderBy))
+            {
+                Predicates.RemoveAll(i => i.QueryType is QueryType.OrderBy);
+            }
+            
             Predicates.Add(new QueryItem { QueryType = QueryType.OrderByDescending, ExpressionObject = keySelector });
             return this;
         }
