@@ -37,42 +37,22 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         return item;
     }
 
-    protected async void CreateItems(int itemsCountToInsert, string guid)
+    protected async Task<List<TItem>> CreateAndInsertItemsAsync(int itemsCountToInsert, string guid = null,
+        int? intData = null)
     {
-        for (var i = 0; i < itemsCountToInsert; i++)
-        {
-            var item = CreateNewItem();
-            item.IntData = i;
-            item.StringData = guid;
-            await Collection.InsertAsync(item);
-        }
-    }
-
-    protected async void CreateItems(int itemsCountToInsert)
-    {
-        for (var i = 0; i < itemsCountToInsert; i++)
-        {
-            var item = CreateNewItem();
-            item.IntData = i;
-            await Collection.InsertAsync(item);
-        }
-    }
-
-    protected async Task<List<TItem>> CreateListItems_WithRandLongData(int itemsCountToInsert)
-    {
-        var rand = new Random();
-            
-        List<TItem> list = new();
+        List<TItem> createItems = new();
 
         for (var i = 0; i < itemsCountToInsert; i++)
         {
             var item = CreateNewItem();
-            item.IntData = i;
-            item.LongData = rand.Next(5);
-            list.Add(await Collection.InsertAsync(item));
+            item.IntData = intData ?? i;
+            item.StringData = guid ?? item.StringData;
+            createItems.Add(item);
         }
 
-        return list;
+        await Collection.InsertAsync(createItems);
+
+        return createItems;
     }
 
     #region WhereQuery
@@ -87,7 +67,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -111,7 +91,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -133,7 +113,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -162,7 +142,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -191,7 +171,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -220,7 +200,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -252,7 +232,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -279,7 +259,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -308,7 +288,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -337,7 +317,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -366,7 +346,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -399,7 +379,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -421,7 +401,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -448,7 +428,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -475,7 +455,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -502,7 +482,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -530,7 +510,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -558,7 +538,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -588,7 +568,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -611,7 +591,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -638,7 +618,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -666,7 +646,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -694,7 +674,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -728,7 +708,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 5;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -756,7 +736,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -782,7 +762,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -810,7 +790,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -831,7 +811,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -864,7 +844,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 5;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -892,7 +872,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -918,7 +898,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -948,7 +928,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -974,7 +954,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -992,7 +972,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
     }
-        
+
     #endregion
 
     #endregion
@@ -1008,7 +988,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1030,7 +1010,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1055,7 +1035,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1082,7 +1062,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1108,7 +1088,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1135,7 +1115,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1164,7 +1144,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1189,7 +1169,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1216,7 +1196,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1242,7 +1222,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1269,7 +1249,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1300,7 +1280,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1322,7 +1302,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1349,7 +1329,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1376,7 +1356,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1403,7 +1383,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1430,7 +1410,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1458,7 +1438,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1511,7 +1491,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1538,7 +1518,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1564,7 +1544,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1591,7 +1571,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1619,7 +1599,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1647,7 +1627,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1680,7 +1660,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1702,7 +1682,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1727,7 +1707,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1752,7 +1732,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1780,7 +1760,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1795,6 +1775,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
             .And
             .BeInDescendingOrder(o => o.IntData);
     }
+
     [Fact]
     public virtual async Task SkipOrderByDescendingTake_ReturnOk()
     {
@@ -1803,7 +1784,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1833,7 +1814,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1855,7 +1836,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1882,7 +1863,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1909,7 +1890,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1936,7 +1917,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1964,7 +1945,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -1992,7 +1973,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2045,7 +2026,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2072,7 +2053,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2098,7 +2079,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 3;
         int itemsCountToSkip = 2;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2125,7 +2106,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2154,7 +2135,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2181,7 +2162,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2211,13 +2192,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 10;
 
-        List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
+        var list = await CreateAndInsertItemsAsync(itemsCountToInsert, intData: 1);
 
-        await Collection.InsertAsync(list);
-
-        var listOredered = list
+        var ordered = list
             .OrderBy(o => o.IntData)
-            .ThenBy(o => o.LongData);
+            .ThenBy(o => o.LongData)
+            .ToList();
 
         // Act
         var itemsResult = await Collection.Query
@@ -2226,9 +2206,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
             .ToListAsync();
 
         // Assert
-        itemsResult.Should().HaveCount(itemsCountToInsert);
-        itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
-        itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
+        itemsResult.Should()
+            .HaveCount(itemsCountToInsert)
+            .And
+            .BeEquivalentTo(ordered, options => options.WithStrictOrdering()
+                .Including(x => x.IntData)
+                .Including(x => x.LongData));
     }
 
     [Fact]
@@ -2237,13 +2220,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 10;
 
-        List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
+        var list = await CreateAndInsertItemsAsync(itemsCountToInsert, intData: 1);
 
-        await Collection.InsertAsync(list);
-
-        var listOredered = list
+        var ordered = list
             .OrderBy(o => o.IntData)
-            .ThenByDescending(o => o.LongData);
+            .ThenByDescending(o => o.LongData)
+            .ToList();
 
         // Act
         var itemsResult = await Collection.Query
@@ -2252,24 +2234,26 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
             .ToListAsync();
 
         // Assert
-        itemsResult.Should().HaveCount(itemsCountToInsert);
-        itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
-        itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
+        itemsResult.Should()
+            .HaveCount(itemsCountToInsert)
+            .And
+            .BeEquivalentTo(ordered, options => options.WithStrictOrdering()
+                .Including(x => x.IntData)
+                .Including(x => x.LongData));
     }
 
     [Fact]
     public virtual async Task ThenBy_AfterOrderByDescending_ReturnOk()
     {
-        // Arrange/
+        // Arrange
         int itemsCountToInsert = 10;
 
-        List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
+        var list = await CreateAndInsertItemsAsync(itemsCountToInsert, intData: 1);
 
-        await Collection.InsertAsync(list);
-
-        var listOredered = list
+        var ordered = list
             .OrderByDescending(o => o.IntData)
-            .ThenBy(o => o.LongData);
+            .ThenBy(o => o.LongData)
+            .ToList();
 
         // Act
         var itemsResult = await Collection.Query
@@ -2278,9 +2262,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
             .ToListAsync();
 
         // Assert
-        itemsResult.Should().HaveCount(itemsCountToInsert);
-        itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
-        itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
+        itemsResult.Should()
+            .HaveCount(itemsCountToInsert)
+            .And
+            .BeEquivalentTo(ordered, options => options.WithStrictOrdering()
+                .Including(x => x.IntData)
+                .Including(x => x.LongData));
     }
 
     [Fact]
@@ -2289,13 +2276,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 10;
 
-        List<TItem> list = await CreateListItems_WithRandLongData(itemsCountToInsert);
+        var list = await CreateAndInsertItemsAsync(itemsCountToInsert, intData: 1);
 
-        await Collection.InsertAsync(list);
-
-        var listOredered = list
+        var ordered = list
             .OrderByDescending(o => o.IntData)
-            .ThenByDescending(o => o.LongData);
+            .ThenByDescending(o => o.LongData)
+            .ToList();
 
         // Act
         var itemsResult = await Collection.Query
@@ -2304,9 +2290,12 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
             .ToListAsync();
 
         // Assert
-        itemsResult.Should().HaveCount(itemsCountToInsert);
-        itemsResult.First().IntData.Should().Be(listOredered.First().IntData);
-        itemsResult.First().LongData.Should().Be(listOredered.First().LongData);
+        itemsResult.Should()
+            .HaveCount(itemsCountToInsert)
+            .And
+            .BeEquivalentTo(ordered, options => options.WithStrictOrdering()
+                .Including(x => x.IntData)
+                .Including(x => x.LongData));
     }
 
     #endregion
@@ -2322,7 +2311,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2340,7 +2329,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 1;
 
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2359,7 +2348,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 1;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2381,7 +2370,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2402,7 +2391,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2425,7 +2414,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         var guid = Guid.NewGuid().ToString();
         var unfaithfulGuid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2444,7 +2433,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 1;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2464,7 +2453,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 1;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = () => Collection.Query
@@ -2484,7 +2473,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 1;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2504,7 +2493,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = itemsCountToInsert + 3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2572,7 +2561,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToTake = -3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2592,7 +2581,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int itemsCountToSkip = -3;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2607,7 +2596,8 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
     #endregion
 
-    #region FirstOrDefaultAsync 
+    #region FirstOrDefaultAsync
+
     [Fact]
     public virtual async Task FirstOrDefault_Skip_ReturnOk()
     {
@@ -2617,7 +2607,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2636,7 +2626,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int intData = 0;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2655,7 +2645,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var itemsResult = await Collection.Query
@@ -2682,7 +2672,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
     #endregion
 
-    #region CountAsync  
+    #region CountAsync
 
     [Fact]
     public virtual async Task Count_Skip_ReturnOk()
@@ -2693,7 +2683,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var countResult = await Collection.Query
@@ -2714,7 +2704,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var countResult = await Collection.Query
@@ -2732,7 +2722,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 5;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var countResult = await Collection.Query
@@ -2759,7 +2749,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
     #endregion
 
-    #region DeleteAsync 
+    #region DeleteAsync
 
     [Fact]
     public virtual async Task Delete_WhereOneItem_ReturnOk()
@@ -2768,7 +2758,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToInsert = 5;
         int intData = 0;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var deleteResult = await Collection.Query
@@ -2781,7 +2771,6 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Assert
         deleteResult.Should().Be(1);
         countResult.Should().Be(itemsCountToInsert - deleteResult);
-
     }
 
     [Fact]
@@ -2792,7 +2781,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
         var guid = Guid.NewGuid().ToString();
 
-        CreateItems(itemsCountToInsert, guid);
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
 
         // Act
         var deleteResult = await Collection.Query
@@ -2813,7 +2802,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         // Arrange
         int itemsCountToInsert = 5;
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var deleteResult = await Collection.Query
@@ -2833,7 +2822,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToSkip = 2;
 
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var deleteResult = await Collection.Query
@@ -2855,7 +2844,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
         int itemsCountToTake = 2;
 
 
-        CreateItems(itemsCountToInsert);
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
 
         // Act
         var deleteResult = await Collection.Query
