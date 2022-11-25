@@ -105,7 +105,7 @@ public class LiteDBCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
         CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-        return _collection.Update(items);
+        return await Task.Run(() => _collection.Update(items), cancellationToken);
     }
 
     #endregion

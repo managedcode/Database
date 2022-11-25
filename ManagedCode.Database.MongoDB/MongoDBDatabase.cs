@@ -40,7 +40,7 @@ public class MongoDBDatabase : BaseDatabase<IMongoDatabase>
     {
     }
 
-    public MongoDBDatabaseCollection<TItem> GetCollection<TItem>() where TItem : class, IItem<ObjectId>, new()
+    public MongoDBCollection<TItem> GetCollection<TItem>() where TItem : MongoDBItem, new()
     {
         if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
@@ -48,7 +48,7 @@ public class MongoDBDatabase : BaseDatabase<IMongoDatabase>
             ? typeof(TItem).Name.Pluralize()
             : _dbOptions.CollectionName;
 
-        return new MongoDBDatabaseCollection<TItem>(
+        return new MongoDBCollection<TItem>(
             NativeClient.GetCollection<TItem>(collectionName, new MongoCollectionSettings()));
     }
 }
