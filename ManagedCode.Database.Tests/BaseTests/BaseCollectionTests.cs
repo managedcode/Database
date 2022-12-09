@@ -328,16 +328,13 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
     }
 
     [Fact]
-    public virtual async Task DeleteAll_WhenNoItems()
+    public virtual async Task DeleteCollectionAsync()
     {
-        // Arrange & Act
-        var deletedItems = await Collection.DeleteCollectionAsync();
-
-        var count = await Collection.CountAsync();
+        // Act
+        var isDeleted = await Collection.DeleteCollectionAsync();
 
         // Assert
-        deletedItems.Should().BeTrue();
-        count.Should().Be(0);
+        isDeleted.Should().BeTrue();
     }
 
     #endregion

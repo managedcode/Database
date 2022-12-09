@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,12 +10,12 @@ using MongoDB.Driver;
 
 namespace ManagedCode.Database.MongoDB;
 
-public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId, TItem>
-    where TItem : class, IItem<ObjectId>
+public class MongoDBCollection<TItem> : BaseDatabaseCollection<ObjectId, TItem>
+    where TItem : MongoDBItem
 {
     private readonly IMongoCollection<TItem> _collection;
 
-    public MongoDBDatabaseCollection(IMongoCollection<TItem> collection)
+    public MongoDBCollection(IMongoCollection<TItem> collection)
     {
         _collection = collection;
     }
@@ -63,10 +64,11 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
     protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        await _collection.InsertManyAsync(items, new InsertManyOptions(),
-            cancellationToken);
+        var models = items.Select(i => new InsertOneModel<TItem>(i));
 
-        return items.Count();
+        var result = await _collection.BulkWriteAsync(models, new BulkWriteOptions(), cancellationToken);
+
+        return (int) result.InsertedCount;
     }
 
     #endregion
@@ -81,21 +83,18 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
             IsUpsert = true
         }, cancellationToken);
 
-        return item;
+        return (await GetInternalAsync(item.Id, cancellationToken))!;
     }
 
     protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var count = 0;
+        var models = items.Select(item => new ReplaceOneModel<TItem>(Builders<TItem>.Filter.Eq(nameof(item.Id), item.Id), item) {IsUpsert = true})
+            .ToList();
 
-        foreach (var item in items)
-        {
-            await InsertOrUpdateInternalAsync(item, cancellationToken);
-            count++;
-        }
+        var result = await _collection.BulkWriteAsync(models, new BulkWriteOptions(), cancellationToken);
 
-        return count;
+        return (int) Math.Max(result.Upserts.Count, result.ModifiedCount);
     }
 
     #endregion
@@ -104,7 +103,7 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
 
     protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var result = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq("_id", item.Id), item,
+        var result = await _collection.ReplaceOneAsync(Builders<TItem>.Filter.Eq(nameof(item.Id), item.Id), item,
             cancellationToken: cancellationToken);
 
         if (result.ModifiedCount == 0)
@@ -118,15 +117,11 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
     protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var count = 0;
+        var models = items.Select(item => new ReplaceOneModel<TItem>(Builders<TItem>.Filter.Eq(nameof(item.Id), item.Id), item)).ToList();
 
-        foreach (var item in items)
-        {
-            await UpdateInternalAsync(item, cancellationToken);
-            count++;
-        }
+        var result = await _collection.BulkWriteAsync(models, new BulkWriteOptions(), cancellationToken);
 
-        return count;
+        return (int) result.MatchedCount;
     }
 
     #endregion
@@ -152,29 +147,30 @@ public class MongoDBDatabaseCollection<TItem> : BaseDatabaseCollection<ObjectId,
     protected override async Task<int> DeleteInternalAsync(IEnumerable<ObjectId> ids,
         CancellationToken cancellationToken = default)
     {
-        var count = 0;
-        foreach (var item in ids)
-            if (await DeleteInternalAsync(item, cancellationToken))
-                count++;
+        var models = ids
+            .Select(id => new DeleteOneModel<TItem>(Builders<TItem>.Filter.Eq(nameof(MongoDBItem.Id), id)));
 
-        return count;
+        var result = await _collection.BulkWriteAsync(models, new BulkWriteOptions(), cancellationToken);
+
+        return (int) result.DeletedCount;
     }
 
     protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        var count = 0;
-        foreach (var item in items)
-            if (await DeleteInternalAsync(item, cancellationToken))
-                count++;
+        var models = items
+            .Select(item => new DeleteOneModel<TItem>(Builders<TItem>.Filter.Eq(nameof(item.Id), item.Id)));
 
-        return count;
+        var result = await _collection.BulkWriteAsync(models, new BulkWriteOptions(), cancellationToken);
+
+        return (int) result.DeletedCount;
     }
 
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteManyAsync(w => true, cancellationToken);
-        return result.DeletedCount > 0;
+        await _collection.DeleteManyAsync(w => true, cancellationToken);
+
+        return await CountInternalAsync(cancellationToken) == 0;
     }
 
     #endregion

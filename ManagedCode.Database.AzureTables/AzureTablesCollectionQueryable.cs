@@ -79,9 +79,18 @@ public class AzureTablesCollectionQueryable<TItem> : BaseCollectionQueryable<TIt
         return enumerable;
     }
 
-    private static string ConvertPredicatesToFilter(IEnumerable<QueryItem> predicates)
+    private static string? ConvertPredicatesToFilter(IEnumerable<QueryItem> predicates)
     {
-        var filter = predicates
+        var wherePredicates = predicates
+            .Where(p => p.QueryType is QueryType.Where)
+            .ToList();
+
+        if (!wherePredicates.Any())
+        {
+            return null;
+        }
+
+        var filter = wherePredicates
             .Where(p => p.QueryType is QueryType.Where)
             .Select(p => TableClient.CreateQueryFilter(p.ExpressionBool))
             .Aggregate((a, b) => a + " and " + b);
