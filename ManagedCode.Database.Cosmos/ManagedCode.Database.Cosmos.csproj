@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
+        <LangVersion>11</LangVersion>
+        <IsPackable>True</IsPackable>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <LangVersion>10</LangVersion>
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <Nullable>enable</Nullable>
@@ -11,10 +12,10 @@
 
     <!--NuGet-->
     <PropertyGroup>
-        <Title>ManagedCode.Repository.CosmosDB</Title>
+        <Title>ManagedCode.Repository.Cosmos</Title>
         <PackageId>ManagedCode.Database.Cosmos</PackageId>
-        <Description>Repository for CosmosDB</Description>
-        <PackageTags>managedcode, repository, CosmosDB</PackageTags>
+        <Description>Repository for Cosmos DB</Description>
+        <PackageTags>managedcode, repository, Cosmos</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.30.0"/>
     </ItemGroup>
 

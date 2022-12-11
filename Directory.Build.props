@@ -1,28 +1,37 @@
 <Project>
     <!--NuGet-->
     <PropertyGroup>
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <Authors>ManagedCode</Authors>
         <Copyright>Copyright © 2021-$([System.DateTime]::Now.ToString(`yyyy`)) ManagedCode SAS</Copyright>
-        <RepositoryUrl>https://github.com/managed-code-hub/Repository</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/managed-code-hub/Repository</PackageProjectUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <RepositoryType>Github</RepositoryType>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <PackageIcon>logo.png</PackageIcon>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Product>Managed Code - Repository</Product>
-        <Version>1.0.18</Version>
-        <PackageVersion>1.0.18</PackageVersion>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <RepositoryUrl>https://github.com/managedcode/Database</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/managedcode/Database</PackageProjectUrl>
+        <Product>Managed Code - Database</Product>
+        <Version>2.0.1</Version>
+        <PackageVersion>2.0.1</PackageVersion>
+
     </PropertyGroup>
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
-    <PropertyGroup>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    </PropertyGroup>
     <ItemGroup>
-        <None Include="$(SolutionDir)\logo.png" Pack="true" Visible="false" PackagePath=""/>
+        <None Include="$(SolutionDir)\logo.png" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(SolutionDir)\README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 </Project>
