@@ -14,10 +14,10 @@
 
     <!--NuGet-->
     <PropertyGroup>
-        <Title>ManagedCode.Repository.AzureTable</Title>
+        <Title>ManagedCode.Repository.AzureTables</Title>
         <PackageId>ManagedCode.Database.AzureTables</PackageId>
-        <Description>Repository for AzureTable</Description>
-        <PackageTags>managedcode, repository, AzureTable</PackageTags>
+        <Description>Repository for AzureTables</Description>
+        <PackageTags>managedcode, repository, AzureTables</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
