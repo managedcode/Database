@@ -8,15 +8,37 @@
 | Version | Package | Description |
 | ------- | ------- | ----------- |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.Core.svg)](https://www.nuget.org/packages/ManagedCode.Database.Core) | [ManagedCode.Database.Core](https://www.nuget.org/packages/ManagedCode.Database.Core) | Core |
-|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.AzureTable.svg)](https://www.nuget.org/packages/ManagedCode.Database.AzureTable) | [ManagedCode.Database.AzureTable](https://www.nuget.org/packages/ManagedCode.Database.AzureTable) | AzureTable |
-|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.CosmosDB.svg)](https://www.nuget.org/packages/ManagedCode.Database.CosmosDB) | [ManagedCode.Database.CosmosDB](https://www.nuget.org/packages/ManagedCode.Database.CosmosDB) | CosmosDB |
+|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.AzureTables.svg)](https://www.nuget.org/packages/ManagedCode.Database.AzureTables) | [ManagedCode.Database.AzureTables](https://www.nuget.org/packages/ManagedCode.Database.AzureTable) | AzureTable |
+|[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.CosmosDB.svg)](https://www.nuget.org/packages/ManagedCode.Database.Cosmos) | [ManagedCode.Database.Cosmos](https://www.nuget.org/packages/ManagedCode.Database.Cosmos) | Cosmos DB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.LiteDB.svg)](https://www.nuget.org/packages/ManagedCode.Database.LiteDB) | [ManagedCode.Database.LiteDB](https://www.nuget.org/packages/ManagedCode.Database.LiteDB) | LiteDB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.MongoDB.svg)](https://www.nuget.org/packages/ManagedCode.Database.MongoDB) | [ManagedCode.Database.MongoDB](https://www.nuget.org/packages/ManagedCode.Database.MongoDB) | MongoDB |
 |[![NuGet Package](https://img.shields.io/nuget/v/ManagedCode.Database.SQLite.svg)](https://www.nuget.org/packages/ManagedCode.Database.SQLite) | [ManagedCode.Database.SQLite](https://www.nuget.org/packages/ManagedCode.Database.SQLite) | SQLite |
+---
+
+## Introduction
+This library provides a unified interface for working with a variety of different document-oriented NoSQL databases. 
+With this library, you can easily switch between different databases without having to change your code,
+making it easy to experiment with different options and find the best solution for your needs.
+
+## Motivation
+Document-oriented NoSQL databases are a popular choice for many applications because of their flexibility and ease of use. 
+However, each database has its own unique syntax and features, making it difficult to switch between them. 
+This library aims to solve this problem by providing a consistent interface for working with multiple document-oriented NoSQL databases.
+
+## Features
+- Provides a single, unified interface for working with multiple document-oriented NoSQL databases.
+- Allows you to easily switch between different databases without having to change your code.
+- Makes it easy to experiment with different options and find the best solution for your needs.
+
+## Usage
+
+To use the library, simply import it and initialize a client for the database you want to use. 
 
 
+## Contributing
 
-
+We welcome contributions to this project. If you have an idea for a new feature or improvement, please open an issue to discuss it. 
+If you want to submit a pull request, please make sure to follow the contribution guidelines and include tests for your changes.
 
 ---
 # OUTDATED--
