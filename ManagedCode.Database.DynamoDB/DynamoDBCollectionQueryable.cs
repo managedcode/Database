@@ -24,9 +24,15 @@ namespace ManagedCode.Database.DynamoDB
 
         public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
         {
-           await Task.Yield();
+            var conditions = new List<ScanCondition>();
 
-            foreach (var item in ApplyPredicates(Predicates, query))
+            var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+
+            IEnumerable<TItem> items = from docs in allDocs select docs;
+
+            await Task.Yield();
+
+            foreach (var item in ApplyPredicates(Predicates, items))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -34,30 +40,52 @@ namespace ManagedCode.Database.DynamoDB
             }
         }
 
-        public override Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+        public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
-        }
-
-        public override Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<int> DeleteAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async IEnumerable<TItem> ApplyPredicates(List<QueryItem> predicates, IEnumerable<TItem>)
-        {
-
             var conditions = new List<ScanCondition>();
 
             var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
 
-            IEnumerable<TItem> query = from docs in allDocs select docs;
+            IEnumerable<TItem> items = from docs in allDocs select docs;
 
+            var query = ApplyPredicates(Predicates, items);
+
+            return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
+
+        }
+
+        public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
+        {
+            var conditions = new List<ScanCondition>();
+
+            var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+
+            IEnumerable<TItem> items = from docs in allDocs select docs;
+
+            var query = ApplyPredicates(Predicates, items);
+
+            return await Task.Run(() => query.LongCount(), cancellationToken);
+        }
+
+        public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
+        {
+            var conditions = new List<ScanCondition>();
+
+            var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+
+            IEnumerable<TItem> items = from docs in allDocs select docs;
+
+            var ids = ApplyPredicates(Predicates, items)
+                            .Select(d => d.Id);
+
+
+            var result = _dynamoDBContext.DeleteAsync(ids, cancellationToken); //TODO check count
+
+            return Convert.ToInt32(ids.Count());
+        }
+
+        private IEnumerable<TItem> ApplyPredicates(List<QueryItem> predicates, IEnumerable<TItem> query)
+        {
             foreach (var predicate in predicates)
                 query = predicate.QueryType switch
                 {
@@ -73,14 +101,6 @@ namespace ManagedCode.Database.DynamoDB
                 };
 
             return query;
-        }
-
-        private async IEnumerable<TItem> GetItemsAsync()
-        {
-            
-
-            return query;
-
         }
     }
 }
