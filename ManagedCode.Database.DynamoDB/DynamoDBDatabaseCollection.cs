@@ -25,9 +25,7 @@ namespace ManagedCode.Database.DynamoDB
             _dynamoDBContext = dynamoDBContext;
         }
 
-        public override ICollectionQueryable<TItem> Query => throw new NotImplementedException();
-
-        //public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
+        public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
 
         public override void Dispose()
         {
