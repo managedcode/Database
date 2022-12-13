@@ -18,11 +18,11 @@ jobs:
       - name: azuright
         uses: potatoqualitee/azuright@v1.1
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
         
         # run build and test           
       - name: Restore dependencies
@@ -35,7 +35,7 @@ jobs:
       - name: coverlet
         uses: b3b00/coverlet-action@1.1.9
         with:
-          testProject: 'ManagedCode.Repository.Tests/ManagedCode.Repository.Tests.csproj'
+          testProject: 'ManagedCode.Database.Tests/ManagedCode.Database.Tests.csproj'
           output: 'lcov.info'
           outputFormat: 'lcov'
           excludes: '[program]*,[test]test.*'

@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.Tests.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B34993FC-20CB-4E46-86D7-8B8A30B3FABE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFramework", "EntityFramework", "{DCB5D3F8-1632-4C2E-9A17-344BF9A3ECB3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Databases", "Databases", "{9D86DFE5-1381-4621-8AC4-DC502CE5F43B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCode.Database.ZoneTree", "ManagedCode.Database.ZoneTree\ManagedCode.Database.ZoneTree.csproj", "{8F382CD4-7E0A-41E1-BB91-96E58F3F166C}"
