@@ -16,9 +16,13 @@ public class LiteDBDatabase : BaseDatabase<LiteDatabase>
         _options = options;
     }
 
-    public override Task DeleteAsync(CancellationToken token = default)
+    public override async Task DeleteAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        await DisposeAsyncInternal();
+
+        var allCollections = NativeClient.GetCollectionNames();
+        foreach(var collection in allCollections)
+            NativeClient.DropCollection(collection);
     }
 
 

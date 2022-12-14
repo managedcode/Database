@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ZoneTree" Version="1.5.7" />
+        <PackageReference Include="ZoneTree" Version="1.5.8" />
     </ItemGroup>
 
 </Project>
