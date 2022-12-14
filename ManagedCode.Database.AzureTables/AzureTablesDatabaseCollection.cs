@@ -97,7 +97,7 @@ public class AzureTablesDatabaseCollection<TItem> : BaseDatabaseCollection<Table
         CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
-            TableTransactionActionType.UpsertMerge, cancellationToken);
+            TableTransactionActionType.UpsertReplace, cancellationToken);
 
         return responses.Count(v => !v.IsError);
     }
@@ -120,7 +120,7 @@ public class AzureTablesDatabaseCollection<TItem> : BaseDatabaseCollection<Table
         CancellationToken cancellationToken = default)
     {
         var responses = await _tableClient.SubmitTransactionByChunksAsync(items,
-            TableTransactionActionType.UpdateMerge, cancellationToken);
+            TableTransactionActionType.UpsertReplace, cancellationToken);
 
         return responses.Count(v => !v.IsError);
     }

@@ -18,6 +18,33 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
     {
     }
 
+    public override async Task InsertOrUpdateListOfItems()
+    {
+        // Arrange
+        int itemsCount = 5;
+        List<TestAzureTablesItem> list = new();
+
+        for (var i = 0; i < itemsCount; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        var itemsInsert = await Collection.InsertOrUpdateAsync(list);
+
+        foreach (var item in list)
+        {
+            item.StringData = Guid.NewGuid().ToString();
+        }
+
+        // Act
+        var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
+        
+        // Assert
+        itemsUpdate.Should().Be(itemsCount);
+        itemsInsert.Should().Be(itemsCount);
+        list.Count.Should().Be(itemsCount);
+    }
+
     public override async Task UpdateItem_WhenItemDoesntExists()
     {
         var baseMethod = () => base.UpdateItem_WhenItemDoesntExists();
