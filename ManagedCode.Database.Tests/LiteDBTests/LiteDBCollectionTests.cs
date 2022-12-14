@@ -37,7 +37,6 @@ public class LiteDBCollectionTests : BaseCollectionTests<string, TestLiteDBItem>
 
         // Act
         var itemsUpdate = await Collection.InsertOrUpdateAsync(list);
-        //TODO: LiteDB must be 100, but result 0
 
         // Assert
         itemsUpdate.Should().Be(updatedItemsCount);
