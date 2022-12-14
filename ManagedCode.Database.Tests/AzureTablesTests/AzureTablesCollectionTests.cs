@@ -45,12 +45,6 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
         list.Count.Should().Be(itemsCount);
     }
 
-    public override async Task UpdateItem_WhenItemDoesntExists()
-    {
-        var baseMethod = () => base.UpdateItem_WhenItemDoesntExists();
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
-
     public override async Task DeleteListOfItemsById()
     {
         var baseMethod = () => base.DeleteListOfItemsById();
