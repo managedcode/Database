@@ -33,4 +33,82 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
             .Should()
             .ThrowAsync<ArgumentNullException>();   
     }
+
+    public override async Task OrderByDescending_TakeNull_ReturnException()
+    {
+        // Arrange
+        int itemsCountToInsert = 1;
+
+        var guid = Guid.NewGuid().ToString();
+        var unfaithfulGuid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = () => Collection.Query
+            .OrderByDescending(null)
+            .ToListAsync();
+
+        // Assert
+        await itemsResult
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    public override async Task ThenBy_TakeNull_ReturnException()
+    {
+        // Arrange
+        int itemsCountToInsert = 1;
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
+
+        // Act
+        var itemsResult = () => Collection.Query
+            .OrderBy(o => o.StringData)
+            .ThenBy(null)
+            .ToListAsync();
+
+        // Assert
+        await itemsResult
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    public override async Task ThenByDescending_TakeNull_ReturnException()
+    {
+        // Arrange
+        int itemsCountToInsert = 1;
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
+
+        // Act
+        var itemsResult = () => Collection.Query
+            .OrderBy(o => o.StringData)
+            .ThenByDescending(null)
+            .ToListAsync();
+
+        // Assert
+        await itemsResult
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
+
+    public override async Task Where_TakeNull_ReturnException()
+    {
+        // Arrange
+        int itemsCountToInsert = 1;
+
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert);
+
+        // Act
+        var itemsResult = () => Collection.Query
+            .Where(null)
+            .ToListAsync();
+
+        // Assert
+        await itemsResult
+            .Should()
+            .ThrowAsync<ArgumentNullException>();
+    }
 }
