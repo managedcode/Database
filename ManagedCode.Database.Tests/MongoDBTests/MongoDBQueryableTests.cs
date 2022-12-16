@@ -5,6 +5,7 @@ using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
@@ -110,5 +111,20 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
         await itemsResult
             .Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    public override async Task Skip_NegativeNumber_ReturnZero()
+    {
+        // In mongoDb using negative numbers in skip is not allowed
+        var baseMethod = () => base.Skip_NegativeNumber_ReturnZero();
+
+        await baseMethod.Should().ThrowExactlyAsync<MongoCommandException>();
+    }
+
+    public override async Task Take_NegativeNumber_ReturnZero()
+    {
+        var baseMethod = () => base.Take_NegativeNumber_ReturnZero();
+
+        await baseMethod.Should().ThrowExactlyAsync<MongoCommandException>();
     }
 }
