@@ -513,4 +513,185 @@ public class LiteDBQueryableTests : BaseQueryableTests<string, TestLiteDBItem>
 
         await baseMethod.Should().ThrowExactlyAsync<ArgumentException>("ORDER BY already defined in this query builder");
     }
+
+    public override async Task ThenBy_AfterOrderByDescending_ReturnOk()
+    {
+        var baseMethod = () => base.ThenBy_AfterOrderBy_ReturnOk();
+
+        await baseMethod.Should().ThrowExactlyAsync<ArgumentException>("ORDER BY already defined in this query builder");
+    }
+
+    public override async Task ThenByDescending_AfterOrderBy_ReturnOk()
+    {
+        var baseMethod = () => base.ThenBy_AfterOrderBy_ReturnOk();
+
+        await baseMethod.Should().ThrowExactlyAsync<ArgumentException>("ORDER BY already defined in this query builder");
+
+    }
+
+    public override async Task WhereOrderByDescendingTakeSkip_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .OrderByDescending(o => o.IntData)
+            .Take(itemsCountToTake)
+            .Skip(itemsCountToSkip)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInDescendingOrder(o => o.IntData);
+
+        itemsResult.First().IntData.Should().Be(itemsCountToInsert - itemsCountToSkip - 1);
+    }
+
+    public override async Task WhereOrderByTakeSkip_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .OrderBy(o => o.IntData)
+            .Take(itemsCountToTake)
+            .Skip(itemsCountToSkip)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInAscendingOrder(o => o.IntData);
+
+        itemsResult.First().IntData.Should().Be(itemsCountToSkip);
+    }
+
+    public override async Task WhereTakeOrderByDescendingSkip_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .Take(itemsCountToTake)
+            .OrderByDescending(o => o.IntData)
+            .Skip(itemsCountToSkip)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInDescendingOrder(o => o.IntData);
+    }
+
+    public override async Task WhereTakeOrderBySkip_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .Take(itemsCountToTake)
+            .OrderBy(o => o.IntData)
+            .Skip(itemsCountToSkip)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInAscendingOrder(o => o.IntData);
+    }
+
+    public override async Task WhereTakeSkipOrderBy_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .Take(itemsCountToTake)
+            .Skip(itemsCountToSkip)
+            .OrderBy(o => o.IntData)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInAscendingOrder(o => o.IntData);
+    }
+
+    public override async Task WhereTakeSkipOrderByDescendingSkip_ReturnOk()
+    {
+        // Arrange
+        int itemsCountToInsert = 5;
+        int itemsCountToTake = 3;
+        int itemsCountToSkip = 2;
+
+        var guid = Guid.NewGuid().ToString();
+
+        await CreateAndInsertItemsAsync(itemsCountToInsert, guid);
+
+        // Act
+        var itemsResult = await Collection.Query
+            .Where(w => w.StringData == guid)
+            .Take(itemsCountToTake)
+            .Skip(itemsCountToSkip)
+            .OrderByDescending(o => o.IntData)
+            .ToListAsync();
+
+        // Assert
+        itemsResult
+            .Should()
+            .HaveCount(itemsCountToTake)
+            .And
+            .BeInDescendingOrder(o => o.IntData);
+    }
 }
