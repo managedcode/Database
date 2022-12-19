@@ -3,18 +3,24 @@
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <LangVersion>11</LangVersion>
+		<IsPackable>True</IsPackable>
+		<LangVersion>11</LangVersion>
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <Nullable>enable</Nullable>
-        <AssemblyName>ManagedCode.Database.AzureTables</AssemblyName>
-        <RootNamespace>ManagedCode.Database.AzureTables</RootNamespace>
     </PropertyGroup>
+
+	<!--NuGet-->
+	<PropertyGroup>
+		<Title>ManagedCode.Repository.DynamoDB</Title>
+		<PackageId>ManagedCode.Database.DynamoDB</PackageId>
+		<Description>Repository for DynamoDB</Description>
+		<PackageTags>managedcode, repository, DynamoDB</PackageTags>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\ManagedCode.Database.Core\ManagedCode.Database.Core.csproj" />
 	</ItemGroup>
-
 
 	<ItemGroup>
         <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.100.21" />
