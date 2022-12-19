@@ -2,6 +2,9 @@
 using System;
 using System.Threading.Tasks;
 using ManagedCode.Database.Tests.TestContainers;
+using Xunit;
+using System.Collections.Generic;
+using FluentAssertions;
 
 namespace ManagedCode.Database.Tests.BaseTests;
 
@@ -12,13 +15,48 @@ public abstract class BaseMultiThreadingTests<TId, TItem> : BaseTests<TId, TItem
     {
     }
 
-    public Task InitializeAsync()
+    protected TItem CreateNewItem()
     {
-        throw new NotImplementedException();
+        var rnd = new Random();
+        return new TItem
+        {
+            Id = GenerateId(),
+            StringData = Guid.NewGuid().ToString(),
+            IntData = rnd.Next(),
+            LongData = rnd.Next(),
+            FloatData = Convert.ToSingle(rnd.NextDouble()),
+            DoubleData = rnd.NextDouble(),
+            DateTimeData = DateTime.UtcNow,
+        };
     }
 
-    public Task DisposeAsync()
+    protected TItem CreateNewItem(TId id)
     {
-        throw new NotImplementedException();
+        var item = CreateNewItem();
+        item.Id = id;
+        return item;
     }
+
+    #region Insert
+
+    [Fact]
+    public virtual async Task InsertFromMultiplieThreads_ReturnsOk()
+    {
+        // Arrange
+        int taskCount = 100;
+        List<Task> tasks = new List<Task>();
+
+        for(int i = 0; i < taskCount; i++)
+            tasks.Add(Task.Run(async () => await Collection.InsertAsync(CreateNewItem())));
+
+        // Act
+        var act = async () => await Task.WhenAll(tasks);
+
+        //Assert
+        await act.Should().NotThrowAsync();
+        long count = await Collection.CountAsync();
+        count.Should().Be(taskCount);
+    }
+
+    #endregion
 }
