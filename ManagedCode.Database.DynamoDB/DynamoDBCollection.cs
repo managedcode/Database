@@ -62,7 +62,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
 
     protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await _dynamoDBContext.SaveAsync(item, cancellationToken);
+        await _dynamoDBContext.SaveAsync<TItem>(item, cancellationToken);
 
         var response = await _dynamoDBContext.QueryAsync<TItem>(item.Id).GetRemainingAsync(cancellationToken);
 
@@ -72,7 +72,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
     protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        await _dynamoDBContext.SaveAsync(items, cancellationToken);
+        await _dynamoDBContext.SaveAsync<IEnumerable<TItem>>(items, cancellationToken);
 
         var response = await _dynamoDBContext.QueryAsync<TItem>(items).GetRemainingAsync(cancellationToken);
 

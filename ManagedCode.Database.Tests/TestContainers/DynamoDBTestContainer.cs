@@ -1,7 +1,9 @@
+using System;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DocumentModel;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.DynamoDB;
 using ManagedCode.Database.Tests.Common;
@@ -48,8 +50,8 @@ public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
         await _dynamoDBContainer.StopAsync();
     }
 
-    Primitive ITestContainer<Primitive, TestDynamoDbItem>.GenerateId()
+    public Primitive GenerateId()
     {
-        throw new System.NotImplementedException();
+        return new Primitive($"{Guid.NewGuid():N}");
     }
 }
