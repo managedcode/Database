@@ -2,6 +2,7 @@
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Core.Common;
 using System;
@@ -32,7 +33,13 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
 
     protected override Task InitializeAsyncInternal(CancellationToken token = default)
     {
-        var client = new AmazonDynamoDBClient();
+        var creds = new BasicAWSCredentials(_dbOptions.AccessKey, _dbOptions.SecretKey);
+        var config = new AmazonDynamoDBConfig()
+        {
+            ServiceURL = _dbOptions.ServiceURL,
+            AuthenticationRegion = _dbOptions.AuthenticationRegion,
+        };
+        var client = new AmazonDynamoDBClient(creds, config);
         _dynamoDBContext = new DynamoDBContext(client);
 
         return Task.CompletedTask;

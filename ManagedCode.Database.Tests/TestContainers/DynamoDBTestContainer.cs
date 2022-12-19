@@ -11,7 +11,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
 
 {
-    private static int _port = 27017;
+    private static int _port = 25051;
     private readonly DynamoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _dynamoDBContainer;
 
@@ -20,13 +20,16 @@ public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
         var port = ++_port;
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()
         {
-            ConnectionString = $"dynamodb://localhost:{port}",
+            ServiceURL = $"http://localhost:{port}",
+            AuthenticationRegion = "ap-southrast-2",
+            AccessKey = $"AccessKey",
+            SecretKey = $"SecretKey",
             DataBaseName = "db"
         });
 
         _dynamoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mongo")
-            .WithPortBinding(port, 27017)
+            .WithImage("amazon/dynamodb-local")
+            .WithPortBinding(port, 25051)
             .Build();
     }
 
