@@ -55,7 +55,7 @@ public class SQLiteCollectionQueryable<TId, TItem> : BaseCollectionQueryable<TIt
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            _connection.Delete<TItem>(item);
+            _connection.Delete<TItem>(item.Id);
             count++;
         }
 
