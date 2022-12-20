@@ -29,7 +29,7 @@ public class ZoneTreeQueryableTests : BaseQueryableTests<string, TestZoneTreeIte
         // Assert
         await itemsResult
             .Should()
-            .ThrowAsync<ArgumentNullException>();
+            .ThrowAsync<NullReferenceException>();
     }
     
     public override async Task ThenBy_TakeNull_ReturnException()
@@ -48,6 +48,6 @@ public class ZoneTreeQueryableTests : BaseQueryableTests<string, TestZoneTreeIte
         // Assert
         await itemsResult
             .Should()
-            .ThrowAsync<ArgumentNullException>();
+            .ThrowAsync<NullReferenceException>();
     }
 }
