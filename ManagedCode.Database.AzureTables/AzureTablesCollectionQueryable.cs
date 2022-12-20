@@ -39,9 +39,9 @@ public class AzureTablesCollectionQueryable<TItem> : BaseCollectionQueryable<TIt
     {
         var filter = ConvertPredicatesToFilter(Predicates);
 
-        return await _tableClient
-            .QueryAsync<TItem>(filter, cancellationToken: cancellationToken)
-            .CountAsync(cancellationToken);
+        var query = _tableClient
+            .QueryAsync<TItem>(filter, cancellationToken: cancellationToken);
+        return await ApplyPredicates(query, Predicates).CountAsync(cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)

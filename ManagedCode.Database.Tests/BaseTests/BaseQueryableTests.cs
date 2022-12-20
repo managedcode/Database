@@ -560,6 +560,7 @@ public abstract class BaseQueryableTests<TId, TItem> : BaseTests<TId, TItem> whe
 
     #region WhereSkip
 
+    [Fact]
     public virtual async Task WhereSkip_ReturnOk()
     {
         // Arrange
