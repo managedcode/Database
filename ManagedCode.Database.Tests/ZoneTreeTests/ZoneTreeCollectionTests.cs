@@ -31,7 +31,6 @@ public class ZoneTreeCollectionTests : BaseCollectionTests<string, TestZoneTreeI
         foreach (var item in list)
         {
             item.DateTimeData = DateTime.Now.AddDays(-1);
-            item.StringData = "Updated";
         }
 
         // Act
