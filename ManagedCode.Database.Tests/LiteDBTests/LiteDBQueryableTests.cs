@@ -694,4 +694,9 @@ public class LiteDBQueryableTests : BaseQueryableTests<string, TestLiteDBItem>
             .And
             .BeInDescendingOrder(o => o.IntData);
     }
+
+    public override Task ThenByDescending_AfterOrderByDescending_ReturnOk()
+    {
+        return base.ThenByDescending_AfterOrderByDescending_ReturnOk();
+    }
 }
