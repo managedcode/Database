@@ -694,4 +694,12 @@ public class LiteDBQueryableTests : BaseQueryableTests<string, TestLiteDBItem>
             .And
             .BeInDescendingOrder(o => o.IntData);
     }
+
+    public override async Task ThenByDescending_AfterOrderByDescending_ReturnOk()
+    {
+        string expectedErrorMessage = "ORDER BY already defined in this query builder";
+
+        var baseMethod = async () => await base.ThenByDescending_AfterOrderByDescending_ReturnOk();
+        await baseMethod.Should().ThrowExactlyAsync<ArgumentException>(expectedErrorMessage); 
+    }
 }
