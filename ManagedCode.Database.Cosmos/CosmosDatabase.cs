@@ -51,15 +51,17 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
         _container = container;
     }
 
-    protected override ValueTask DisposeAsyncInternal()
+    protected override async ValueTask DisposeAsyncInternal()
     {
+        await DeleteAsync();
         DisposeInternal();
-        return new ValueTask(Task.CompletedTask);
+        //return new ValueTask(Task.CompletedTask);
     }
 
     protected override void DisposeInternal()
     {
-        NativeClient.Dispose();
+        _database.Client.Dispose();
+        NativeClient?.Dispose();
     }
 
     public CosmosCollection<TItem> GetCollection<TItem>() where TItem : CosmosItem, new()
@@ -71,6 +73,6 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
     public override async Task DeleteAsync(CancellationToken token = default)
     {
-        await _database.DeleteAsync(cancellationToken: token);
+        await _database?.DeleteAsync(cancellationToken: token);
     }
 }
