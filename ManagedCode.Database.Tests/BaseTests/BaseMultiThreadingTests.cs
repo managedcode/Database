@@ -12,23 +12,30 @@ namespace ManagedCode.Database.Tests.BaseTests;
 public abstract class BaseMultiThreadingTests<TId, TItem> : BaseTests<TId, TItem>
     where TItem : IBaseItem<TId>, new()
 {
+    private static object lock_object = new object();
+
     protected BaseMultiThreadingTests(ITestContainer<TId, TItem> testContainer) : base(testContainer)
     {
     }
 
     protected TItem CreateNewItem()
     {
-        var rnd = new Random();
-        return new TItem
+        var item = new TItem();
+        lock (lock_object)
         {
-            Id = GenerateId(),
-            StringData = Guid.NewGuid().ToString(),
-            IntData = rnd.Next(),
-            LongData = rnd.Next(),
-            FloatData = Convert.ToSingle(rnd.NextDouble()),
-            DoubleData = rnd.NextDouble(),
-            DateTimeData = DateTime.UtcNow,
-        };
+            var rnd = new Random();
+            item = new TItem
+            {
+                Id = GenerateId(),
+                StringData = Guid.NewGuid().ToString(),
+                IntData = rnd.Next(),
+                LongData = rnd.Next(),
+                FloatData = Convert.ToSingle(rnd.NextDouble()),
+                DoubleData = rnd.NextDouble(),
+                DateTimeData = DateTime.UtcNow,
+            };
+        }
+        return item;
     }
 
     protected TItem CreateNewItem(TId id)
@@ -76,8 +83,6 @@ public abstract class BaseMultiThreadingTests<TId, TItem> : BaseTests<TId, TItem
         int threadsCount = 100;
         int iterations = 300;
         int itemsToInsertCount = 100;
-        TItem itemToDelete = CreateNewItem();
-        TItem itemToFound = CreateNewItem();
         
         List<Thread> threads = new List<Thread>();
 
@@ -87,6 +92,9 @@ public abstract class BaseMultiThreadingTests<TId, TItem> : BaseTests<TId, TItem
             {
                 for (int j = 0; j < iterations; j++)
                 {
+                    TItem itemToDelete = CreateNewItem();
+                    TItem itemToFound = CreateNewItem();
+                    
                     await Collection.InsertAsync(itemToFound);
                     await Collection.InsertAsync(itemToDelete);
                     await Collection.CountAsync();
