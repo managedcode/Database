@@ -16,7 +16,7 @@ public class ZoneTreeCollectionQueryable<TId, TItem> : BaseCollectionQueryable<T
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await Task.Yield();
-
+        
         foreach (var item in ApplyPredicates())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -67,15 +67,15 @@ public class ZoneTreeCollectionQueryable<TId, TItem> : BaseCollectionQueryable<T
                     .OrderBy(x => predicate.ExpressionObject.Compile().Invoke(x)),
                 QueryType.OrderByDescending => enumerable
                     .OrderByDescending(x => predicate.ExpressionObject.Compile().Invoke(x)),
-                QueryType.ThenBy => (enumerable as IOrderedQueryable<TItem>)!
+                QueryType.ThenBy => (enumerable as IOrderedEnumerable<TItem>)!
                     .ThenBy(x => predicate.ExpressionObject.Compile().Invoke(x)),
-                QueryType.ThenByDescending => (enumerable as IOrderedQueryable<TItem>)!
+                QueryType.ThenByDescending => (enumerable as IOrderedEnumerable<TItem>)!
                     .ThenByDescending(x => predicate.ExpressionObject.Compile().Invoke(x)),
                 QueryType.Take => predicate.Count.HasValue ? enumerable.Take(predicate.Count.Value) : enumerable,
                 QueryType.Skip => enumerable.Skip(predicate.Count!.Value),
                 _ => enumerable
             };
-
+        
         return enumerable;
     }
 }
