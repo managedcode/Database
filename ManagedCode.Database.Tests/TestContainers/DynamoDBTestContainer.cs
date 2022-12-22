@@ -10,12 +10,13 @@ using ManagedCode.Database.Tests.Common;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
+public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
 
 {
-    private static int _port = 25051;
+    private static int _port = 8000;
     private readonly DynamoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _dynamoDBContainer;
+    private readonly string _tableName = "testTable";
 
     public DynamoDBTestContainer()
     {
@@ -31,12 +32,12 @@ public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
 
         _dynamoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("amazon/dynamodb-local")
-            .WithPortBinding(port, 25051)
+            .WithPortBinding(port, 8000)
             .Build();
     }
 
-    public IDatabaseCollection<Primitive, TestDynamoDbItem> Collection =>
-        _dbDatabase.GetCollection<TestDynamoDbItem>();
+    public IDatabaseCollection<string, TestDynamoDbItem> Collection =>
+        _dbDatabase.GetCollection<TestDynamoDbItem>(_tableName);
 
     public async Task InitializeAsync()
     {
@@ -50,8 +51,8 @@ public class DynamoDBTestContainer : ITestContainer<Primitive, TestDynamoDbItem>
         await _dynamoDBContainer.StopAsync();
     }
 
-    public Primitive GenerateId()
+    public string GenerateId()
     {
-        return new Primitive($"{Guid.NewGuid():N}");
+        return Guid.NewGuid().ToString();
     }
 }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ManagedCode.Database.DynamoDB;
 
-public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<Primitive>
+public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<string>
 {
     private readonly DynamoDBContext _dynamoDBContext;
 

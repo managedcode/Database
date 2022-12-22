@@ -5,7 +5,7 @@ using ManagedCode.Database.Tests.TestContainers;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
-public class DynamoDbCollectionTests : BaseCollectionTests<Primitive, TestDynamoDbItem>
+public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbItem>
 {
     public DynamoDbCollectionTests() : base(new DynamoDBTestContainer())
     {

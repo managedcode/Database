@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,14 +16,16 @@ using System.Timers;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ManagedCode.Database.DynamoDB;
 
-public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem>
-    where TItem : DynamoDBItem, IItem<Primitive>, new()
+public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
+    where TItem : DynamoDBItem<string>, IItem<string>, new()
 {
     private readonly DynamoDBContext _dynamoDBContext;
+    private readonly DynamoDBOperationConfig _dynamoDBOperationConfig;
 
-    public DynamoDBCollection(DynamoDBContext dynamoDBContext)
-    {
+    public DynamoDBCollection(DynamoDBContext dynamoDBContext, DynamoDBOperationConfig dynamoDBOperationConfig)
+    { 
         _dynamoDBContext = dynamoDBContext;
+        _dynamoDBOperationConfig = dynamoDBOperationConfig;
     }
 
     public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
@@ -38,7 +41,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
 
     #region Get
 
-    protected override async Task<TItem?> GetInternalAsync(Primitive hashKey, CancellationToken cancellationToken = default)
+    protected override async Task<TItem?> GetInternalAsync(string hashKey, CancellationToken cancellationToken = default)
     {
         var cursor = await _dynamoDBContext.QueryAsync<TItem>(hashKey).GetRemainingAsync(cancellationToken);
 
@@ -72,12 +75,30 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
     protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        await _dynamoDBContext.SaveAsync<IEnumerable<TItem>>(items, cancellationToken);
+        /*List<ScanCondition> conditions = new List<ScanCondition>();
 
-        var response = await _dynamoDBContext.QueryAsync<TItem>(items).GetRemainingAsync(cancellationToken);
+        foreach(var item in items)
+        {
+            conditions.Add(new ScanCondition("Id", ScanOperator.Equal, item.Id));
+        }*/
+
+        foreach(var item in items)
+            await _dynamoDBContext.SaveAsync(item, cancellationToken);
 
 
-        return response.Count();
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null).GetRemainingAsync(cancellationToken);
+
+        int responseCount = 0;
+
+        foreach (var item in data)
+        {
+            if(items.Contains(item))
+            {
+                responseCount++;
+            }
+        }
+
+        return responseCount;
     }
 
     #endregion
@@ -188,7 +209,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
         return response.Count != 0 ? false : true;
     }
 
-    protected override async Task<bool> DeleteInternalAsync(Primitive id, CancellationToken cancellationToken = default)
+    protected override async Task<bool> DeleteInternalAsync(string id, CancellationToken cancellationToken = default)
     {
         await _dynamoDBContext.DeleteAsync(id, cancellationToken);
 
@@ -197,7 +218,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<Primitive, TItem
         return response.Count == 0 ? true : false;
     }
 
-    protected override async Task<int> DeleteInternalAsync(IEnumerable<Primitive> ids, CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
     {
         int count = 0;
 

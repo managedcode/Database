@@ -13,5 +13,4 @@ public class DynamoDBOptions
     public string AccessKey { get; set; }
     public string SecretKey { get; set; }
     public string DataBaseName { get; set; }
-    //public bool AllowTableCreation { get; set; }
 }
