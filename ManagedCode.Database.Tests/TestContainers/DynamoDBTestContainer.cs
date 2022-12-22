@@ -16,7 +16,6 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     private static int _port = 8000;
     private readonly DynamoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _dynamoDBContainer;
-    private readonly string _tableName = "testTable";
 
     public DynamoDBTestContainer()
     {
@@ -24,7 +23,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()
         {
             ServiceURL = $"http://localhost:{port}",
-            AuthenticationRegion = "ap-southrast-2",
+            AuthenticationRegion = "eu-central-1",
             AccessKey = $"AccessKey",
             SecretKey = $"SecretKey",
             DataBaseName = "db"
@@ -37,7 +36,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     }
 
     public IDatabaseCollection<string, TestDynamoDbItem> Collection =>
-        _dbDatabase.GetCollection<TestDynamoDbItem>(_tableName);
+        _dbDatabase.GetCollection<TestDynamoDbItem>();
 
     public async Task InitializeAsync()
     {

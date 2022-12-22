@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Humanizer;
 
 namespace ManagedCode.Database.DynamoDB;
 
@@ -20,7 +21,7 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
 
     private readonly DynamoDBOptions _dbOptions;
     private DynamoDBContext _dynamoDBContext;
-    private AmazonDynamoDBClient _DynamoDBClient;
+    private AmazonDynamoDBClient _dynamoDBClient;
     private DynamoDBOperationConfig _dynamoDBOperationConfig;
 
     public DynamoDBDatabase(DynamoDBOptions dbOptions)
@@ -43,8 +44,8 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
             ServiceURL = _dbOptions.ServiceURL,
             AuthenticationRegion = _dbOptions.AuthenticationRegion,
         };
-        _DynamoDBClient = new AmazonDynamoDBClient(creds, config);
-        _dynamoDBContext = new DynamoDBContext(_DynamoDBClient);
+        _dynamoDBClient = new AmazonDynamoDBClient(creds, config);
+        _dynamoDBContext = new DynamoDBContext(_dynamoDBClient);
 
         return Task.CompletedTask;
     }
@@ -88,30 +89,24 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
             },
         }.ToList();
 
-        var createTableResponse = _DynamoDBClient.CreateTableAsync(createTableRequest);
+        var createTableResponse = _dynamoDBClient.CreateTableAsync(createTableRequest);
 
         return createTableResponse.Result;
     }
 
-    public  DynamoDBCollection<TItem> GetCollection<TItem>(string tableName)
+    public  DynamoDBCollection<TItem> GetCollection<TItem>()
        where TItem : DynamoDBItem<string>, new()
     {
         if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
 
-        /*var table = Table.LoadTable(_DynamoDBClient, tableName);
+        var tableName = string.IsNullOrEmpty(_dbOptions.CollectionName)
+            ? typeof(TItem).Name.Pluralize()
+            : _dbOptions.CollectionName;
 
-        if (table is null)
-        {*/
-            var result = SetupAsync(tableName);
+        SetupAsync(tableName).GetAwaiter().GetResult();
 
-            if(!result.IsCompleted) throw new TableNotFoundException("Table connection error");
-        //}
+        Table table = Table.LoadTable(_dynamoDBClient, tableName);
 
-        _dynamoDBOperationConfig = new DynamoDBOperationConfig()
-        {
-            OverrideTableName = tableName
-        };
-
-        return new DynamoDBCollection<TItem>(_dynamoDBContext, _dynamoDBOperationConfig);
+        return new DynamoDBCollection<TItem>(_dynamoDBContext, tableName);
     }
 }

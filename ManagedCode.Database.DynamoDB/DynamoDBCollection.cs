@@ -20,12 +20,10 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     where TItem : DynamoDBItem<string>, IItem<string>, new()
 {
     private readonly DynamoDBContext _dynamoDBContext;
-    private readonly DynamoDBOperationConfig _dynamoDBOperationConfig;
 
-    public DynamoDBCollection(DynamoDBContext dynamoDBContext, DynamoDBOperationConfig dynamoDBOperationConfig)
+    public DynamoDBCollection(DynamoDBContext dynamoDBContext, string tableName)
     { 
         _dynamoDBContext = dynamoDBContext;
-        _dynamoDBOperationConfig = dynamoDBOperationConfig;
     }
 
     public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
@@ -83,8 +81,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         }*/
 
         foreach(var item in items)
-            await _dynamoDBContext.SaveAsync(item, cancellationToken);
-
+            await _dynamoDBContext.SaveAsync(item);
 
         var data = await _dynamoDBContext.ScanAsync<TItem>(null).GetRemainingAsync(cancellationToken);
 
