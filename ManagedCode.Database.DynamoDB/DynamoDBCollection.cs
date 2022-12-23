@@ -90,9 +90,9 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         foreach(var item in items)
             await _dynamoDBContext.SaveAsync(item, config, cancellationToken);
 
-        var data = await _dynamoDBContext.ScanAsync<TItem>(null).GetRemainingAsync(cancellationToken);
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null, config).GetRemainingAsync(cancellationToken);
 
-        int responseCount = 0;
+        /*int responseCount = 0;
 
         foreach (var item in data)
         {
@@ -100,9 +100,9 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
             {
                 responseCount++;
             }
-        }
+        }*/
 
-        return responseCount;
+        return data.Count;
     }
 
     #endregion

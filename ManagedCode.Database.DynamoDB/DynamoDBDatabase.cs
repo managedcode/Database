@@ -85,7 +85,7 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
         createTableRequest.AttributeDefinitions = new[] {
             new AttributeDefinition {
             AttributeName = "Id",
-                AttributeType = ScalarAttributeType.N,
+                AttributeType = ScalarAttributeType.S,
             },
         }.ToList();
 
