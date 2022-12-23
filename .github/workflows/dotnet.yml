@@ -21,10 +21,6 @@ jobs:
         with:
           dotnet-version: 7.0.x
         
-      - name: publish nuget packages
-        run: |
-          sudo swapoff /swapfile
-          sudo rm -rf /swapfile /usr/share/dotnet /usr/local/lib/android /opt/ghc  
         # run build and test           
       - name: Restore dependencies
         run: dotnet restore

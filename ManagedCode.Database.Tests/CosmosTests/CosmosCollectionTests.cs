@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
+static class TET
+{
+    public static CosmosTestContainer CONT = new CosmosTestContainer();
+}
+
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 {
-    public CosmosCollectionTests() : base(new CosmosTestContainer())
+    public CosmosCollectionTests() : base(TET.CONT)
     {
     }
 
