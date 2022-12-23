@@ -46,8 +46,9 @@ public class CosmosCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates);
-        return await query.CountAsync(cancellationToken);
+        var query = ApplyPredicates(Predicates).ToFeedIterator();
+        var result = await query.ReadNextAsync();
+        return result.Count();
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
