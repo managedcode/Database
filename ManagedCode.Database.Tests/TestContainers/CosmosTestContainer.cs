@@ -14,13 +14,11 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 {
 
 
-    private static CosmosDatabase _database;
-    private static  TestcontainersContainer _cosmosContainer;
+    private readonly CosmosDatabase _database;
+    private readonly TestcontainersContainer _cosmosContainer;
 
     public CosmosTestContainer()
     {
-        if(_cosmosContainer != null)
-            return;
 
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
@@ -38,12 +36,11 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
             .Build();
-
-        var mappedPort = _cosmosContainer.GetMappedPublicPort(8081);
+        
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
-                $"AccountEndpoint=https://localhost:{mappedPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+                $"AccountEndpoint=https://localhost:{_cosmosContainer.GetMappedPublicPort(8081)}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
             CollectionName = "testContainer",
             AllowTableCreation = true,
@@ -63,33 +60,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         });
     }
     
-    /*
-    await Task.Delay(TimeSpan.FromSeconds(30))
-    .ConfigureAwait(false);
-
-        using (var handler = new HttpClientHandler())
-    {
-        handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-
-        using (var client = new HttpClient(handler))
-        {
-            var mappedPort = this.container.GetMappedPublicPort(8081);
-
-            var response = await client.GetAsync($"https://localhost:{mappedPort}/_explorer/emulator.pem")
-                .ConfigureAwait(false);
-
-            var pem = await response.Content.ReadAsStringAsync()
-                .ConfigureAwait(false);
-
-            Debug.WriteLine(pem);
-        }
-    }
-    
-    
-    
-    */
-    
-
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
         _database.GetCollection<TestCosmosItem>();
 
