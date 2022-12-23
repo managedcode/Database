@@ -22,6 +22,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
+            .WithCleanUp(true)
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName("azure-cosmos-emulator")
             .WithExposedPort(8081)
@@ -34,7 +35,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(8081))
+            .UntilPortIsAvailable(8081))
             .Build();
         
         _database = new CosmosDatabase(new CosmosOptions
