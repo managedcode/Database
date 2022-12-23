@@ -89,9 +89,9 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
             },
         }.ToList();
 
-        var createTableResponse = _dynamoDBClient.CreateTableAsync(createTableRequest);
+        var createTableResponse = await _dynamoDBClient.CreateTableAsync(createTableRequest);
 
-        return createTableResponse.Result;
+        return createTableResponse;
     }
 
     public  DynamoDBCollection<TItem> GetCollection<TItem>()
