@@ -15,9 +15,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: azuright
-        uses: potatoqualitee/azuright@v1.1
-
+      - 
       - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
