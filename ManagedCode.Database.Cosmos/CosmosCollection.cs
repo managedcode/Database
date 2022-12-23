@@ -51,8 +51,11 @@ public class CosmosCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
     protected override async Task<TItem?> GetInternalAsync(string id, CancellationToken cancellationToken = default)
     {
-        var query = _container.GetItemLinqQueryable<TItem>();
-        return await Task.Run(() => query.FirstOrDefault(w => w.Id == id), cancellationToken);
+        using var queryIterator = _container.GetItemLinqQueryable<TItem>().Where(w => w.Id == id).ToFeedIterator<TItem>();
+
+        var response = await queryIterator.ReadNextAsync(cancellationToken);
+
+        return response.SingleOrDefault();
     }
 
     #endregion

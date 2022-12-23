@@ -19,4 +19,18 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
+
+    public override async Task DeleteListOfItemsById_WhenItemsDontExist()
+    {
+        var baseMethod = async () => await base.DeleteListOfItemsById_WhenItemsDontExist();
+
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+    }
+
+    public override async Task DeleteListOfItems_WhenItemsDontExist()
+    {
+        var baseMethod = async () => await base.DeleteListOfItems_WhenItemsDontExist();
+
+        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+    }
 }
