@@ -32,21 +32,22 @@ public class CosmosCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var item in await iterator.ReadNextAsync(cancellationToken)) yield return item;
+                foreach (var item in await iterator.ReadNextAsync(cancellationToken)) 
+                    yield return item;
             }
         }
     }
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var queryIterator = ApplyPredicates(Predicates).ToFeedIterator();
+        using var queryIterator = ApplyPredicates(Predicates).ToFeedIterator();
         var response = await queryIterator.ReadNextAsync();
         return response.FirstOrDefault();
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates).ToFeedIterator();
+        using var query = ApplyPredicates(Predicates).ToFeedIterator();
         var result = await query.ReadNextAsync();
         return result.Count();
     }
