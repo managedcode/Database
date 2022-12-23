@@ -39,8 +39,9 @@ public class CosmosCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var query = ApplyPredicates(Predicates);
-        return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
+        var queryIterator = ApplyPredicates(Predicates).ToFeedIterator();
+        var response = await queryIterator.ReadNextAsync();
+        return response.FirstOrDefault();
     }
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)

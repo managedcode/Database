@@ -91,4 +91,18 @@ public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
+
+    public override async Task Skip_NegativeNumber_ReturnZero()
+    {
+        var baseMethod = async () => await base.Skip_NegativeNumber_ReturnZero();
+
+        await baseMethod.Should().ThrowExactlyAsync<ArgumentException>();
+    }
+
+    public override async Task Take_NegativeNumber_ReturnZero()
+    {
+        var baseMethod = async () => await base.Take_NegativeNumber_ReturnZero();
+
+        await baseMethod.Should().ThrowExactlyAsync<ArgumentException>();
+    }
 }
