@@ -14,11 +14,13 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 {
 
 
-    private readonly CosmosDatabase _database;
-    private readonly TestcontainersContainer _cosmosContainer;
+    private static CosmosDatabase _database;
+    private static  TestcontainersContainer _cosmosContainer;
 
     public CosmosTestContainer()
     {
+        if(_cosmosContainer != null)
+            return;
 
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
