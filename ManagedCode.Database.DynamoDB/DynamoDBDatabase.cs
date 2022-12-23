@@ -103,9 +103,14 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
             ? typeof(TItem).Name.Pluralize()
             : _dbOptions.CollectionName;
 
-        SetupAsync(tableName).GetAwaiter().GetResult();
-
-        Table table = Table.LoadTable(_dynamoDBClient, tableName);
+        try
+        {
+            Table.LoadTable(_dynamoDBClient, tableName); //TODO Edit check created table
+        }
+        catch
+        {
+            SetupAsync(tableName).GetAwaiter().GetResult();
+        }
 
         return new DynamoDBCollection<TItem>(_dynamoDBContext, tableName);
     }
