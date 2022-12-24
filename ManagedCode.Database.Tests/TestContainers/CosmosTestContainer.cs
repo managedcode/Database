@@ -12,7 +12,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 {
-    private readonly CosmosDatabase _database;
+    private CosmosDatabase _database;
     private readonly TestcontainersContainer _cosmosContainer;
 
     public CosmosTestContainer()
@@ -32,9 +32,24 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .WithCleanUp(true)
-            //.WithWaitStrategy(Wait.ForUnixContainer()
-            //    .UntilPortIsAvailable(8081))
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(8081))
             .Build();
+        
+    
+    }
+    
+    public IDatabaseCollection<string, TestCosmosItem> Collection =>
+        _database.GetCollection<TestCosmosItem>();
+
+    public string GenerateId()
+    {
+        return $"{Guid.NewGuid():N}";
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _cosmosContainer.StartAsync();
         
         _database = new CosmosDatabase(new CosmosOptions
         {
@@ -57,25 +72,13 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
                 ConnectionMode = ConnectionMode.Gateway
             },
         });
-    }
-    
-    public IDatabaseCollection<string, TestCosmosItem> Collection =>
-        _database.GetCollection<TestCosmosItem>();
-
-    public string GenerateId()
-    {
-        return $"{Guid.NewGuid():N}";
-    }
-
-    public async Task InitializeAsync()
-    {
-        //await _cosmosContainer.StartAsync();
+        
         await _database.InitializeAsync();
     }
 
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
-        //await _cosmosContainer.StopAsync();
+        await _cosmosContainer.StopAsync();
     }
 }

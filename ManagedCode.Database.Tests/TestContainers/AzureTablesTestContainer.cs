@@ -10,7 +10,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
-    private readonly AzureTablesDatabase _database;
+    private  AzureTablesDatabase _database;
     private readonly TestcontainersContainer _azureTablesContainer;
 
     public AzureTablesTestContainer()
@@ -20,10 +20,18 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
             .WithPortBinding(10000, true)
             .WithPortBinding(10001, true)
             .WithPortBinding(10002, true)
-            //.WithWaitStrategy(Wait.ForUnixContainer()
-            //    .UntilPortIsAvailable(10000))
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(10000))
             .WithCleanUp(true)
             .Build();
+        
+ 
+       
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _azureTablesContainer.StartAsync();
         
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
@@ -31,12 +39,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
                 $"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:{ _azureTablesContainer.GetMappedPublicPort(10000)}/devstoreaccount1;QueueEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10001)}/devstoreaccount1;TableEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10002)}/devstoreaccount1;",
             AllowTableCreation = true,
         });
-       
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _azureTablesContainer.StartAsync();
+        
         await _database.InitializeAsync();
     }
 

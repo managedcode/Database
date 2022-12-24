@@ -10,7 +10,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
-    private readonly MongoDBDatabase _dbDatabase;
+    private MongoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _mongoDBContainer;
 
     public MongoDBTestContainer()
@@ -19,16 +19,10 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             .WithImage("mongo")
             .WithPortBinding(27017, true)
             .WithCleanUp(true)
-            //.WithWaitStrategy(Wait.ForUnixContainer()
-             //   .UntilPortIsAvailable(27017))
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(27017))
             .Build();
         
-        _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
-        {
-            ConnectionString = $"mongodb://localhost:{_mongoDBContainer.GetMappedPublicPort(27017)}",
-            DataBaseName = "db"
-        });
-
         
     }
 
@@ -43,6 +37,13 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task InitializeAsync()
     {
         await _mongoDBContainer.StartAsync();
+        
+        _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
+        {
+            ConnectionString = $"mongodb://localhost:{_mongoDBContainer.GetMappedPublicPort(27017)}",
+            DataBaseName = "db"
+        });
+        
         await _dbDatabase.InitializeAsync();
     }
 
