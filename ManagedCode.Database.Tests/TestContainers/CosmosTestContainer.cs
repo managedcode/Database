@@ -21,7 +21,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
-            .WithName("azure-cosmos-emulator")
+            .WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
             .WithExposedPort(8081)
             .WithPortBinding(8081, true)
             .WithPortBinding(10251, true)

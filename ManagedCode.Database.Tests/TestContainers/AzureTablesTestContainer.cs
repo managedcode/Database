@@ -17,6 +17,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     {
         _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
+            .WithName($"azure-storage{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(10000, true)
             .WithPortBinding(10001, true)
             .WithPortBinding(10002, true)
