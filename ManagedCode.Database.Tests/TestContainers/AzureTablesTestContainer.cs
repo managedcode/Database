@@ -10,28 +10,26 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
-    private static int _port = 10000;
     private readonly AzureTablesDatabase _database;
     private readonly TestcontainersContainer _azureTablesContainer;
 
     public AzureTablesTestContainer()
     {
-        int[] ports = { ++_port, ++_port, ++_port };
-
+        _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
+            .WithImage("mcr.microsoft.com/azure-storage/azurite")
+            .WithPortBinding(10000, 10000)
+            .WithPortBinding(10001, 10001)
+            .WithPortBinding(10002, 10002)
+            .WithCleanUp(true)
+            .Build();
+        
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
             ConnectionString =
-                $"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:{ports[0]}/devstoreaccount1;QueueEndpoint=http://localhost:{ports[1]}/devstoreaccount1;TableEndpoint=http://localhost:{ports[2]}/devstoreaccount1;",
+                $"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:{ _azureTablesContainer.GetMappedPublicPort(10000)}/devstoreaccount1;QueueEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10001)}/devstoreaccount1;TableEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10002)}/devstoreaccount1;",
             AllowTableCreation = true,
         });
-
-        _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mcr.microsoft.com/azure-storage/azurite")
-            .WithPortBinding(ports[0], 10000)
-            .WithPortBinding(ports[1], 10001)
-            .WithPortBinding(ports[2], 10002)
-            .WithCleanUp(true)
-            .Build();
+       
     }
 
     public async Task InitializeAsync()

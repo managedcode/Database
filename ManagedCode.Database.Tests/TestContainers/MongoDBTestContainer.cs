@@ -10,24 +10,24 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
-    private static int _port = 27017;
     private readonly MongoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _mongoDBContainer;
 
     public MongoDBTestContainer()
     {
-        var port = ++_port;
+        _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
+            .WithImage("mongo")
+            .WithPortBinding(27017, 27017)
+            .WithCleanUp(true)
+            .Build();
+        
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
-            ConnectionString = $"mongodb://localhost:{port}",
+            ConnectionString = $"mongodb://localhost:{_mongoDBContainer.GetMappedPublicPort(27017)}",
             DataBaseName = "db"
         });
 
-        _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mongo")
-            .WithPortBinding(port, 27017)
-            .WithCleanUp(true)
-            .Build();
+        
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
