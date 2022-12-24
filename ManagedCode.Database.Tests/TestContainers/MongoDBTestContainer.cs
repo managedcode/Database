@@ -26,6 +26,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithPortBinding(port, 27017)
+            .WithCleanUp(true)
             .Build();
     }
 

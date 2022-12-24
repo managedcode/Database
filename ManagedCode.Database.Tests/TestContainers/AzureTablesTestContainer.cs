@@ -30,6 +30,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
             .WithPortBinding(ports[0], 10000)
             .WithPortBinding(ports[1], 10001)
             .WithPortBinding(ports[2], 10002)
+            .WithCleanUp(true)
             .Build();
     }
 
