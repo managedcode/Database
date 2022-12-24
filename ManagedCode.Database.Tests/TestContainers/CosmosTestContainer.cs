@@ -12,8 +12,6 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 {
-
-
     private readonly CosmosDatabase _database;
     private readonly TestcontainersContainer _cosmosContainer;
 
@@ -33,9 +31,9 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(8081))
             .WithCleanUp(true)
+            //.WithWaitStrategy(Wait.ForUnixContainer()
+            //    .UntilPortIsAvailable(8081))
             .Build();
         
         _database = new CosmosDatabase(new CosmosOptions

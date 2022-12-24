@@ -18,9 +18,9 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithPortBinding(27017, true)
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(27017))
             .WithCleanUp(true)
+            //.WithWaitStrategy(Wait.ForUnixContainer()
+             //   .UntilPortIsAvailable(27017))
             .Build();
         
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
