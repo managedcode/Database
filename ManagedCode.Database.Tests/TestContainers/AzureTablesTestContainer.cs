@@ -17,9 +17,11 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     {
         _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
-            .WithPortBinding(10000, 10000)
-            .WithPortBinding(10001, 10001)
-            .WithPortBinding(10002, 10002)
+            .WithPortBinding(10000, true)
+            .WithPortBinding(10001, true)
+            .WithPortBinding(10002, true)
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(10000))
             .WithCleanUp(true)
             .Build();
         
