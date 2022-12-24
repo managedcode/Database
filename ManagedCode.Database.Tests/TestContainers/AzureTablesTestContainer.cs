@@ -25,14 +25,14 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
                 .UntilPortIsAvailable(10000))
             .WithCleanUp(true)
             .Build();
-
-        _azureTablesContainer.StartAsync().Wait();
-
+        
+ 
+       
     }
 
     public async Task InitializeAsync()
     {
-     
+        await _azureTablesContainer.StartAsync();
         
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
