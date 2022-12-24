@@ -36,7 +36,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
                 .UntilPortIsAvailable(8081))
             .Build();
         
-    
+        _cosmosContainer.StartAsync().Wait();
     }
     
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
@@ -49,8 +49,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
     public async Task InitializeAsync()
     {
-        await _cosmosContainer.StartAsync();
-        
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
