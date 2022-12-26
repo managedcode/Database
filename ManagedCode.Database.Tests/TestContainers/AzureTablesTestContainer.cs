@@ -22,7 +22,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
             .WithPortBinding(10001, true)
             .WithPortBinding(10002, true)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(10000))
+                .UntilPortIsAvailable(10002))
             .WithCleanUp(true)
             .Build();
     }

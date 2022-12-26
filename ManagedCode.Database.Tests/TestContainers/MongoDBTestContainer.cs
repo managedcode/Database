@@ -18,14 +18,13 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     {
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
-            .WithName($"mongo{Guid.NewGuid().ToString("N")}")
+            //.WithName($"mongo{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(27017, true)
             .WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(27017))
             .Build();
-        
-        
+
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
