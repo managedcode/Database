@@ -70,7 +70,6 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(hashKey), _config).GetRemainingAsync(cancellationToken);
 
         return data.FirstOrDefault();
-
     }
 
     #endregion
@@ -197,7 +196,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
         await batchWriter.ExecuteAsync();
 
-        return items.Count();
+        return items.Count(); //TODO check count of added items
     }
 
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
