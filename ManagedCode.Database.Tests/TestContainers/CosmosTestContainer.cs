@@ -30,7 +30,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-            .WithCleanUp(true)
+            //.WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
             .Build();
