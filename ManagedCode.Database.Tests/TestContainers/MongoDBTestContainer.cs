@@ -52,6 +52,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task DisposeAsync()
     {
         await _dbDatabase.DisposeAsync();
-        await _mongoDBContainer.StopAsync();
+        await _mongoDBContainer.CleanUpAsync();
     }
 }
