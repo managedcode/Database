@@ -52,7 +52,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         };
     }
 
-    public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
+    public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext, _tableName);
 
     public override void Dispose()
     {

@@ -16,17 +16,20 @@ namespace ManagedCode.Database.DynamoDB;
 public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<string>
 {
     private readonly DynamoDBContext _dynamoDBContext;
+    private readonly DynamoDBOperationConfig _config;
 
-    public DynamoDBCollectionQueryable(DynamoDBContext dynamoDBContext)
+    public DynamoDBCollectionQueryable(DynamoDBContext dynamoDBContext, string tableName)
     {
         _dynamoDBContext = dynamoDBContext;
+        _config = new DynamoDBOperationConfig
+        {
+            OverrideTableName = tableName,
+        };
     }
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var conditions = new List<ScanCondition>();
-
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
         IEnumerable<TItem> items = from docs in allDocs select docs;
 
@@ -42,9 +45,7 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var conditions = new List<ScanCondition>();
-
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
         IEnumerable<TItem> items = from docs in allDocs select docs;
 
@@ -56,9 +57,7 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var conditions = new List<ScanCondition>();
-
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
         IEnumerable<TItem> items = from docs in allDocs select docs;
 
@@ -69,15 +68,12 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var conditions = new List<ScanCondition>();
-
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(conditions).GetRemainingAsync();
+        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
         IEnumerable<TItem> items = from docs in allDocs select docs;
 
         var ids = ApplyPredicates(Predicates, items)
                         .Select(d => d.Id);
-
 
         var result = _dynamoDBContext.DeleteAsync(ids, cancellationToken); //TODO check count
 
