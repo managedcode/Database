@@ -17,7 +17,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
     public CosmosTestContainer()
     {
-
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
@@ -35,8 +34,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
             .Build();
-        
-    
     }
     
     public IDatabaseCollection<string, TestCosmosItem> Collection =>

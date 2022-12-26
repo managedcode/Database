@@ -4,12 +4,13 @@ using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 using System.Threading.Tasks;
 using System;
+using Xunit;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
+public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>, IClassFixture<CosmosTestContainer>
 {
-    public CosmosQueryableTests() : base(new CosmosTestContainer())
+    public CosmosQueryableTests(CosmosTestContainer container) : base(container)
     {
     }
 

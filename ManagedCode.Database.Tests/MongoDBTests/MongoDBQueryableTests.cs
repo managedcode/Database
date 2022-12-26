@@ -6,12 +6,13 @@ using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Xunit;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
+public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>, IClassFixture<MongoDBTestContainer>
 {
-    public MongoDBQueryableTests() : base(new MongoDBTestContainer())
+    public MongoDBQueryableTests(MongoDBTestContainer container) : base(container)
     {
     }
 
