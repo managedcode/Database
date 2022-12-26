@@ -22,7 +22,6 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
     private readonly DynamoDBOptions _dbOptions;
     private DynamoDBContext _dynamoDBContext;
     private AmazonDynamoDBClient _dynamoDBClient;
-    private DynamoDBOperationConfig _dynamoDBOperationConfig;
 
     public DynamoDBDatabase(DynamoDBOptions dbOptions)
     {
@@ -112,6 +111,6 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
             SetupAsync(tableName).GetAwaiter().GetResult();
         }
 
-        return new DynamoDBCollection<TItem>(_dynamoDBContext, tableName);
+        return new DynamoDBCollection<TItem>(_dynamoDBContext, _dynamoDBClient, tableName);
     }
 }

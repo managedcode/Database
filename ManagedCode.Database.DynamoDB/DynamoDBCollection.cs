@@ -22,11 +22,13 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 {
     private readonly DynamoDBOperationConfig _config;
     private readonly DynamoDBContext _dynamoDBContext;
+    private AmazonDynamoDBClient _dynamoDBClient;
     private readonly string _tableName;
 
-    public DynamoDBCollection(DynamoDBContext dynamoDBContext, string tableName)
+    public DynamoDBCollection(DynamoDBContext dynamoDBContext, AmazonDynamoDBClient dynamoDBClient, string tableName)
     { 
         _dynamoDBContext = dynamoDBContext;
+        _dynamoDBClient = dynamoDBClient;
         _tableName = tableName;
         _config = new DynamoDBOperationConfig
         {
@@ -48,18 +50,6 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         {
             new ScanCondition("Id", ScanOperator.Equal, id)
         };
-    }
-
-    private List<ScanCondition> GetScanConditions(IEnumerable<string> ids)
-    {
-        var condition = new List<ScanCondition>();
-
-        foreach(var id in ids)
-        {
-            condition.Add(new ScanCondition("Id", ScanOperator.Equal, id));
-        }
-
-        return condition;
     }
 
     public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext);
@@ -110,19 +100,13 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        /*List<ScanCondition> conditions = new List<ScanCondition>();
+        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
 
-        foreach(var item in items)
-        {
-            conditions.Add(new ScanCondition("Id", ScanOperator.Equal, item.Id));
-        }*/
+         batchWriter.AddPutItems(items);
 
-        foreach(var item in items)
-            await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
+        await batchWriter.ExecuteAsync();
 
-        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync(cancellationToken);
-
-        return data.Count;
+        return items.Count(); //TODO check count of added items
     }
 
     #endregion
@@ -142,12 +126,13 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        foreach (var item in items)
-            await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
+        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
 
-        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync(cancellationToken);
+        batchWriter.AddPutItems(items);
 
-        return data.Count;
+        await batchWriter.ExecuteAsync();
+
+        return items.Count(); //TODO check count of added items
     }
 
     #endregion
@@ -175,7 +160,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     {
         int count = 0;
 
-        foreach(var item in items)
+        foreach (var item in items)
         {
             var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
 
@@ -206,35 +191,36 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
         CancellationToken cancellationToken = default)
     {
-        int count = 0;
+        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
 
-        foreach (var item in items)
-        {
-            var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
+        batchWriter.AddDeleteItems(items);
 
-            if (data.Count != 0)
-            {
-                await _dynamoDBContext.DeleteAsync(item, _config, cancellationToken);
+        await batchWriter.ExecuteAsync();
 
-                count++;
-            }
-        }
-
-        return count;
+        return items.Count();
     }
 
     protected override async Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default)
     {
-        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync(cancellationToken);
-
-        foreach (var item in data)
+        DeleteTableRequest deleteTableRequest = new DeleteTableRequest
         {
-            await _dynamoDBContext.DeleteAsync(item, _config, cancellationToken);
+            TableName = _tableName,
+        };
+        
+        await _dynamoDBClient.DeleteTableAsync(deleteTableRequest);
+
+        bool result = false;
+
+        try
+        {
+            Table.LoadTable(_dynamoDBClient, _tableName); //TODO Edit check table
+        }
+        catch
+        {
+            result = true;
         }
 
-        data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync(cancellationToken);
-
-        return data.Count != 0 ? false : true;
+        return result;
     }
 
     protected override async Task<bool> DeleteInternalAsync(string id, CancellationToken cancellationToken = default)
@@ -250,13 +236,21 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
     protected override async Task<int> DeleteInternalAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
     {
-        var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(ids), _config).GetRemainingAsync(cancellationToken);
+        var data = new List<TItem>();
 
-        await _dynamoDBContext.DeleteAsync(data, _config, cancellationToken);
+        foreach(var id in ids)
+        {
+            var item = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(id), _config).GetRemainingAsync(cancellationToken);
+            data.Add(item.First());
+        }
 
-        var result = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(ids), _config).GetRemainingAsync(cancellationToken);
+        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
 
-        return data.Count - result.Count;
+        batchWriter.AddDeleteItems(data);
+
+        await batchWriter.ExecuteAsync();
+
+        return ids.Count(); //TODO check count of added items
     }
 
     #endregion
