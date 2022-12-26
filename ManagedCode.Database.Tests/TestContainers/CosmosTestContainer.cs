@@ -76,6 +76,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
+        await _cosmosContainer.StopAsync();
         await _cosmosContainer.CleanUpAsync();
     }
 }

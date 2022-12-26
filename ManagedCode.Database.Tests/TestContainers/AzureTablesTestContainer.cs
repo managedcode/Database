@@ -44,6 +44,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
+        await _azureTablesContainer.StopAsync();    
         await _azureTablesContainer.CleanUpAsync();
     }
 
