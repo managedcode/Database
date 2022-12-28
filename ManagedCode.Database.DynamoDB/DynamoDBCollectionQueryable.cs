@@ -29,13 +29,11 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async IAsyncEnumerable<TItem> ToAsyncEnumerable(CancellationToken cancellationToken = default)
     {
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
-
-        IEnumerable<TItem> items = from docs in allDocs select docs;
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
         await Task.Yield();
 
-        foreach (var item in ApplyPredicates(Predicates, items))
+        foreach (var item in ApplyPredicates(Predicates, data.AsQueryable()))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -45,11 +43,9 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<TItem?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
-        IEnumerable<TItem> items = from docs in allDocs select docs;
-
-        var query = ApplyPredicates(Predicates, items);
+        var query = ApplyPredicates(Predicates, data.AsQueryable());
 
         return await Task.Run(() => query.FirstOrDefault(), cancellationToken);
 
@@ -57,30 +53,48 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
     public override async Task<long> CountAsync(CancellationToken cancellationToken = default)
     {
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
-        IEnumerable<TItem> items = from docs in allDocs select docs;
-
-        var query = ApplyPredicates(Predicates, items);
+        var query = ApplyPredicates(Predicates, data.AsQueryable());
 
         return await Task.Run(() => query.LongCount(), cancellationToken);
     }
 
     public override async Task<int> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        var allDocs = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
+        var data = await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync();
 
-        IEnumerable<TItem> items = from docs in allDocs select docs;
+        var items = ApplyPredicates(Predicates, data.AsQueryable());
 
-        var ids = ApplyPredicates(Predicates, items)
-                        .Select(d => d.Id);
+        var count = 0;
 
-        var result = _dynamoDBContext.DeleteAsync(ids, cancellationToken); //TODO check count
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(25);
 
-        return Convert.ToInt32(ids.Count());
+        foreach (var itemsList in itemsChunk)
+        {
+            var tasks = new List<Task>();
+
+            foreach (var item in itemsList)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
+
+                    batchWriter.AddDeleteItem(item);
+
+                    await batchWriter.ExecuteAsync();
+
+                    Interlocked.Increment(ref count);
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        return count;
     }
 
-    private IEnumerable<TItem> ApplyPredicates(List<QueryItem> predicates, IEnumerable<TItem> query)
+    private IQueryable<TItem> ApplyPredicates(List<QueryItem> predicates, IQueryable<TItem> query)
     {
         foreach (var predicate in predicates)
             query = predicate.QueryType switch

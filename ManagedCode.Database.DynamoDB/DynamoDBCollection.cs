@@ -143,7 +143,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     {
         var count = 0;
 
-        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(25);
 
         foreach (var itemsList in itemsChunk)
         {
@@ -155,7 +155,13 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
                 {
                     var response = await PutItemRequestByTItemAsync(item, cancellationToken);
 
-                    Interlocked.Increment(ref count);
+                    /*var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
+
+                    batchWriter.AddPutItem(item);
+
+                    await batchWriter.ExecuteAsync();
+
+                    Interlocked.Increment(ref count);*/
                 }));
             }
 

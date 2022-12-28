@@ -5,6 +5,7 @@ using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 using System;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
@@ -14,6 +15,7 @@ public class AzureTablesQueryableTests : BaseQueryableTests<TableId, TestAzureTa
     {
     }
 
+    [Fact]
     public override async Task Where_TakeNull_ReturnException()
     {
         // Arrange
