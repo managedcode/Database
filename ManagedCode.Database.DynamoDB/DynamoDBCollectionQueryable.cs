@@ -70,7 +70,7 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
         IEnumerable<TItem[]> itemsChunk = items.Chunk(25);
 
-        foreach (var itemsList in itemsChunk)
+        foreach (var itemsList in itemsChunk) //TODO check
         {
             var tasks = new List<Task>();
 

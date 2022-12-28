@@ -52,7 +52,7 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         deleted.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    [Fact]
+/*    [Fact]
     public override async Task GetById_ReturnOk()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
             // Assert
             await getItemResult.Should().ThrowAsync<DatabaseException>();
         }
-    }
+    }*/
 
     [Fact]
     public override async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
