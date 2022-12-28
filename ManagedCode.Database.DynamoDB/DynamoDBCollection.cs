@@ -160,8 +160,9 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
                     batchWriter.AddPutItem(item);
 
                     await batchWriter.ExecuteAsync();
+                    */
 
-                    Interlocked.Increment(ref count);*/
+                    Interlocked.Increment(ref count);
                 }));
             }
 
