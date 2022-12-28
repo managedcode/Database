@@ -73,12 +73,24 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     {
         PutItemOperationConfig config = new PutItemOperationConfig
         {
-            ReturnValues = ReturnValues.AllOldAttributes,
+            ReturnValues = ReturnValues.UpdatedNewAttributes,
         };
 
         var table = Table.LoadTable(_dynamoDBClient, _tableName);
 
         return await table.PutItemAsync(Document.FromJson(JsonSerializer.Serialize(item)), config, cancellationToken);
+    }
+
+    private async Task<Document> UpdateItemRequestByTItemAsync(TItem item, CancellationToken cancellationToken)
+    {
+        UpdateItemOperationConfig config = new UpdateItemOperationConfig
+        {
+            ReturnValues = ReturnValues.AllOldAttributes,
+        };
+
+        var table = Table.LoadTable(_dynamoDBClient, _tableName);
+
+        return await table.UpdateItemAsync(Document.FromJson(JsonSerializer.Serialize(item)), config, cancellationToken);
     }
 
     public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext, _tableName);
@@ -192,34 +204,33 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
     protected override async Task<TItem> UpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
+        var response = await UpdateItemRequestByTItemAsync(item, cancellationToken);
 
-        if (data.Count == 0)
-        {
-            throw new DatabaseException("Entity not found in collection.");
-        }
-
-        await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
-
-        var result = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
-
-        return result.Count == 0 ? null : item;
+        return response.Count() != 0 ? item : null;
     }
 
     protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        int count = 0;
+        var count = 0;
 
-        foreach (var item in items)
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
+
+        foreach (var itemsList in itemsChunk)
         {
-            var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
+            var tasks = new List<Task>();
 
-            if (data.Count != 0)
+            foreach (var item in itemsList)
             {
-                await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
+                tasks.Add(Task.Run(async () =>
+                {
+                    var response = await UpdateItemRequestByTItemAsync(item, cancellationToken);
 
-                count++;
+                    if (response.Count() != 0)
+                        Interlocked.Increment(ref count);
+                }));
             }
+
+            await Task.WhenAll(tasks);
         }
 
         return count;
