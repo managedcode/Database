@@ -12,13 +12,11 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
-    private readonly ITestOutputHelper _testOutput;
     private MongoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _mongoDBContainer;
 
-    public MongoDBTestContainer(ITestOutputHelper testOutput)
+    public MongoDBTestContainer()
     {
-        _testOutput = testOutput;
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithName($"mongo{Guid.NewGuid().ToString("N")}")
@@ -41,7 +39,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task InitializeAsync()
     {
         await _mongoDBContainer.StartAsync();
-        _testOutput.WriteLine($"MongoContainer State:{_mongoDBContainer.State}");
+        Console.WriteLine($"MongoContainer State:{_mongoDBContainer.State}");
         
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
