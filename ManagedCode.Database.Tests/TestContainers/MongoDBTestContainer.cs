@@ -6,26 +6,28 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
+    private readonly ITestOutputHelper _testOutput;
     private MongoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _mongoDBContainer;
 
-    public MongoDBTestContainer()
+    public MongoDBTestContainer(ITestOutputHelper testOutput)
     {
+        _testOutput = testOutput;
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithName($"mongo{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(27017, true)
             //.WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilContainerIsHealthy()
                 .UntilPortIsAvailable(27017))
+            
             .Build();
-
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
@@ -39,6 +41,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task InitializeAsync()
     {
         await _mongoDBContainer.StartAsync();
+        _testOutput.WriteLine($"MongoContainer State:{_mongoDBContainer.State}");
         
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
