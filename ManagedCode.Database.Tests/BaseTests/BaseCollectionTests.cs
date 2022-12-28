@@ -353,11 +353,14 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
             list.Add(CreateNewItem());
         }
 
+        await Collection.InsertAsync(list);
+
         // Act
-        var insertedItems = await Collection.InsertAsync(list);
+
+        var countItems = await Collection.CountAsync();
 
         // Assert
-        insertedItems.Should().Be(itemsToInsert);
+        countItems.Should().Be(itemsToInsert);
     }
 
     #endregion
