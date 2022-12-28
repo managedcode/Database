@@ -13,11 +13,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Transactions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace ManagedCode.Database.DynamoDB;
 
 public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
@@ -68,6 +69,18 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         };
     }
 
+    private async Task<Document> PutItemRequestByTItemAsync(TItem item, CancellationToken cancellationToken)
+    {
+        PutItemOperationConfig config = new PutItemOperationConfig
+        {
+            ReturnValues = ReturnValues.AllOldAttributes,
+        };
+
+        var table = Table.LoadTable(_dynamoDBClient, _tableName);
+
+        return await table.PutItemAsync(Document.FromJson(JsonSerializer.Serialize(item)), config, cancellationToken);
+    }
+
     public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext, _tableName);
 
     public override void Dispose()
@@ -105,49 +118,72 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
     protected override async Task<TItem> InsertInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
+        await PutItemRequestByTItemAsync(item, cancellationToken);
 
-        var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
-
-        return data.Count == 0 ? null : item;
+        return item;
     }        
 
-    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items,
-        CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertInternalAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
+        var count = 0;
 
-        batchWriter.AddPutItems(items);
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
 
-        await batchWriter.ExecuteAsync();
+        foreach (var itemsList in itemsChunk)
+        {
+            var tasks = new List<Task>();
 
-        return items.Count(); //TODO check count of added items
+            foreach (var item in itemsList)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    var response = await PutItemRequestByTItemAsync(item, cancellationToken);
+
+                    Interlocked.Increment(ref count);
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        return count;
     }
 
     #endregion
 
     #region InsertOrUpdate
 
-    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
-        CancellationToken cancellationToken = default)
+    protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item, CancellationToken cancellationToken = default)
     {
-        await _dynamoDBContext.SaveAsync(item, _config, cancellationToken);
+        await PutItemRequestByTItemAsync(item, cancellationToken);
 
-        var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(item), _config).GetRemainingAsync(cancellationToken);
-
-        return data.Count == 0 ? null : item;
+        return item;
     }
 
-    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items,
-        CancellationToken cancellationToken = default)
+    protected override async Task<int> InsertOrUpdateInternalAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
-        var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
+        var count = 0;
 
-        batchWriter.AddPutItems(items);
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
 
-        await batchWriter.ExecuteAsync();
+        foreach (var itemsList in itemsChunk)
+        {
+            var tasks = new List<Task>();
 
-        return items.Count(); //TODO check count of added items
+            foreach (var item in itemsList)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    var response = await PutItemRequestByTItemAsync(item, cancellationToken);
+
+                    Interlocked.Increment(ref count);
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        return count;
     }
 
     #endregion
@@ -170,8 +206,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         return result.Count == 0 ? null : item;
     }
 
-    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items,
-        CancellationToken cancellationToken = default)
+    protected override async Task<int> UpdateInternalAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         int count = 0;
 
@@ -206,8 +241,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         return false;
     }
 
-    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items,
-        CancellationToken cancellationToken = default)
+    protected override async Task<int> DeleteInternalAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default)
     {
         var count = 0;
 

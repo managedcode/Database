@@ -68,7 +68,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
     }
 
     [Fact]
-    public virtual async Task InsertListOfItems_ReturnsItemCount()
+    public virtual async Task InsertListOfItems_ReturnsItemsCount()
     {
         // Arrange
         int itemsToInsert = 4;
