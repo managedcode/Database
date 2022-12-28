@@ -10,9 +10,9 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>, IClassFixture<MongoDBTestContainer>
+public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
 {
-    public MongoDBQueryableTests(MongoDBTestContainer container) : base(container)
+    public MongoDBQueryableTests() : base(new MongoDBTestContainer())
     {
     }
 
