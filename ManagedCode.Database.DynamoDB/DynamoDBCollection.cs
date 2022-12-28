@@ -40,19 +40,23 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         };
     }
 
-    private List<ScanCondition> GetScanConditions(TItem item)
-    {
-        return new List<ScanCondition>()
-        {
-            new ScanCondition("Id", ScanOperator.Equal, item.Id)
-        };
-    }
-
     private List<ScanCondition> GetScanConditions(string id)
     {
         return new List<ScanCondition>()
         {
             new ScanCondition("Id", ScanOperator.Equal, id)
+        };
+    }
+
+    private GetItemRequest GetItemRequestById(string id)
+    {
+        return new GetItemRequest
+        {
+            TableName = _tableName,
+            Key = new Dictionary<string, AttributeValue>()
+            {
+                {"Id", new AttributeValue() {S = id}}
+            },
         };
     }
 

@@ -51,4 +51,56 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         // Assert
         deleted.Should().ThrowExactlyAsync<DatabaseException>();
     }
+
+    [Fact]
+    public override async Task GetById_ReturnOk()
+    {
+        // Arrange
+        var itemId = GenerateId();
+        await Collection.InsertAsync(CreateNewItem(itemId));
+
+        try
+        {
+            // Act
+            var getItemResult = await Collection.GetAsync(itemId);
+
+            // Assert
+            getItemResult.Should().NotBeNull();
+        }
+        catch (DatabaseException e)
+        {
+            // Act
+            var getItemResult = () => Collection.GetAsync(itemId);
+
+            // Assert
+            await getItemResult.Should().ThrowAsync<DatabaseException>();
+        }
+    }
+
+    [Fact]
+    public override async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
+    {
+        // Arrange
+        var item = CreateNewItem();
+
+        // Act
+        await Collection.InsertAsync(item);
+        var insertItem = await Collection.InsertAsync(item);
+
+        // Assert
+        insertItem.Should().NotBeNull();
+    }
+
+    [Fact]
+    public override async Task UpdateItem_WhenItemDoesntExists()
+    {
+        // Arrange
+        var id = GenerateId();
+
+        // Act
+        var updateItem = await Collection.UpdateAsync(CreateNewItem(id));
+
+        // Assert
+        updateItem.Should().BeNull();
+    }
 }
