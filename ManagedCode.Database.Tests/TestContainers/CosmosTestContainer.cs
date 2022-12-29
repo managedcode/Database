@@ -21,15 +21,24 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
-            //.WithExposedPort(8081)
-            .WithPortBinding(8081, true)
-            //.WithPortBinding(10251, true)
-            //.WithPortBinding(10252, true)
-            //.WithPortBinding(10253, true)
-            //.WithPortBinding(10254, true)
+            // .WithExposedPort(8081)
+            // .WithExposedPort(10250)
+            // .WithExposedPort(10251)
+            // .WithExposedPort(10252)
+            // .WithExposedPort(10253)
+            // .WithExposedPort(10254)
+            // .WithExposedPort(10255)
+            .WithExposedPort(8081)
+            .WithPortBinding(8081, 8081)
+            .WithPortBinding(10250, 10250)
+            .WithPortBinding(10251, 10251)
+            .WithPortBinding(10252, 10252)
+            .WithPortBinding(10253, 10253)
+            .WithPortBinding(10254, 10254)
+            .WithPortBinding(10255, 10255)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
-            //.WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
-            //.WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             //.WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
@@ -69,6 +78,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
                 ConnectionMode = ConnectionMode.Gateway
             },
         });
+        
         
         await _database.InitializeAsync();
     }

@@ -28,12 +28,8 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
         if (_options.AllowTableCreation)
         {
-            _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName,
-                cancellationToken: token);
-
-            _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, "/id",
-                cancellationToken: token);
-
+            _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, cancellationToken: token);
+            _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, _options.PartitionKey, cancellationToken: token);
             return;
         }
 
@@ -44,23 +40,23 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
         var container = database.GetContainer(_options.CollectionName);
 
-        if (container is null) throw new Exception($"Container '{_options.CollectionName}' does not exist.");
+        if (container is null) 
+            throw new Exception($"Container '{_options.CollectionName}' does not exist.");
 
         NativeClient = cosmosClient;
         _database = database;
         _container = container;
     }
 
-    protected override async ValueTask DisposeAsyncInternal()
+    protected override ValueTask DisposeAsyncInternal()
     {
-        await DeleteAsync();
         DisposeInternal();
-        //return new ValueTask(Task.CompletedTask);
+        return ValueTask.CompletedTask;
     }
 
     protected override void DisposeInternal()
     {
-        _database.Client.Dispose();
+        _database?.Client.Dispose();
         NativeClient?.Dispose();
     }
 
