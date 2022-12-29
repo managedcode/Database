@@ -29,7 +29,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     public async Task InitializeAsync()
     {
         await _azureTablesContainer.StartAsync();
-        
+        Console.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
             ConnectionString =
@@ -45,6 +45,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
         await _database.DisposeAsync();
         await _azureTablesContainer.StopAsync();    
         await _azureTablesContainer.CleanUpAsync();
+        Console.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
     }
 
     public IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>

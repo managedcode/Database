@@ -38,7 +38,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task InitializeAsync()
     {
         await _mongoDBContainer.StartAsync();
-        Console.WriteLine($"MongoContainer State:{_mongoDBContainer.State}");
+        Console.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
@@ -54,6 +54,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         await _dbDatabase.DisposeAsync();
         await _mongoDBContainer.StopAsync();
         await _mongoDBContainer.CleanUpAsync();
-        
+        Console.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
     }
 }
