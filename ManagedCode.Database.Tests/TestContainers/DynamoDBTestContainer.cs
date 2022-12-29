@@ -12,7 +12,6 @@ using ManagedCode.Database.Tests.Common;
 namespace ManagedCode.Database.Tests.TestContainers;
 
 public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
-
 {
     private DynamoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _dynamoDBContainer;

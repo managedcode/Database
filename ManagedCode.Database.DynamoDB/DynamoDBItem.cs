@@ -1,7 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
 using ManagedCode.Database.Core;
-using System.Security.Cryptography;
 
 namespace ManagedCode.Database.DynamoDB
 {

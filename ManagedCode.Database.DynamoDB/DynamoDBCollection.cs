@@ -1,23 +1,13 @@
-﻿using Amazon.Auth.AccessControlPolicy;
-using Amazon.DynamoDBv2;
+﻿using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
-using Amazon.DynamoDBv2.Model.Internal.MarshallTransformations;
-using Amazon.Runtime.Internal;
 using ManagedCode.Database.Core;
-using ManagedCode.Database.Core.Exceptions;
-using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Transactions;
 
 namespace ManagedCode.Database.DynamoDB;
 
@@ -26,7 +16,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 {
     private readonly DynamoDBOperationConfig _config;
     private readonly DynamoDBContext _dynamoDBContext;
-    private AmazonDynamoDBClient _dynamoDBClient;
+    private readonly AmazonDynamoDBClient _dynamoDBClient;
     private readonly string _tableName;
 
     public DynamoDBCollection(DynamoDBContext dynamoDBContext, AmazonDynamoDBClient dynamoDBClient, string tableName)
@@ -45,18 +35,6 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
         return new List<ScanCondition>()
         {
             new ScanCondition("Id", ScanOperator.Equal, id)
-        };
-    }
-
-    private GetItemRequest GetItemRequestById(string id)
-    {
-        return new GetItemRequest
-        {
-            TableName = _tableName,
-            Key = new Dictionary<string, AttributeValue>()
-            {
-                {"Id", new AttributeValue() {S = id}}
-            },
         };
     }
 
@@ -82,7 +60,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
         var table = Table.LoadTable(_dynamoDBClient, _tableName);
 
-        return await table.PutItemAsync(Document.FromJson(JsonSerializer.Serialize(item)), config, cancellationToken);
+        return await table.PutItemAsync(Document.FromJson(JsonConvert.SerializeObject(item)), config, cancellationToken);
     }
 
     private async Task<Document> UpdateItemRequestByTItemAsync(TItem item, CancellationToken cancellationToken)
@@ -94,10 +72,10 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
         var table = Table.LoadTable(_dynamoDBClient, _tableName);
 
-        return await table.UpdateItemAsync(Document.FromJson(JsonSerializer.Serialize(item)), config, cancellationToken);
+        return await table.UpdateItemAsync(Document.FromJson(JsonConvert.SerializeObject(item)), config, cancellationToken);
     }
 
-    public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext, _tableName);
+    public override ICollectionQueryable<TItem> Query => new DynamoDBCollectionQueryable<TItem>(_dynamoDBContext, _dynamoDBClient, _tableName);
 
     public override void Dispose()
     {
@@ -143,7 +121,7 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
     {
         var count = 0;
 
-        IEnumerable<TItem[]> itemsChunk = items.Chunk(25);
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
 
         foreach (var itemsList in itemsChunk)
         {
@@ -154,13 +132,6 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
                 tasks.Add(Task.Run(async () =>
                 {
                     var response = await PutItemRequestByTItemAsync(item, cancellationToken);
-
-                    /*var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
-
-                    batchWriter.AddPutItem(item);
-
-                    await batchWriter.ExecuteAsync();
-                    */
 
                     Interlocked.Increment(ref count);
                 }));
@@ -345,7 +316,5 @@ protected override async Task<bool> DeleteCollectionInternalAsync(CancellationTo
 
         return count;
     }
-
     #endregion
-
 }
