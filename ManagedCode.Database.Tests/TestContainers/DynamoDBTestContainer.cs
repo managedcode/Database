@@ -21,11 +21,10 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     {
         _dynamoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("amazon/dynamodb-local")
-            .WithPortBinding(8000, 8000)
+            .WithName($"dynamodb{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(8000, true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8000))
-            .WithCleanUp(true)
             .Build();
     }
 
@@ -35,7 +34,8 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     public async Task InitializeAsync()
     {
         await _dynamoDBContainer.StartAsync();
-
+        Console.WriteLine($"DynamoDB container State:{_dynamoDBContainer.State}");
+        
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()
         {
             ServiceURL = $"http://localhost:{_dynamoDBContainer.GetMappedPublicPort(8000)}",
@@ -53,6 +53,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
         await _dbDatabase.DisposeAsync();
         await _dynamoDBContainer.StopAsync();
         await _dynamoDBContainer.CleanUpAsync();
+        Console.WriteLine($"DynamoDB container State:{_dynamoDBContainer.State}");
     }
 
     public string GenerateId()

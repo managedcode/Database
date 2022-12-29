@@ -9,10 +9,6 @@
     </PropertyGroup>
     
     <PropertyGroup>
-        <VSTestLogger>trx%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
-        <VSTestResultsDirectory>$(MSBuildThisFileDirectory)</VSTestResultsDirectory>
-    </PropertyGroup>
-    <PropertyGroup>
         <CollectCoverage>true</CollectCoverage>
         <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
         <Exclude>[*]*.Migrations.*</Exclude>
