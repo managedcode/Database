@@ -102,7 +102,7 @@ public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
 
     public override async Task Take_NegativeNumber_ReturnZero()
     {
-        var baseMethod = async () => await base.Take_NegativeNumber_ReturnZero();
+        var baseMethod = () => base.Take_NegativeNumber_ReturnZero();
 
         await baseMethod.Should().ThrowExactlyAsync<ArgumentException>();
     }
