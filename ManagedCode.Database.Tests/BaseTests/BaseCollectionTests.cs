@@ -16,6 +16,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
     {
     }
 
+    
     protected TItem CreateNewItem()
     {
         var rnd = new Random();
