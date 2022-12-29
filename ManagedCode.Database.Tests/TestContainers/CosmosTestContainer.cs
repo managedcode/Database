@@ -21,7 +21,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
-            .WithExposedPort(8081)
+            //.WithExposedPort(8081)
             .WithPortBinding(8081, true)
             .WithPortBinding(10251, true)
             .WithPortBinding(10252, true)
