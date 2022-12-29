@@ -1,6 +1,4 @@
 using System;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
 using ManagedCode.Database.DynamoDB;
 using Newtonsoft.Json;
 
