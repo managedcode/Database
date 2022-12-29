@@ -24,7 +24,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             //.WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(27017))
-            
             .Build();
     }
 
