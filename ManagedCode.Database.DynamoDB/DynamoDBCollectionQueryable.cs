@@ -1,26 +1,26 @@
-﻿using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
-using Amazon.Runtime;
 using ManagedCode.Database.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace ManagedCode.Database.DynamoDB;
 
 public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem> where TItem : class, IItem<string>
 {
     private readonly DynamoDBContext _dynamoDBContext;
     private readonly DynamoDBOperationConfig _config;
+    private readonly AmazonDynamoDBClient _dynamoDBClient;
+    private readonly string _tableName;
 
-    public DynamoDBCollectionQueryable(DynamoDBContext dynamoDBContext, string tableName)
+    public DynamoDBCollectionQueryable(DynamoDBContext dynamoDBContext, AmazonDynamoDBClient dynamoDBClient, string tableName)
     {
         _dynamoDBContext = dynamoDBContext;
+        _dynamoDBClient = dynamoDBClient;
+        _tableName = tableName;
         _config = new DynamoDBOperationConfig
         {
             OverrideTableName = tableName,
@@ -68,9 +68,9 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
 
         var count = 0;
 
-        IEnumerable<TItem[]> itemsChunk = items.Chunk(25);
+        IEnumerable<TItem[]> itemsChunk = items.Chunk(100);
 
-        foreach (var itemsList in itemsChunk) //TODO check
+        foreach (var itemsList in itemsChunk)
         {
             var tasks = new List<Task>();
 
@@ -78,13 +78,10 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    var batchWriter = _dynamoDBContext.CreateBatchWrite<TItem>(_config);
+                    var response = await _dynamoDBClient.DeleteItemAsync(DeleteItemRequestById(item.Id), cancellationToken);
 
-                    batchWriter.AddDeleteItem(item);
-
-                    await batchWriter.ExecuteAsync();
-
-                    Interlocked.Increment(ref count);
+                    if (response.Attributes.Count != 0 && response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+                        Interlocked.Increment(ref count);
                 }));
             }
 
@@ -111,5 +108,18 @@ public class DynamoDBCollectionQueryable<TItem> : BaseCollectionQueryable<TItem>
             };
 
         return query;
+    }
+
+    private DeleteItemRequest DeleteItemRequestById(string id)
+    {
+        return new DeleteItemRequest
+        {
+            TableName = _tableName,
+            Key = new Dictionary<string, AttributeValue>()
+                    {
+                        {"Id", new AttributeValue() {S = id}}
+                    },
+            ReturnValues = "ALL_OLD",
+        };
     }
 }
