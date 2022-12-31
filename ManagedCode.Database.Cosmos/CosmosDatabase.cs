@@ -62,13 +62,17 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
     public CosmosCollection<TItem> GetCollection<TItem>() where TItem : CosmosItem, new()
     {
-        if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
+        if (!IsInitialized) 
+            throw new DatabaseNotInitializedException(GetType());
 
         return new CosmosCollection<TItem>(_options, _container!);
     }
 
     public override async Task DeleteAsync(CancellationToken token = default)
     {
-        await _database?.DeleteAsync(cancellationToken: token);
+        if (_database is null)
+            return;
+        
+        await _database.DeleteAsync(cancellationToken: token);
     }
 }

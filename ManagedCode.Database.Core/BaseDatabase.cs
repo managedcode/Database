@@ -9,7 +9,7 @@ namespace ManagedCode.Database.Core
         private bool _disposed;
         private T _nativeClient = default!;
 
-        public bool IsInitialized { get; protected set; }
+        public bool IsInitialized { get; internal set; }
 
         public T NativeClient
         {

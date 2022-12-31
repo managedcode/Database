@@ -8,9 +8,10 @@ using Xunit;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
+[Collection("cosmos")]
+public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>, IClassFixture<CosmosTestContainer>
 {
-    public CosmosCollectionTests() : base(new CosmosTestContainer())
+    public CosmosCollectionTests(CosmosTestContainer container) : base(container)
     {
     }
 

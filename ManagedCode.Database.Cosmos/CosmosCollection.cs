@@ -222,10 +222,10 @@ public class CosmosCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
         await Parallel.ForEachAsync(items, cancellationToken, async (item, token) =>
         {
-            var response =
-                await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
+            var response = await _container.DeleteItemAsync<TItem>(item.Id, item.PartitionKey, cancellationToken: token);
 
-            if (response is not null) Interlocked.Increment(ref count);
+            if (response is not null) 
+                Interlocked.Increment(ref count);
         });
 
         return count;

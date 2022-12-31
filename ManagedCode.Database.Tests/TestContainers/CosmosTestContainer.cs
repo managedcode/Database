@@ -14,22 +14,18 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 {
     private CosmosDatabase _database;
     private readonly TestcontainersContainer _cosmosContainer;
+    private readonly string _collectionName = "testContainer"; 
+    private readonly string _databaseName = "database";
 
     public CosmosTestContainer()
     {
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
-            .WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
-            // .WithExposedPort(8081)
-            // .WithExposedPort(10250)
-            // .WithExposedPort(10251)
-            // .WithExposedPort(10252)
-            // .WithExposedPort(10253)
-            // .WithExposedPort(10254)
-            // .WithExposedPort(10255)
+            //.WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
+            .WithName($"azure-cosmos-emulator")
             .WithExposedPort(8081)
-            .WithPortBinding(8081, 8081)
+            .WithPortBinding(8081,   8081)
             .WithPortBinding(10250, 10250)
             .WithPortBinding(10251, 10251)
             .WithPortBinding(10252, 10252)
@@ -56,13 +52,14 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     public async Task InitializeAsync()
     {
         await _cosmosContainer.StartAsync();
+
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
                 $"AccountEndpoint=https://localhost:{_cosmosContainer.GetMappedPublicPort(8081)}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-            DatabaseName = "database",
-            CollectionName = "testContainer",
+            DatabaseName = _databaseName,
+            CollectionName = _collectionName + Guid.NewGuid().ToString("N"),
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
             {
@@ -79,15 +76,12 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             },
         });
         
-        
         await _database.InitializeAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await _database.DisposeAsync();
-        await _cosmosContainer.StopAsync();
-        await _cosmosContainer.CleanUpAsync();
+        //await _cosmosContainer.CleanUpAsync();
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
     }
 }
