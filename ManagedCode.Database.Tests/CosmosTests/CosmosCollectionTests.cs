@@ -9,9 +9,9 @@ using Xunit;
 namespace ManagedCode.Database.Tests.CosmosTests;
 
 [Collection("cosmos")]
-public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>, IClassFixture<CosmosTestContainer>
+public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>, IClassFixture<CosmosDockerContainer>
 {
-    public CosmosCollectionTests(CosmosTestContainer container) : base(container)
+    public CosmosCollectionTests(CosmosDockerContainer container) : base(new CosmosTestContainer(container))
     {
     }
 

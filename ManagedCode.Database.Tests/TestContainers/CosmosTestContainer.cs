@@ -7,20 +7,18 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.Cosmos;
 using ManagedCode.Database.Tests.Common;
 using Microsoft.Azure.Cosmos;
+using Xunit;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
-{
-    private CosmosDatabase _database;
-    private readonly TestcontainersContainer _cosmosContainer;
-    private readonly string _collectionName = "testContainer"; 
-    private readonly string _databaseName = "database";
 
-    public CosmosTestContainer()
+public class CosmosDockerContainer : IAsyncLifetime
+{
+    public TestcontainersContainer CosmosContainer { get; private set; }
+
+    public CosmosDockerContainer()
     {
-        // Docker container for cosmos db is not working at all, to test database use local windows emulator
-        _cosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        CosmosContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             //.WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
             .WithName($"azure-cosmos-emulator")
@@ -41,6 +39,32 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .Build();
     }
     
+    public async Task InitializeAsync()
+    {
+        await CosmosContainer.StartAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await CosmosContainer.StopAsync();
+        await CosmosContainer.CleanUpAsync();
+    }
+}
+
+
+
+public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
+{
+    private CosmosDatabase _database;
+    private readonly TestcontainersContainer _cosmosContainer;
+    private readonly string _collectionName = "testContainer"; 
+    private readonly string _databaseName = "database";
+
+    public CosmosTestContainer(CosmosDockerContainer container)
+    {
+        _cosmosContainer = container.CosmosContainer;
+    }
+    
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
         _database.GetCollection<TestCosmosItem>();
 
@@ -51,8 +75,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
     public async Task InitializeAsync()
     {
-        await _cosmosContainer.StartAsync();
-
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
         _database = new CosmosDatabase(new CosmosOptions
         {
@@ -81,7 +103,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
     public async Task DisposeAsync()
     {
-        //await _cosmosContainer.CleanUpAsync();
+        await _database.DisposeAsync();
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
     }
 }
