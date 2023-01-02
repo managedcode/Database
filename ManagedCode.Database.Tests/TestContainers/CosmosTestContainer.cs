@@ -46,7 +46,7 @@ public class CosmosDockerContainer : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await CosmosContainer.StopAsync();
+        //await CosmosContainer.StopAsync();
         await CosmosContainer.CleanUpAsync();
     }
 }
@@ -75,6 +75,9 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
     public async Task InitializeAsync()
     {
+        if (_cosmosContainer.State is not TestcontainersStates.Running)
+            await _cosmosContainer.StartAsync();
+        
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
         _database = new CosmosDatabase(new CosmosOptions
         {
@@ -104,6 +107,13 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
+
+        if (_cosmosContainer.State is TestcontainersStates.Running)
+        {
+            //await _cosmosContainer.StopAsync();
+            await _cosmosContainer.CleanUpAsync();
+        }
+        
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
     }
 }

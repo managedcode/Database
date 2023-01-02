@@ -25,27 +25,25 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
         var cosmosClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
         cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
         cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
-
+        NativeClient = cosmosClient;
+        
         if (_options.AllowTableCreation)
         {
             _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, cancellationToken: token);
             _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, _options.PartitionKey, cancellationToken: token);
-            return;
         }
+        else
+        {
+            _database = cosmosClient.GetDatabase(_options.DatabaseName);
+            
+            if (_database is null)
+                throw new InvalidOperationException($"Database '{_options.DatabaseName}' does not exist.");
 
-        var database = cosmosClient.GetDatabase(_options.DatabaseName);
-
-        if (database is null)
-            throw new InvalidOperationException($"Database '{_options.DatabaseName}' does not exist.");
-
-        var container = database.GetContainer(_options.CollectionName);
-
-        if (container is null) 
-            throw new Exception($"Container '{_options.CollectionName}' does not exist.");
-
-        NativeClient = cosmosClient;
-        _database = database;
-        _container = container;
+            _container = _database.GetContainer(_options.CollectionName);
+             
+            if (_container is null) 
+                throw new Exception($"Container '{_options.CollectionName}' does not exist.");
+        }
     }
 
     protected override ValueTask DisposeAsyncInternal()
