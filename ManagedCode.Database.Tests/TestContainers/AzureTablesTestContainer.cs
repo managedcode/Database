@@ -5,16 +5,19 @@ using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
-    private  AzureTablesDatabase _database;
+    private readonly ITestOutputHelper _testOutputHelper;
+    private AzureTablesDatabase _database;
     private readonly TestcontainersContainer _azureTablesContainer;
 
-    public AzureTablesTestContainer()
+    public AzureTablesTestContainer(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
             .WithName($"azure-storage{Guid.NewGuid().ToString("N")}")
@@ -29,7 +32,10 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     public async Task InitializeAsync()
     {
         await _azureTablesContainer.StartAsync();
-        Console.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+
+        _testOutputHelper.WriteLine("=START=");
+        _testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
             ConnectionString =
@@ -45,7 +51,9 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
         await _database.DisposeAsync();
         await _azureTablesContainer.StopAsync();    
         await _azureTablesContainer.CleanUpAsync();
-        Console.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+
+        _testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+        _testOutputHelper.WriteLine("=STOP=");
     }
 
     public IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>

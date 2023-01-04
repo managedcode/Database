@@ -8,16 +8,19 @@ using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.DynamoDB;
 using ManagedCode.Database.Tests.Common;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private DynamoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _dynamoDBContainer;
 
-    public DynamoDBTestContainer()
+    public DynamoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         _dynamoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("amazon/dynamodb-local")
             .WithName($"dynamodb{Guid.NewGuid().ToString("N")}")
@@ -33,8 +36,10 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     public async Task InitializeAsync()
     {
         await _dynamoDBContainer.StartAsync();
-        Console.WriteLine($"DynamoDB container State:{_dynamoDBContainer.State}");
-        
+
+        _testOutputHelper.WriteLine($"DynamoDb container State:{_dynamoDBContainer.State}");
+        _testOutputHelper.WriteLine("=START=");
+
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()
         {
             ServiceURL = $"http://localhost:{_dynamoDBContainer.GetMappedPublicPort(8000)}",
@@ -52,7 +57,9 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
         await _dbDatabase.DisposeAsync();
         await _dynamoDBContainer.StopAsync();
         await _dynamoDBContainer.CleanUpAsync();
-        Console.WriteLine($"DynamoDB container State:{_dynamoDBContainer.State}");
+
+        _testOutputHelper.WriteLine($"DynamoDb container State:{_dynamoDBContainer.State}");
+        _testOutputHelper.WriteLine("=STOP=");
     }
 
     public string GenerateId()

@@ -9,12 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
 public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzureTablesItem>
 {
-    public AzureTablesCollectionTests() : base(new AzureTablesTestContainer())
+    public AzureTablesCollectionTests(ITestOutputHelper testOutputHelper) : base(new AzureTablesTestContainer(testOutputHelper))
     {
     }
 

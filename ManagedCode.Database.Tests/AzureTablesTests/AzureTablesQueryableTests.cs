@@ -6,12 +6,13 @@ using ManagedCode.Database.Tests.TestContainers;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
 public class AzureTablesQueryableTests : BaseQueryableTests<TableId, TestAzureTablesItem>
 {
-    public AzureTablesQueryableTests() : base(new AzureTablesTestContainer())
+    public AzureTablesQueryableTests(ITestOutputHelper testOutputHelper) : base(new AzureTablesTestContainer(testOutputHelper))
     {
     }
 

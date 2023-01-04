@@ -7,12 +7,13 @@ using ManagedCode.Database.Tests.TestContainers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
 public class DynamoDBQueryableTests : BaseQueryableTests<string, TestDynamoDbItem>
 {
-    public DynamoDBQueryableTests() : base(new DynamoDBTestContainer())
+    public DynamoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new DynamoDBTestContainer(testOutputHelper))
     {
     }
 

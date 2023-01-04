@@ -9,12 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
 public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbItem>
 {
-    public DynamoDbCollectionTests() : base(new DynamoDBTestContainer())
+    public DynamoDbCollectionTests(ITestOutputHelper testOutputHelper) : base(new DynamoDBTestContainer(testOutputHelper))
     {
     }
 

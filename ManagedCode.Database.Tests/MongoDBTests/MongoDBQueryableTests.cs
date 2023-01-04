@@ -7,12 +7,13 @@ using ManagedCode.Database.Tests.TestContainers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
 public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
 {
-    public MongoDBQueryableTests() : base(new MongoDBTestContainer())
+    public MongoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
     {
     }
 

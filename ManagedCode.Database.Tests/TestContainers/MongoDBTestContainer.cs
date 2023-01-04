@@ -12,11 +12,13 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private MongoDBDatabase _dbDatabase;
     private readonly TestcontainersContainer _mongoDBContainer;
 
-    public MongoDBTestContainer()
+    public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithName($"mongo{Guid.NewGuid().ToString("N")}")
@@ -38,8 +40,10 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task InitializeAsync()
     {
         await _mongoDBContainer.StartAsync();
-        Console.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
-        
+
+        _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
+        _testOutputHelper.WriteLine("=START=");
+
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
             ConnectionString = $"mongodb://localhost:{_mongoDBContainer.GetMappedPublicPort(27017)}",
@@ -54,6 +58,8 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         await _dbDatabase.DisposeAsync();
         await _mongoDBContainer.StopAsync();
         await _mongoDBContainer.CleanUpAsync();
-        Console.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
+
+        _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
+        _testOutputHelper.WriteLine("=STOP=");
     }
 }
