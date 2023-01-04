@@ -56,6 +56,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     public async Task InitializeAsync()
     {
         await _cosmosContainer.StartAsync();
+        Console.WriteLine("=START=");
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
         _database = new CosmosDatabase(new CosmosOptions
         {
@@ -89,5 +90,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         await _cosmosContainer.StopAsync();
         await _cosmosContainer.CleanUpAsync();
         Console.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
+        Console.WriteLine("=STOP=");
+
     }
 }
