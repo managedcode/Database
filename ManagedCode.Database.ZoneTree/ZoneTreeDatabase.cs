@@ -39,7 +39,7 @@ public class ZoneTreeDatabase : BaseDatabase<ZoneTreeDatabase>
 
     public override async Task DeleteAsync(CancellationToken token = default)
     {
-        await Task.Yield();
+        await DisposeAsyncInternal();
         Directory.Delete(_options.Path, true);
     }
 

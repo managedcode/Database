@@ -108,7 +108,7 @@ internal class ZoneTreeWrapper<TKey, TValue> : IDisposable
     public long Count()
     {
         //add more cache logic
-        return _zoneTree.Maintenance.DiskSegment.ReadBufferCount;
+        return _zoneTree.Count();
     }
 
     public IEnumerable<TValue?> Enumerate()

@@ -36,7 +36,6 @@ public class ZoneTreeTestContainer : ITestContainer<string, TestZoneTreeItem>
 
     public async Task DisposeAsync()
     {
-        await _database.DisposeAsync();
         await _database.DeleteAsync();
     }
 }
