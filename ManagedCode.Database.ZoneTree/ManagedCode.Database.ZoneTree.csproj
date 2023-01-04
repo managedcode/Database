@@ -12,8 +12,8 @@
     <PropertyGroup>
         <Title>ManagedCode.Database.ZoneTree</Title>
         <PackageId>ManagedCode.Database.ZoneTree</PackageId>
-        <Description>Repository for SQLite</Description>
-        <PackageTags>managedcode, repository, SQLite</PackageTags>
+        <Description>Repository for ZoneTree</Description>
+        <PackageTags>managedcode, repository, ZoneTree</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
