@@ -5,12 +5,14 @@ using ManagedCode.Database.Tests.TestContainers;
 using System.Threading.Tasks;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
+[Collection("cosmos")]
 public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
 {
-    public CosmosQueryableTests() : base(new CosmosTestContainer())
+    public CosmosQueryableTests(ITestOutputHelper testOutputHelper) : base(new CosmosTestContainer(testOutputHelper))
     {
     }
 
