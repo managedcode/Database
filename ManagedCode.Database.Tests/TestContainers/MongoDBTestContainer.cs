@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Docker.DotNet;
+using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.Core;
@@ -14,19 +16,25 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private MongoDBDatabase _dbDatabase;
-    private readonly TestcontainersContainer _mongoDBContainer;
+    private DockerClient _client;
 
     public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mongo")
-            .WithName($"mongo{Guid.NewGuid().ToString("N")}")
-            .WithPortBinding(27017, true)
-            //.WithCleanUp(true)
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(27017))
-            .Build();
+        DockerClient client = new DockerClientConfiguration()
+            .CreateClient();
+        
+        client.
+        
+        
+        // _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        //     .WithImage("mongo")
+        //     .WithName($"mongo{Guid.NewGuid().ToString("N")}")
+        //     .WithPortBinding(27017, true)
+        //     //.WithCleanUp(true)
+        //     .WithWaitStrategy(Wait.ForUnixContainer()
+        //         .UntilPortIsAvailable(27017))
+        //     .Build();
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
@@ -39,7 +47,14 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
     public async Task InitializeAsync()
     {
-        await _mongoDBContainer.StartAsync();
+        await _client.Containers.CreateContainerAsync(new CreateContainerParameters()
+        {
+            Image = "mongo",
+            HostConfig = new HostConfig()
+            {
+                DNS = new[] { "8.8.8.8", "8.8.4.4" }
+            }
+        });
 
         _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         _testOutputHelper.WriteLine("=START=");

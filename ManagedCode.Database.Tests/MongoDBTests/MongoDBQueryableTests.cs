@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
+public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>, IClassFixture<MongoDBTestContainer>
 {
-    public MongoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
+    public MongoDBQueryableTests(MongoDBTestContainer container) : base(container)
     {
     }
 
