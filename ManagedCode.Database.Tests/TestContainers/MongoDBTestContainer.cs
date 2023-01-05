@@ -23,10 +23,12 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             .WithImage("mongo")
             .WithName($"mongo{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(27017, true)
-            //.WithCleanUp(true)
+            .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(27017))
             .Build();
+
+
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
@@ -39,7 +41,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
     public async Task InitializeAsync()
     {
-        await _mongoDBContainer.StartAsync();
+        //await _mongoDBContainer.StartAsync();
 
         _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         _testOutputHelper.WriteLine("=START=");
@@ -56,8 +58,8 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task DisposeAsync()
     {
         await _dbDatabase.DisposeAsync();
-        await _mongoDBContainer.StopAsync();
-        await _mongoDBContainer.CleanUpAsync();
+       // await _mongoDBContainer.StopAsync();
+        //await _mongoDBContainer.CleanUpAsync();
 
         _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         _testOutputHelper.WriteLine("=STOP=");
