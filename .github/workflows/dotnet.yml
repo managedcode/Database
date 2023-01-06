@@ -29,15 +29,15 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=ManagedCode.Repository.Tests/lcov.info
 
-      - name: coverlet
-        uses: b3b00/coverlet-action@1.1.9
-        with:
-          testProject: 'ManagedCode.Database.Tests/ManagedCode.Database.Tests.csproj'
-          output: 'lcov.info'
-          outputFormat: 'lcov'
-          excludes: '[program]*,[test]test.*'
-      - name: coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN }}
-          path-to-lcov: ManagedCode.Storage.Tests/lcov.info
+      #- name: coverlet
+      #  uses: b3b00/coverlet-action@1.1.9
+      #  with:
+      #    testProject: 'ManagedCode.Database.Tests/ManagedCode.Database.Tests.csproj'
+      #    output: 'lcov.info'
+      #    outputFormat: 'lcov'
+      #    excludes: '[program]*,[test]test.*'
+      #- name: coveralls
+      #  uses: coverallsapp/github-action@master
+      #  with:
+      #    github-token: ${{secrets.GITHUB_TOKEN }}
+      #    path-to-lcov: ManagedCode.Storage.Tests/lcov.info
