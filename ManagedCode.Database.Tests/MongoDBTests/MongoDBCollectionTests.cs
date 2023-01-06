@@ -7,9 +7,9 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-public class MongoDBCollectionTests : BaseCollectionTests<ObjectId, TestMongoDBItem>
+public class MongoDBCollectionTests : BaseCollectionTests<ObjectId, TestMongoDBItem>, IClassFixture<MongoDBTestContainer>
 {
-    public MongoDBCollectionTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
+    public MongoDBCollectionTests(MongoDBTestContainer container) : base(container)
     {
     }
 }

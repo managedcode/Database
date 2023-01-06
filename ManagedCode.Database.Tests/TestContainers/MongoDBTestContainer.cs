@@ -25,12 +25,11 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-
         _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
-            .WithName(containerName)
+            .WithName($"mongo{Guid.NewGuid().ToString("N")}")
             .WithPortBinding(27017, true)
-            .WithCleanUp(false)
+            //.WithCleanUp(true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(27017))
             .Build();
@@ -46,11 +45,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
     public async Task InitializeAsync()
     {
-        ushort publicPort = 0;
-
-        try
-        {
-            await _mongoDBContainer.StartAsync();
+        await _mongoDBContainer.StartAsync();
 
             containerExsist = false;
         }
