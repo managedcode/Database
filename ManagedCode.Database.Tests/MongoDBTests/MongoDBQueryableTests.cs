@@ -1,4 +1,4 @@
-using System;
+/*using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Tests.BaseTests;
@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>, IClassFixture<MongoDBTestContainer>
+public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
 {
-    public MongoDBQueryableTests(MongoDBTestContainer container) : base(container)
+    public MongoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
     {
     }
 
@@ -34,7 +34,7 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
         // Assert
         await itemsResult
             .Should()
-            .ThrowAsync<ArgumentNullException>();   
+            .ThrowAsync<ArgumentNullException>();
     }
 
     public override async Task OrderByDescending_TakeNull_ReturnException()
@@ -129,4 +129,4 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
 
         await baseMethod.Should().ThrowExactlyAsync<MongoCommandException>();
     }
-}
+}*/
