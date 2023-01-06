@@ -34,7 +34,7 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
         // Assert
         await itemsResult
             .Should()
-            .ThrowAsync<ArgumentNullException>();   
+            .ThrowAsync<ArgumentNullException>();
     }
 
     public override async Task OrderByDescending_TakeNull_ReturnException()
