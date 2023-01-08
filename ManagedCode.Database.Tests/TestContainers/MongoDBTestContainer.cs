@@ -36,7 +36,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             .Build();
 
         _dockerClient = new DockerClientConfiguration().CreateClient();
-
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
