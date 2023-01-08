@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Docker.DotNet;
+using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.AzureTables;
@@ -12,34 +16,92 @@ namespace ManagedCode.Database.Tests.TestContainers;
 public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly TestcontainersContainer _azureTablesTestContainer;
     private AzureTablesDatabase _database;
-    private readonly TestcontainersContainer _azureTablesContainer;
+    private DockerClient _dockerClient;
+    private const string containerName = "azureTablesContainer";
+    private readonly Dictionary<int, ushort> privatePort = new Dictionary<int, ushort>
+    {
+        {1, 10000},
+        {2, 10001},
+        {3, 10002}
+    };
+    private bool containerExsist = false;
 
     public AzureTablesTestContainer(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        _azureTablesContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        _azureTablesTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
-            .WithName($"azure-storage{Guid.NewGuid().ToString("N")}")
+            .WithName(containerName)
             .WithPortBinding(10000, true)
             .WithPortBinding(10001, true)
             .WithPortBinding(10002, true)
+            .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(10002))
             .Build();
+
+        _dockerClient = new DockerClientConfiguration().CreateClient();
+    }
+
+    public IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
+        _database.GetCollection<TableId, TestAzureTablesItem>();
+
+    public TableId GenerateId()
+    {
+        return new TableId($"{Guid.NewGuid():N}", $"{Guid.NewGuid():N}");
     }
 
     public async Task InitializeAsync()
     {
-        await _azureTablesContainer.StartAsync();
+        Dictionary<int, ushort> publicPort = new Dictionary<int, ushort>
+        {
+            {1, 0},
+            {2, 0},
+            {3, 0},
+        };
 
-        _testOutputHelper.WriteLine("=START=");
-        _testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+        try
+        {
+            await _azureTablesTestContainer.StartAsync();
+
+            containerExsist = false;
+        }
+        catch (Exception ex) //TODO catch name already using exception
+        {
+            containerExsist = true;
+        }
+
+        if (!containerExsist)
+        {
+            publicPort[1] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[1]);
+            publicPort[2] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[2]);
+            publicPort[3] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[3]);
+        }
+        else
+        {
+            var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
+
+            ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
+
+            publicPort[1] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[1]).PublicPort;
+            publicPort[2] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[2]).PublicPort;
+            publicPort[3] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[3]).PublicPort;
+        }
+
+        //_testOutputHelper.WriteLine("=START=");
+        //_testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
 
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
             ConnectionString =
-                $"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:{ _azureTablesContainer.GetMappedPublicPort(10000)}/devstoreaccount1;QueueEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10001)}/devstoreaccount1;TableEndpoint=http://localhost:{_azureTablesContainer.GetMappedPublicPort(10002)}/devstoreaccount1;",
+                $"DefaultEndpointsProtocol=http;" +
+                $"AccountName=devstoreaccount1;" +
+                $"AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+                $"BlobEndpoint=http://localhost:{publicPort[1]}/devstoreaccount1;" +
+                $"QueueEndpoint=http://localhost:{publicPort[2]}/devstoreaccount1;" +
+                $"TableEndpoint=http://localhost:{publicPort[3]}/devstoreaccount1;",
             AllowTableCreation = true,
         });
         
@@ -49,18 +111,10 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
-        await _azureTablesContainer.StopAsync();    
-        await _azureTablesContainer.CleanUpAsync();
+        //await _azureTablesContainer.StopAsync();    
+        //await _azureTablesContainer.CleanUpAsync();
 
-        _testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
-        _testOutputHelper.WriteLine("=STOP=");
-    }
-
-    public IDatabaseCollection<TableId, TestAzureTablesItem> Collection =>
-        _database.GetCollection<TableId, TestAzureTablesItem>();
-
-    public TableId GenerateId()
-    {
-        return new TableId($"{Guid.NewGuid():N}", $"{Guid.NewGuid():N}");
+        //_testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+        //_testOutputHelper.WriteLine("=STOP=");
     }
 }

@@ -47,8 +47,10 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(privatePort))
             .Build();
+
+        _dockerClient = new DockerClientConfiguration().CreateClient();
     }
-    
+
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
         _database.GetCollection<TestCosmosItem>();
 
