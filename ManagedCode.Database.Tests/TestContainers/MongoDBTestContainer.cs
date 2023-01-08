@@ -16,18 +16,17 @@ namespace ManagedCode.Database.Tests.TestContainers;
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly TestcontainersContainer _mongoDBTestContainer;
     private MongoDBDatabase _dbDatabase;
-    private DockerClient _client;
-    private ContainerListResponse _mongoContainer;
-    private TestcontainersContainer _mongoDBContainer;
-    private string containerName = "mongoContainer";
+    private DockerClient _dockerClient;
+    private const string containerName = "mongoContainer";
     private bool containerExsist = false;
 
     public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
 
-        _mongoDBContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        _mongoDBTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithName(containerName)
             .WithPortBinding(27017, true)
@@ -36,7 +35,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
                 .UntilPortIsAvailable(27017))
             .Build();
 
-        _client = new DockerClientConfiguration().CreateClient();
+        _dockerClient = new DockerClientConfiguration().CreateClient();
 
     }
 
@@ -54,7 +53,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
         try
         {
-            await _mongoDBContainer.StartAsync();
+            await _mongoDBTestContainer.StartAsync();
 
             containerExsist = false;
         }
@@ -65,33 +64,15 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
         if (!containerExsist)
         {
-            publicPort = _mongoDBContainer.GetMappedPublicPort(27017);
+            publicPort = _mongoDBTestContainer.GetMappedPublicPort(27017);
         }
         else
         {
-            var listContainers = await _client.Containers.ListContainersAsync(new ContainersListParameters());
+            var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
-            _mongoContainer = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
+            ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
-           /* foreach (var container in listContainers)
-            {
-                foreach (var name in container.Names) //TODO edit foreach -> .constain
-                {
-                    if (name == "/" + containerName)
-                        _mongoContainer = container;
-                }
-            }*/
-
-           publicPort = _mongoContainer.Ports.Single(port => port.PrivatePort == 27017).PublicPort;
-
-           /* foreach (var port in _mongoContainer.Ports) //TODO edit foreach -> .constain
-            {
-                if (port.PrivatePort == 27017)
-                {
-                    publicPort = port.PublicPort;
-                    break;
-                }
-            }*/
+            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == 27017).PublicPort;
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
@@ -102,9 +83,8 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
         await _dbDatabase.InitializeAsync();
 
-        /*
-                _testOutputHelper.WriteLine($"Mongo container State:{_mongoContainer.State}");
-                _testOutputHelper.WriteLine("=START=");*/
+        //_testOutputHelper.WriteLine($"Mongo container State:{_mongoContainer.State}");
+        //_testOutputHelper.WriteLine("=START=");
     }
 
     public async Task DisposeAsync()
