@@ -78,7 +78,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
             ConnectionString = $"mongodb://localhost:{publicPort}",
-            DataBaseName = $"db{Guid.NewGuid().ToString("N")}"
+            DataBaseName = $"db{Guid.NewGuid().ToString("N")}",
         });
 
         await _dbDatabase.InitializeAsync();

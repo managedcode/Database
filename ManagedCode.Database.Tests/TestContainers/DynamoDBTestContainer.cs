@@ -80,7 +80,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
             AuthenticationRegion = "eu-central-1",
             AccessKey = $"AccessKey",
             SecretKey = $"SecretKey",
-            DataBaseName = $"db{Guid.NewGuid().ToString("N")}"
+            DataBaseName = $"db{Guid.NewGuid().ToString("N")}",
         });
 
         await _dbDatabase.InitializeAsync();
