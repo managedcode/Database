@@ -20,6 +20,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     private MongoDBDatabase _dbDatabase;
     private DockerClient _dockerClient;
     private const string containerName = "mongoContainer";
+    private const ushort privatePort = 27017;
     private bool containerExsist = false;
 
     public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
@@ -29,10 +30,10 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         _mongoDBTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")
             .WithName(containerName)
-            .WithPortBinding(27017, true)
+            .WithPortBinding(privatePort, true)
             .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(27017))
+                .UntilPortIsAvailable(privatePort))
             .Build();
 
         _dockerClient = new DockerClientConfiguration().CreateClient();
@@ -63,7 +64,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
         if (!containerExsist)
         {
-            publicPort = _mongoDBTestContainer.GetMappedPublicPort(27017);
+            publicPort = _mongoDBTestContainer.GetMappedPublicPort(privatePort);
         }
         else
         {
@@ -71,7 +72,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
-            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == 27017).PublicPort;
+            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()

@@ -19,7 +19,9 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     private DynamoDBDatabase _dbDatabase;
     private DockerClient _dockerClient;
     private const string containerName = "dynamoContainer";
+    private const ushort privatePort = 8000;
     private bool containerExsist = false;
+
 
     public DynamoDBTestContainer(ITestOutputHelper testOutputHelper)
     {
@@ -27,10 +29,10 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
         _dynamoDBTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("amazon/dynamodb-local")
             .WithName(containerName)
-            .WithPortBinding(8000, true)
+            .WithPortBinding(privatePort, true)
             .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(8000))
+                .UntilPortIsAvailable(privatePort))
             .Build();
 
         _dockerClient = new DockerClientConfiguration().CreateClient();
@@ -61,7 +63,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
 
         if (!containerExsist)
         {
-            publicPort = _dynamoDBTestContainer.GetMappedPublicPort(27017);
+            publicPort = _dynamoDBTestContainer.GetMappedPublicPort(privatePort);
         }
         else
         {
@@ -69,7 +71,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
-            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == 27017).PublicPort;
+            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
         }
 
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()
