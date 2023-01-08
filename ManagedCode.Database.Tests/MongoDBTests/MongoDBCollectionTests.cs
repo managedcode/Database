@@ -14,10 +14,4 @@ public class MongoDBCollectionTests : BaseCollectionTests<ObjectId, TestMongoDBI
     public MongoDBCollectionTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
     {
     }
-
-
-    [Fact]
-    public override async Task Count()
-    {
-    }
 }

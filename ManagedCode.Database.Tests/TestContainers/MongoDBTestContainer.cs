@@ -17,9 +17,10 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private MongoDBDatabase _dbDatabase;
+    private DockerClient _client;
     private ContainerListResponse _mongoContainer;
     private TestcontainersContainer _mongoDBContainer;
-    private string containerName = "mongo3026f50d661c40d699a97de27eafe7e";
+    private string containerName = "mongoContainer";
     private bool containerExsist = false;
 
     public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
@@ -34,6 +35,9 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(27017))
             .Build();
+
+        _client = new DockerClientConfiguration().CreateClient();
+
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
@@ -54,7 +58,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 
             containerExsist = false;
         }
-        catch (Exception ex)
+        catch (Exception ex) //TODO catch name already using exception
         {
             containerExsist = true;
         }
@@ -65,33 +69,35 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
         }
         else
         {
-            DockerClient _client = new DockerClientConfiguration().CreateClient();
-
             var listContainers = await _client.Containers.ListContainersAsync(new ContainersListParameters());
 
-            foreach (var container in listContainers)
+            _mongoContainer = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
+
+           /* foreach (var container in listContainers)
             {
                 foreach (var name in container.Names) //TODO edit foreach -> .constain
                 {
                     if (name == "/" + containerName)
                         _mongoContainer = container;
                 }
-            }
+            }*/
 
-            foreach (var port in _mongoContainer.Ports) //TODO edit foreach -> .constain
+           publicPort = _mongoContainer.Ports.Single(port => port.PrivatePort == 27017).PublicPort;
+
+           /* foreach (var port in _mongoContainer.Ports) //TODO edit foreach -> .constain
             {
                 if (port.PrivatePort == 27017)
                 {
                     publicPort = port.PublicPort;
                     break;
                 }
-            }
+            }*/
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
             ConnectionString = $"mongodb://localhost:{publicPort}",
-            DataBaseName = "db"
+            DataBaseName = $"db{Guid.NewGuid().ToString("N")}"
         });
 
         await _dbDatabase.InitializeAsync();
