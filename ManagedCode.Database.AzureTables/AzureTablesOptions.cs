@@ -9,4 +9,6 @@ public class AzureTablesOptions
     public TableSharedKeyCredential TableSharedKeyCredential { get; set; }
     public Uri TableStorageUri { get; set; }
     public bool AllowTableCreation { get; set; }
+    public string TableName { get; set; }
+
 }

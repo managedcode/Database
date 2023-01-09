@@ -103,6 +103,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
                 $"QueueEndpoint=http://localhost:{publicPort[2]}/devstoreaccount1;" +
                 $"TableEndpoint=http://localhost:{publicPort[3]}/devstoreaccount1;",
             AllowTableCreation = true,
+            TableName = $"table{Guid.NewGuid().ToString("N")}",
         });
         
         await _database.InitializeAsync();
