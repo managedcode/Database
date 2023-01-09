@@ -28,8 +28,6 @@ public class DynamoDBDatabase : BaseDatabase<AmazonDynamoDBClient>
         _dbOptions = dbOptions;
     }
 
-
-
     public override Task DeleteAsync(CancellationToken token = default)
     {
         throw new NotImplementedException();

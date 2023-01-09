@@ -81,6 +81,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
             AccessKey = $"AccessKey",
             SecretKey = $"SecretKey",
             DataBaseName = $"db{Guid.NewGuid().ToString("N")}",
+            CollectionName = $"collection{Guid.NewGuid().ToString("N")}",
         });
 
         await _dbDatabase.InitializeAsync();

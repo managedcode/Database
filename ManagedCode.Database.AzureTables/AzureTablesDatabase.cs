@@ -82,6 +82,6 @@ public class AzureTablesDatabase : BaseDatabase<TableServiceClient>
 
     private string GetTableName<TItem>()
     {
-        return _options.TableName != null ? _options.TableName : typeof(TItem).Name.Pluralize();
+        return string.IsNullOrEmpty(_options.TableName) ? typeof(TItem).Name.Pluralize() : _options.TableName;
     }
 }

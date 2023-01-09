@@ -5,8 +5,8 @@ namespace ManagedCode.Database.Cosmos;
 public class CosmosOptions
 {
     public string ConnectionString { get; set; }
-    public string DatabaseName { get; set; } = "database";
-    public string CollectionName { get; set; } = "collection";
+    public string DatabaseName { get; set; }
+    public string CollectionName { get; set; }
     
     public string PartitionKey { get; set; } = "/id";
     public CosmosClientOptions CosmosClientOptions { get; set; }

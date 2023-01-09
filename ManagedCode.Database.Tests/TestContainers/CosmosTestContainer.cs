@@ -1,15 +1,18 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Cosmos;
 using ManagedCode.Database.Tests.Common;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Fluent;
 using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
@@ -28,26 +31,29 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     {
         _testOutputHelper = testOutputHelper;
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
+        var outputConsumer = Consume.RedirectStdoutAndStderrToStream(new MemoryStream(), new MemoryStream());
+        var waitStrategy = Wait.ForUnixContainer().UntilMessageIsLogged(outputConsumer.Stdout, "Started");
+
         _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
             //.WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
-            .WithExposedPort(privatePort)
-            .WithPortBinding(privatePort, privatePort)
-            .WithPortBinding(10250, 10250)
-            .WithPortBinding(10251, 10251)
-            .WithPortBinding(10252, 10252)  
-            .WithPortBinding(10253, 10253)
-            .WithPortBinding(10254, 10254)
-            .WithPortBinding(10255, 10255)
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
+            .WithExposedPort(8081)
+            .WithExposedPort(10251)
+            .WithExposedPort(10252)
+            .WithExposedPort(10253)
+            .WithExposedPort(10254)
+            .WithPortBinding(8081, true)
+            .WithPortBinding(10251, true)
+            .WithPortBinding(10252, true)
+            .WithPortBinding(10253, true)
+            .WithPortBinding(10254, true)
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "30")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-            .WithCleanUp(false)
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(privatePort))
+            .WithOutputConsumer(outputConsumer)
+            .WithWaitStrategy(waitStrategy)
             .Build();
-
         _dockerClient = new DockerClientConfiguration().CreateClient();
     }
 
@@ -83,7 +89,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
-
+                
             publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
         }
         
@@ -100,7 +106,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
                 {
                     HttpMessageHandler httpMessageHandler = new HttpClientHandler()
                     {
-                        ServerCertificateCustomValidationCallback =  (_, _, _, _) => true
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                     };
                     
                     return new HttpClient(httpMessageHandler);
@@ -108,7 +114,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
                 ConnectionMode = ConnectionMode.Gateway
             },
         });
-        
+
         await _database.InitializeAsync();
         
         //_testOutputHelper.WriteLine("=START=");
