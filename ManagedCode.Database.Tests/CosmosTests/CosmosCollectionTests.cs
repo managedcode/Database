@@ -9,10 +9,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-[CollectionDefinition("Cosmos collection")]
+[Collection(nameof(CosmosTestContainer))]
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 {
-    public CosmosCollectionTests(ITestOutputHelper testOutputHelper) : base(new CosmosTestContainer(testOutputHelper))
+    public CosmosCollectionTests(ITestOutputHelper testOutputHelper, CosmosTestContainer container) : base(container)
     {
     }
 

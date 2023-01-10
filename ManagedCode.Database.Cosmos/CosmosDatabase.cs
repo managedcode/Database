@@ -9,7 +9,6 @@ namespace ManagedCode.Database.Cosmos;
 
 public class CosmosDatabase : BaseDatabase<CosmosClient>
 {
-    private const int RetryCount = 25;
     private readonly CosmosOptions _options;
 
     private Container? _container;
@@ -23,14 +22,21 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
     protected override async Task InitializeAsyncInternal(CancellationToken token = default)
     {
         var cosmosClient = new CosmosClient(_options.ConnectionString, _options.CosmosClientOptions);
-        cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = RetryCount;
-        cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(2);
+        
+        if (_options.MaxRetryAttemptsOnRateLimitedRequests.HasValue)
+        {
+            cosmosClient.ClientOptions.MaxRetryAttemptsOnRateLimitedRequests = _options.MaxRetryAttemptsOnRateLimitedRequests.Value;
+        }
+        if (_options.MaxRetryWaitTimeOnRateLimitedRequests.HasValue)
+        {
+            cosmosClient.ClientOptions.MaxRetryWaitTimeOnRateLimitedRequests = _options.MaxRetryWaitTimeOnRateLimitedRequests.Value;
+        }
+        
 
         if (_options.AllowTableCreation)
         {
             _database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, cancellationToken: token);
             _container = await _database.CreateContainerIfNotExistsAsync(_options.CollectionName, _options.PartitionKey, cancellationToken: token);
-            return;
         }
 
         var database = cosmosClient.GetDatabase(_options.DatabaseName);
@@ -42,10 +48,10 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
         if (container is null) 
             throw new Exception($"Container '{_options.CollectionName}' does not exist.");
-
-        NativeClient = cosmosClient;
+        
         _database = database;
         _container = container;
+        NativeClient = cosmosClient;
     }
 
     protected override ValueTask DisposeAsyncInternal()
@@ -56,19 +62,25 @@ public class CosmosDatabase : BaseDatabase<CosmosClient>
 
     protected override void DisposeInternal()
     {
-        _database?.Client.Dispose();
         NativeClient?.Dispose();
+        _database = null;
+        _container = null;
+        IsInitialized = false;
     }
 
     public CosmosCollection<TItem> GetCollection<TItem>() where TItem : CosmosItem, new()
     {
-        if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
+        if (!IsInitialized) 
+            throw new DatabaseNotInitializedException(GetType());
 
         return new CosmosCollection<TItem>(_options, _container!);
     }
 
     public override async Task DeleteAsync(CancellationToken token = default)
     {
-        await _database?.DeleteAsync(cancellationToken: token);
+        if (_database is not null)
+        {
+            await _database.DeleteAsync(cancellationToken: token);
+        }
     }
 }

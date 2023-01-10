@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Azure.Cosmos;
 
 namespace ManagedCode.Database.Cosmos;
@@ -13,4 +14,7 @@ public class CosmosOptions
     public bool SplitByType { get; set; } = true;
     public bool UseItemIdAsPartitionKey { get; set; } = true;
     public bool AllowTableCreation { get; set; }
+
+    public TimeSpan? MaxRetryWaitTimeOnRateLimitedRequests { get; set; } 
+    public int? MaxRetryAttemptsOnRateLimitedRequests { get; set; } 
 }
