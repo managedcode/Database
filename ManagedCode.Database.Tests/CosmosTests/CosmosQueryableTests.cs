@@ -1,4 +1,4 @@
-/*using FluentAssertions;
+using FluentAssertions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
@@ -108,4 +108,4 @@ public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
 
         await baseMethod.Should().ThrowExactlyAsync<ArgumentException>();
     }
-}*/
+}

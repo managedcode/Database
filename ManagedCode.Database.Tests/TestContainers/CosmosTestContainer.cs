@@ -30,8 +30,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         // Docker container for cosmos db is not working at all, to test database use local windows emulator
         _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
-            //.WithName(containerName)
-            .WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
+            .WithName(containerName)
+            //.WithName($"azure-cosmos-emulator{Guid.NewGuid().ToString("N")}")
             .WithExposedPort(8081)
             .WithPortBinding(8081, 8081)
             .WithPortBinding(10250, 10250)
@@ -40,9 +40,9 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
             .WithPortBinding(10253, 10253)
             .WithPortBinding(10254, 10254)
             .WithPortBinding(10255, 10255)
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "25")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "true")
             .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
@@ -91,8 +91,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
         {
             ConnectionString =
                 $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-            DatabaseName = "database",
-            CollectionName = "testContainer",
+            DatabaseName = $"db{Guid.NewGuid().ToString("N")}",
+            CollectionName = "testContainers",
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
             {
@@ -116,9 +116,16 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
+        /*
         await _cosmosTestContainer.StopAsync();
-        await _cosmosTestContainer.CleanUpAsync();
+        await _cosmosTestContainer.CleanUpAsync();*/
         /*     _testOutputHelper.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
              _testOutputHelper.WriteLine("=STOP=");*/
     }
+/*
+    public async void Dispose()
+    {
+        await _cosmosTestContainer.StopAsync();
+        await _cosmosTestContainer.CleanUpAsync();
+    }*/
 }
