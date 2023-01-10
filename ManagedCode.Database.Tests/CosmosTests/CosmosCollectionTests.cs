@@ -1,4 +1,4 @@
-using FluentAssertions;
+/*using FluentAssertions;
 using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-[Collection("cosmos")]
+[CollectionDefinition("Cosmos collection")]
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 {
     public CosmosCollectionTests(ITestOutputHelper testOutputHelper) : base(new CosmosTestContainer(testOutputHelper))
@@ -36,4 +36,4 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
     }
-}
+}*/

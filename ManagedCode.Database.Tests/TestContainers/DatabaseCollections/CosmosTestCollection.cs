@@ -1,4 +1,4 @@
-﻿/*using Xunit;
+﻿using Xunit;
 
 namespace ManagedCode.Database.Tests.TestContainers.DatabaseCollections
 {
@@ -7,4 +7,3 @@ namespace ManagedCode.Database.Tests.TestContainers.DatabaseCollections
     {
     }
 }
-*/
