@@ -14,7 +14,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
 {
-    private readonly ITestOutputHelper _testOutputHelper;
+   // private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _dynamoDBTestContainer;
     private DynamoDBDatabase _dbDatabase;
     private DockerClient _dockerClient;
@@ -23,9 +23,9 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     private bool containerExsist = false;
 
 
-    public DynamoDBTestContainer(ITestOutputHelper testOutputHelper)
+    public DynamoDBTestContainer()
     {
-        _testOutputHelper = testOutputHelper;
+        //_testOutputHelper = testOutputHelper;
         _dynamoDBTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("amazon/dynamodb-local")
             .WithName(containerName)

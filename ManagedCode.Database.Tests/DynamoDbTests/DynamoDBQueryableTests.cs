@@ -9,9 +9,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
+[Collection("DynamoDB collection")]
 public class DynamoDBQueryableTests : BaseQueryableTests<string, TestDynamoDbItem>
 {
-    public DynamoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new DynamoDBTestContainer(testOutputHelper))
+    public DynamoDBQueryableTests() : base(new DynamoDBTestContainer())
     {
     }
 

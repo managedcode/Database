@@ -11,9 +11,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
+[Collection("MongoDB collection")]
 public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
 {
-    public MongoDBQueryableTests(ITestOutputHelper testOutputHelper) : base(new MongoDBTestContainer(testOutputHelper))
+    public MongoDBQueryableTests() : base(new MongoDBTestContainer())
     {
     }
 

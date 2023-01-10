@@ -13,9 +13,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
+[Collection("AzureTables collection")]
 public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzureTablesItem>
 {
-    public AzureTablesCollectionTests(ITestOutputHelper testOutputHelper) : base(new AzureTablesTestContainer(testOutputHelper))
+    public AzureTablesCollectionTests() : base(new AzureTablesTestContainer())
     {
     }
 

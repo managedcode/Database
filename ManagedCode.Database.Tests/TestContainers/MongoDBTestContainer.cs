@@ -15,7 +15,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
 {
-    private readonly ITestOutputHelper _testOutputHelper;
+    //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _mongoDBTestContainer;
     private MongoDBDatabase _dbDatabase;
     private DockerClient _dockerClient;
@@ -23,9 +23,9 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     private const ushort privatePort = 27017;
     private bool containerExsist = false;
 
-    public MongoDBTestContainer(ITestOutputHelper testOutputHelper)
+    public MongoDBTestContainer()
     {
-        _testOutputHelper = testOutputHelper;
+        //_testOutputHelper = testOutputHelper;
 
         _mongoDBTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mongo")

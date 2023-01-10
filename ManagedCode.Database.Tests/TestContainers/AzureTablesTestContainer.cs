@@ -15,7 +15,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 
 public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
 {
-    private readonly ITestOutputHelper _testOutputHelper;
+    //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _azureTablesTestContainer;
     private AzureTablesDatabase _database;
     private DockerClient _dockerClient;
@@ -28,9 +28,9 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     };
     private bool containerExsist = false;
 
-    public AzureTablesTestContainer(ITestOutputHelper testOutputHelper)
+    public AzureTablesTestContainer()
     {
-        _testOutputHelper = testOutputHelper;
+        //_testOutputHelper = testOutputHelper;
         _azureTablesTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/azure-storage/azurite")
             .WithName(containerName)
