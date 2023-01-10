@@ -61,15 +61,39 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>, IColl
 
     public async Task InitializeAsync()
     {
-        if(_cosmosTestContainer.State != TestcontainersStates.Running)
+        ushort publicPort = 0;
+
+        try
+        {
             await _cosmosTestContainer.StartAsync();
+
+            containerExsist = false;
+        }
+        catch (Exception ex) //TODO catch name already using exception
+        {
+            containerExsist = true;
+        }
+
+        if (!containerExsist)
+        {
+            publicPort = _cosmosTestContainer.GetMappedPublicPort(privatePort);
+        }
+        else
+        {
+            var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
+
+            ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
+            
+            if(containerListResponse != null)
+                publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
+        }
 
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
-                $"AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+                $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
-            CollectionName = $"collection{Guid.NewGuid().ToString("N").Take(8)}",
+            CollectionName = $"testContainers",
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
             {
@@ -92,8 +116,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>, IColl
 
     public async Task DisposeAsync()
     {
-        ///await  _database.DeleteAsync();
-        //await _database.DisposeAsync();
+        await  _database.DeleteAsync();
+        await _database.DisposeAsync();
         /*
         await _cosmosTestContainer.StopAsync();
         await _cosmosTestContainer.CleanUpAsync();*/
