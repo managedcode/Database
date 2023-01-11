@@ -19,17 +19,6 @@ jobs:
             image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
             ports:
                 - 8081:8081
-                - 8900:8900
-                - 8901:8901
-                - 8902:8902
-                - 10250:10250
-                - 10251:10251
-                - 10252:10252
-                - 10253:10253
-                - 10254:10254
-                - 10255:10255
-                - 10256:10256
-                - 10350:10350
             env:
                 AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 2
                 AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: true
