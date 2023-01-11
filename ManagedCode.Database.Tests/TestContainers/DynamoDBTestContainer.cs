@@ -8,11 +8,13 @@ using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.DynamoDB;
 using ManagedCode.Database.Tests.Common;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
+[CollectionDefinition(nameof(DynamoDBTestContainer))]
+public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>, ICollectionFixture<DynamoDBTestContainer>, IDisposable
 {
    // private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _dynamoDBTestContainer;
@@ -21,7 +23,7 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     private const string containerName = "dynamoContainer";
     private const ushort privatePort = 8000;
     private bool containerExsist = false;
-
+    private string containerId;
 
     public DynamoDBTestContainer()
     {
@@ -64,12 +66,16 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
         if (!containerExsist)
         {
             publicPort = _dynamoDBTestContainer.GetMappedPublicPort(privatePort);
+
+            containerId = _dynamoDBTestContainer.Id;
         }
         else
         {
             var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
+
+            containerId = containerListResponse.ID;
 
             publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
         }
@@ -93,10 +99,18 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>
     public async Task DisposeAsync()
     {
         await _dbDatabase.DisposeAsync();
-        //await _dynamoDBContainer.StopAsync();
-        //await _dynamoDBContainer.CleanUpAsync();
 
         //_testOutputHelper.WriteLine($"DynamoDb container State:{_dynamoDBContainer.State}");
         //_testOutputHelper.WriteLine("=STOP=");
+    }
+
+    public async void Dispose()
+    {
+
+        await _dockerClient.Containers.RemoveContainerAsync(containerId,
+              new ContainerRemoveParameters
+              {
+                  Force = true
+              });
     }
 }

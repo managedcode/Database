@@ -1,4 +1,4 @@
-/*using FluentAssertions;
+using FluentAssertions;
 using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -10,10 +10,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
-[Collection("DynamoDB collection")]
+[Collection(nameof(DynamoDBTestContainer))]
 public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbItem>
 {
-    public DynamoDbCollectionTests() : base(new DynamoDBTestContainer())
+    public DynamoDbCollectionTests(DynamoDBTestContainer container) : base(container)
     {
     }
 
@@ -51,30 +51,30 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         deleted.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    *//*    [Fact]
-        public override async Task GetById_ReturnOk()
+    [Fact]
+    public override async Task GetById_ReturnOk()
+    {
+        // Arrange
+        var itemId = GenerateId();
+        await Collection.InsertAsync(CreateNewItem(itemId));
+
+        try
         {
-            // Arrange
-            var itemId = GenerateId();
-            await Collection.InsertAsync(CreateNewItem(itemId));
+            // Act
+            var getItemResult = await Collection.GetAsync(itemId);
 
-            try
-            {
-                // Act
-                var getItemResult = await Collection.GetAsync(itemId);
+            // Assert
+            getItemResult.Should().NotBeNull();
+        }
+        catch (DatabaseException e)
+        {
+            // Act
+            var getItemResult = () => Collection.GetAsync(itemId);
 
-                // Assert
-                getItemResult.Should().NotBeNull();
-            }
-            catch (DatabaseException e)
-            {
-                // Act
-                var getItemResult = () => Collection.GetAsync(itemId);
-
-                // Assert
-                await getItemResult.Should().ThrowAsync<DatabaseException>();
-            }
-        }*//*
+            // Assert
+            await getItemResult.Should().ThrowAsync<DatabaseException>();
+        }
+    }
 
     [Fact]
     public override async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
@@ -102,4 +102,4 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         // Assert
         updateItem.Should().BeNull();
     }
-}*/
+}

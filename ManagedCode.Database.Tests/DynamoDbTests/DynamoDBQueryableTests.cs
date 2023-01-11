@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Tests.BaseTests;
@@ -9,10 +9,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
-[Collection("DynamoDB collection")]
+[Collection(nameof(DynamoDBTestContainer))]
 public class DynamoDBQueryableTests : BaseQueryableTests<string, TestDynamoDbItem>
 {
-    public DynamoDBQueryableTests() : base(new DynamoDBTestContainer())
+    public DynamoDBQueryableTests(DynamoDBTestContainer container) : base(container)
     {
     }
 
@@ -55,4 +55,4 @@ public class DynamoDBQueryableTests : BaseQueryableTests<string, TestDynamoDbIte
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
-}*/
+}
