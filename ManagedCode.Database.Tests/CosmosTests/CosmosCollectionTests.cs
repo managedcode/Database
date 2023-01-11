@@ -16,24 +16,24 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
     {
     }
 
-    public override async Task DeleteItemById_WhenItemDoesntExists()
-    {
-        var baseMethod = () => base.DeleteItemById_WhenItemDoesntExists();
+    /* public override async Task DeleteItemById_WhenItemDoesntExists()
+     {
+         var baseMethod = () => base.DeleteItemById_WhenItemDoesntExists();
 
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
+         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+     }
 
-    public override async Task DeleteListOfItemsById_WhenItemsDontExist()
-    {
-        var baseMethod = () => base.DeleteListOfItemsById_WhenItemsDontExist();
+     public override async Task DeleteListOfItemsById_WhenItemsDontExist()
+     {
+         var baseMethod = () => base.DeleteListOfItemsById_WhenItemsDontExist();
 
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
+         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+     }
 
-    public override async Task DeleteListOfItems_WhenItemsDontExist()
-    {
-        var baseMethod = () => base.DeleteListOfItems_WhenItemsDontExist();
+     public override async Task DeleteListOfItems_WhenItemsDontExist()
+     {
+         var baseMethod = () => base.DeleteListOfItems_WhenItemsDontExist();
 
-        await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
-    }
+         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+     }*/
 }

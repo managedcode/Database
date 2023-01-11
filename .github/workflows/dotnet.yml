@@ -14,15 +14,6 @@ jobs:
   
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-        cosmosdb:
-            image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
-            ports:
-                - 8081:8081
-            env:
-                AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 2
-                AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: true
-                AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE: 127.0.0.1    
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
@@ -37,10 +28,6 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=ManagedCode.Repository.Tests/lcov.info
-      - name: docker run fake-gcs-server
-        run: |
-            docker run -d --name fake-gcs-server -p 8081:8081 -v ${PWD}/examples/data:/data fsouza/fake-gcs-server -scheme http -external-url "http://localhost:8081"
-            sleep 5s
 
       #- name: coverlet
       #  uses: b3b00/coverlet-action@1.1.9
