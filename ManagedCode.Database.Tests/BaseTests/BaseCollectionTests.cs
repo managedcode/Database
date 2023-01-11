@@ -53,6 +53,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
         // Assert
         insertItem.Should().NotBeNull();
     }
+
     [Fact]
     public virtual async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
     {
@@ -66,7 +67,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
         // Assert
         await insertAction.Should().ThrowAsync<DatabaseException>();
     }
-    /*
+
     [Fact]
     public virtual async Task InsertListOfItems_ReturnsItemsCount()
     {
@@ -392,7 +393,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
 
         // Assert
         getItemResult.Should().BeNull();
-    }*/
+    }
 
     #endregion
 }
