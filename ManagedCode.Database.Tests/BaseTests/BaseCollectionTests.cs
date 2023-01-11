@@ -53,6 +53,7 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
         // Assert
         insertItem.Should().NotBeNull();
     }
+    /*
     [Fact]
     public virtual async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
     {

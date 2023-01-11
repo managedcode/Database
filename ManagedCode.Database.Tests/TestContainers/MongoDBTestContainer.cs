@@ -108,13 +108,13 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
 
     public async void Dispose()
     {
-      await _dockerClient.Containers.StopContainerAsync(containerId, new ContainerStopParameters());
 
       await _dockerClient.Containers.RemoveContainerAsync(containerId, 
             new ContainerRemoveParameters
             {
                 Force = true
             });
+       // await _dockerClient.Containers.StopContainerAsync(containerId, new ContainerStopParameters());
 
     }
 }
