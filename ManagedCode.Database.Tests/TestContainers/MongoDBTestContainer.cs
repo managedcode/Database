@@ -19,7 +19,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     private readonly TestcontainersContainer _mongoDBTestContainer;
     private MongoDBDatabase _dbDatabase;
     private DockerClient _dockerClient;
-    private const string containerName = "mongoContainer";
+    private string containerName = $"mongoContainer{Guid.NewGuid().ToString("N")}";
     private const ushort privatePort = 27017;
     private bool containerExsist = false;
 
@@ -36,7 +36,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
                 .UntilPortIsAvailable(privatePort))
             .Build();
 
-        _dockerClient = new DockerClientConfiguration().CreateClient();
+      //  _dockerClient = new DockerClientConfiguration().CreateClient();
     }
 
     public IDatabaseCollection<ObjectId, TestMongoDBItem> Collection =>
@@ -51,9 +51,10 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     {
         ushort publicPort = 0;
 
+        await _mongoDBTestContainer.StartAsync();
+/*
         try
         {
-            await _mongoDBTestContainer.StartAsync();
 
             containerExsist = false;
         }
@@ -73,11 +74,11 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
             publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
-        }
+        }*/
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
         {
-            ConnectionString = $"mongodb://localhost:{publicPort}",
+            ConnectionString = $"mongodb://localhost:{_mongoDBTestContainer.GetMappedPublicPort(privatePort)}",
             DataBaseName = $"db{Guid.NewGuid().ToString("N")}",
         });
 
@@ -90,8 +91,8 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>
     public async Task DisposeAsync()
     {
         await _dbDatabase.DisposeAsync();
-        // await _mongoDBContainer.StopAsync();
-        //await _mongoDBContainer.CleanUpAsync();
+         await _mongoDBTestContainer.StopAsync();
+        await _mongoDBTestContainer.CleanUpAsync();
 
         // _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         //_testOutputHelper.WriteLine("=STOP=");
