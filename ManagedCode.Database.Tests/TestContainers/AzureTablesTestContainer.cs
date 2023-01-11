@@ -10,12 +10,12 @@ using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 [CollectionDefinition(nameof(AzureTablesTestContainer))]
-public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>, ICollectionFixture<AzureTablesTestContainer>, IDisposable
+public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>, 
+    ICollectionFixture<AzureTablesTestContainer>, IDisposable
 {
     //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _azureTablesTestContainer;
@@ -92,13 +92,15 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
 
             containerId = containerListResponse.ID;
 
-            publicPort[1] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[1]).PublicPort;
-            publicPort[2] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[2]).PublicPort;
-            publicPort[3] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[3]).PublicPort;
-        }
+            if (containerListResponse != null)
+            {
+                publicPort[1] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[1]).PublicPort;
+                publicPort[2] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[2]).PublicPort;
+                publicPort[3] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[3]).PublicPort;
 
-        //_testOutputHelper.WriteLine("=START=");
-        //_testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
+                containerId = containerListResponse.ID;
+            }
+        }
 
         _database = new AzureTablesDatabase(new AzureTablesOptions
         {
@@ -114,6 +116,9 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
         });
         
         await _database.InitializeAsync();
+
+        //_testOutputHelper.WriteLine("=START=");
+        //_testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
     }
 
     public async Task DisposeAsync()

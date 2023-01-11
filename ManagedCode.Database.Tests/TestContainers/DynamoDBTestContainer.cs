@@ -9,12 +9,12 @@ using ManagedCode.Database.Core;
 using ManagedCode.Database.DynamoDB;
 using ManagedCode.Database.Tests.Common;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 [CollectionDefinition(nameof(DynamoDBTestContainer))]
-public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>, ICollectionFixture<DynamoDBTestContainer>, IDisposable
+public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>, 
+    ICollectionFixture<DynamoDBTestContainer>, IDisposable
 {
    // private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _dynamoDBTestContainer;
@@ -75,9 +75,12 @@ public class DynamoDBTestContainer : ITestContainer<string, TestDynamoDbItem>, I
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
-            containerId = containerListResponse.ID;
+            if (containerListResponse != null)
+            {
+                publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
-            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
+                containerId = containerListResponse.ID;
+            }
         }
 
         _dbDatabase = new DynamoDBDatabase(new DynamoDBOptions()

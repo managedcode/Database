@@ -10,12 +10,12 @@ using ManagedCode.Database.MongoDB;
 using ManagedCode.Database.Tests.Common;
 using MongoDB.Bson;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
 [CollectionDefinition(nameof(MongoDBTestContainer))]
-public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, ICollectionFixture<MongoDBTestContainer>, IDisposable
+public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, 
+    ICollectionFixture<MongoDBTestContainer>, IDisposable
 {
     //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _mongoDBTestContainer;
@@ -76,9 +76,12 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
 
-            containerId = containerListResponse.ID;
+            if (containerListResponse != null)
+            {
+                publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
-            publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
+                containerId = containerListResponse.ID;
+            }
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
