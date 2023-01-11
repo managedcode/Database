@@ -14,7 +14,6 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-[CollectionDefinition(nameof(MongoDBTestContainer))]
 public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, IDisposable
 {
     //private readonly ITestOutputHelper _testOutputHelper;
@@ -79,6 +78,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
             containerId = containerListResponse.ID;
 
             publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
+
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
@@ -106,7 +106,7 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
     {
       await _dockerClient.Containers.StopContainerAsync(containerId, new ContainerStopParameters());
 
-    //    await _dockerClient.Containers.RemoveContainerAsync(containerId, new ContainerRemoveParameters());
+        await _dockerClient.Containers.RemoveContainerAsync(containerId, new ContainerRemoveParameters());
 
     }
 }
