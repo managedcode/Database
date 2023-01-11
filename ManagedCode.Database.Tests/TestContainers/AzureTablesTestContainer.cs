@@ -9,11 +9,13 @@ using DotNet.Testcontainers.Containers;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core;
 using ManagedCode.Database.Tests.Common;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>
+[CollectionDefinition(nameof(AzureTablesTestContainer))]
+public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesItem>, ICollectionFixture<AzureTablesTestContainer>, IDisposable
 {
     //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _azureTablesTestContainer;
@@ -27,6 +29,7 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
         {3, 10002}
     };
     private bool containerExsist = false;
+    private string containerId;
 
     public AzureTablesTestContainer()
     {
@@ -78,12 +81,16 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
             publicPort[1] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[1]);
             publicPort[2] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[2]);
             publicPort[3] = _azureTablesTestContainer.GetMappedPublicPort(privatePort[3]);
+            
+            containerId = _azureTablesTestContainer.Id;
         }
         else
         {
             var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
             ContainerListResponse containerListResponse = listContainers.Single(container => container.Names.Contains($"/{containerName}"));
+
+            containerId = containerListResponse.ID;
 
             publicPort[1] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[1]).PublicPort;
             publicPort[2] = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort[2]).PublicPort;
@@ -112,10 +119,18 @@ public class AzureTablesTestContainer : ITestContainer<TableId, TestAzureTablesI
     public async Task DisposeAsync()
     {
         await _database.DisposeAsync();
-        //await _azureTablesContainer.StopAsync();    
-        //await _azureTablesContainer.CleanUpAsync();
 
         //_testOutputHelper.WriteLine($"Azure Tables container State:{_azureTablesContainer.State}");
         //_testOutputHelper.WriteLine("=STOP=");
+    }
+
+    public async void Dispose()
+    {
+
+        await _dockerClient.Containers.RemoveContainerAsync(containerId,
+              new ContainerRemoveParameters
+              {
+                  Force = true
+              });
     }
 }

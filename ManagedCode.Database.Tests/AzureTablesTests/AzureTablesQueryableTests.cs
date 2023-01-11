@@ -1,4 +1,4 @@
-/*using FluentAssertions;
+using FluentAssertions;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -10,10 +10,10 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.AzureTablesTests;
 
-[Collection("AzureTables collection")]
+[Collection(nameof(AzureTablesTestContainer))]
 public class AzureTablesQueryableTests : BaseQueryableTests<TableId, TestAzureTablesItem>
 {
-    public AzureTablesQueryableTests() : base(new AzureTablesTestContainer())
+    public AzureTablesQueryableTests(AzureTablesTestContainer container) : base(container)
     {
     }
 
@@ -37,4 +37,3 @@ public class AzureTablesQueryableTests : BaseQueryableTests<TableId, TestAzureTa
             .ThrowAsync<ArgumentNullException>();
     }
 }
-*/

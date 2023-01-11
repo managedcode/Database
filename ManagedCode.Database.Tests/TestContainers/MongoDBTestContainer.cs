@@ -79,11 +79,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
             containerId = containerListResponse.ID;
 
             publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
-
-            /*if(containerListResponse.State == "exited")
-            {
-                await _dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
-            }*/
         }
 
         _dbDatabase = new MongoDBDatabase(new MongoDBOptions()
@@ -101,7 +96,6 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
     public async Task DisposeAsync()
     {
         await _dbDatabase.DisposeAsync();
-        //await _dockerClient.Containers.StopContainerAsync(_mongoDBTestContainer.Id, new ContainerStopParameters());
 
         // _testOutputHelper.WriteLine($"Mongo container State:{_mongoDBContainer.State}");
         //_testOutputHelper.WriteLine("=STOP=");
@@ -115,7 +109,5 @@ public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, I
             {
                 Force = true
             });
-       // await _dockerClient.Containers.StopContainerAsync(containerId, new ContainerStopParameters());
-
     }
 }
