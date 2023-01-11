@@ -2,7 +2,7 @@
 
 namespace ManagedCode.Database.Tests.TestContainers.DatabaseCollections
 {
-    [CollectionDefinition("MongoDB collection")]
+    [CollectionDefinition("MongoDBTestCollection")]
     public class MongoDBTestCollection : ICollectionFixture<MongoDBTestContainer>
     {
     }

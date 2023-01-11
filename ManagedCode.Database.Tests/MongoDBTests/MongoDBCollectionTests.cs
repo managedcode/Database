@@ -12,7 +12,7 @@ namespace ManagedCode.Database.Tests.MongoDBTests;
 [Collection(nameof(MongoDBTestContainer))]
 public class MongoDBCollectionTests : BaseCollectionTests<ObjectId, TestMongoDBItem>
 {
-    public MongoDBCollectionTests(MongoDBTestContainer container) : base(container)
+    public MongoDBCollectionTests(MongoDBTestContainer container)  : base(container)
     {
     }
 }
