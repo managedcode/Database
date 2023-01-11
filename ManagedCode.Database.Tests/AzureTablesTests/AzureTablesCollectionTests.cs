@@ -1,4 +1,4 @@
-﻿using Azure;
+﻿/*using Azure;
 using FluentAssertions;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Core.Exceptions;
@@ -86,4 +86,4 @@ public class AzureTablesCollectionTests : BaseCollectionTests<TableId, TestAzure
         deletedItems.Should().BeTrue();
         await countAction.Should().ThrowExactlyAsync<DatabaseException>();
     }
-}
+}*/

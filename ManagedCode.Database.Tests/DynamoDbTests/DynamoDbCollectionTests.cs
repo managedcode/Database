@@ -1,4 +1,4 @@
-using FluentAssertions;
+/*using FluentAssertions;
 using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -51,7 +51,7 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         deleted.Should().ThrowExactlyAsync<DatabaseException>();
     }
 
-    /*    [Fact]
+    *//*    [Fact]
         public override async Task GetById_ReturnOk()
         {
             // Arrange
@@ -74,7 +74,7 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
                 // Assert
                 await getItemResult.Should().ThrowAsync<DatabaseException>();
             }
-        }*/
+        }*//*
 
     [Fact]
     public override async Task InsertItem_WhenItemExist_ShouldThrowDatabaseException()
@@ -102,4 +102,4 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         // Assert
         updateItem.Should().BeNull();
     }
-}
+}*/

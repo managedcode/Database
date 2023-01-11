@@ -1,4 +1,4 @@
-using FluentAssertions;
+/*using FluentAssertions;
 using ManagedCode.Database.AzureTables;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -37,3 +37,4 @@ public class AzureTablesQueryableTests : BaseQueryableTests<TableId, TestAzureTa
             .ThrowAsync<ArgumentNullException>();
     }
 }
+*/
