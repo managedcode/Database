@@ -14,7 +14,8 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.TestContainers;
 
-public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, IDisposable
+[CollectionDefinition(nameof(MongoDBTestContainer))]
+public class MongoDBTestContainer : ITestContainer<ObjectId, TestMongoDBItem>, ICollectionFixture<MongoDBTestContainer>, IDisposable
 {
     //private readonly ITestOutputHelper _testOutputHelper;
     private readonly TestcontainersContainer _mongoDBTestContainer;
