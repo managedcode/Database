@@ -31,9 +31,9 @@ jobs:
                 - 10256:10256
                 - 10350:10350
             env:
-                - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=2
-                - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
-                - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1    
+                AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 2
+                AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: true
+                AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE: 127.0.0.1    
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
