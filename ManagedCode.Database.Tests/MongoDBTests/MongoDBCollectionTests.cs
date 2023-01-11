@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
-[Collection("MongoDB collection")]
+[Collection(nameof(MongoDBTestContainer))]
 public class MongoDBCollectionTests : BaseCollectionTests<ObjectId, TestMongoDBItem>
 {
     public MongoDBCollectionTests() : base(new MongoDBTestContainer())
