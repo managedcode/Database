@@ -92,12 +92,14 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             }
         }
 
+        var db = $"container{Guid.NewGuid().ToString("N")}";
+
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
                 $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
-            CollectionName = "testContainer",
+            CollectionName = db,
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
             {
