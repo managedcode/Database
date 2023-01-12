@@ -121,7 +121,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task DisposeAsync()
     {
-       // await _database.DeleteAsync();
+        await _database.DeleteAsync();
         await _database.DisposeAsync();
         
         /*     _testOutputHelper.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
