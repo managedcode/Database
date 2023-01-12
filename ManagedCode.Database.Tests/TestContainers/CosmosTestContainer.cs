@@ -31,8 +31,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
         _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
-            .WithExposedPort(privatePort)
-            .WithPortBinding(privatePort, privatePort)
+            .WithExposedPort(8081)
+            .WithPortBinding(8081, 8081)
             .WithPortBinding(10250, 10250)
             .WithPortBinding(10251, 10251)
             .WithPortBinding(10252, 10252)
@@ -92,7 +92,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             }
         }
 
-        var db = $"container{Guid.NewGuid().ToString("N")}";
+       // var db = $"container{Guid.NewGuid().ToString("N")}";
 
         _database = new CosmosDatabase(new CosmosOptions
         {
@@ -122,7 +122,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task DisposeAsync()
     {
-        await _database.DeleteAsync();
+        //await _database.DeleteAsync();
         await _database.DisposeAsync();
 
         /*     _testOutputHelper.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
