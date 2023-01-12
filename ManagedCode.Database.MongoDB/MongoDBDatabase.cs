@@ -42,7 +42,8 @@ public class MongoDBDatabase : BaseDatabase<IMongoDatabase>
 
     public MongoDBCollection<TItem> GetCollection<TItem>() where TItem : MongoDBItem, new()
     {
-        if (!IsInitialized) throw new DatabaseNotInitializedException(GetType());
+        if (!IsInitialized) 
+            throw new DatabaseNotInitializedException(GetType());
 
         var collectionName = string.IsNullOrEmpty(_dbOptions.CollectionName)
             ? typeof(TItem).Name.Pluralize()

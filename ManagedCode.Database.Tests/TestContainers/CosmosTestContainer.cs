@@ -31,8 +31,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
         _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
-            .WithExposedPort(8081)
-            .WithPortBinding(8081, 8081)
+            .WithExposedPort(privatePort)
+            .WithPortBinding(privatePort, privatePort)
             .WithPortBinding(10250, 10250)
             .WithPortBinding(10251, 10251)
             .WithPortBinding(10252, 10252)
@@ -97,7 +97,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             ConnectionString =
                 $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
-            CollectionName = $"testContainers",
+            CollectionName = "testContainer",
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
             {
