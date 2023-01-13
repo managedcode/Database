@@ -22,7 +22,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     private CosmosDatabase _database;
     private DockerClient _dockerClient;
     private const string containerName = "cosmosContainer";
-    private const ushort privatePort = 8081;
+    private ushort privatePort = 8081;
     private bool containerExsist = false;
     private string containerId;
 
@@ -76,24 +76,25 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             containerExsist = true;
         }
 
-        if (!containerExsist)
+        /*if (!containerExsist)
         {
             publicPort = _cosmosTestContainer.GetMappedPublicPort(privatePort);
             containerId = _cosmosTestContainer.Id;
         }
         else
-        {
+        {*/
             var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
             ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
 
             if (containerListResponse != null)
             {
+                privatePort = containerListResponse.Ports.LastOrDefault().PrivatePort;
                 publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
                 containerId = containerListResponse.ID;
             }
-        }
+       // }
 
         var httpMessageHandler = new HttpClientHandler()
         {
