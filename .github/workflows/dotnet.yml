@@ -14,23 +14,6 @@ jobs:
   
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-    cosmos:
-        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
-        container_name: cosmos
-        ports:
-          - 8081:8081
-          - 10251:10251
-          - 10252:10252
-          - 10253:10253
-          - 10254:10254
-        expose:
-          - "8081"
-          - "10251-10255"
-        environment:
-          - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=6
-          - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=false
-          - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET

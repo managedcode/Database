@@ -28,7 +28,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public CosmosTestContainer()
     {
-        /*_cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
             .WithExposedPort(8081)
@@ -50,7 +50,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
                 .UntilPortIsAvailable(privatePort))
             .Build();
 
-        _dockerClient = new DockerClientConfiguration().CreateClient();*/
+        _dockerClient = new DockerClientConfiguration().CreateClient();
     }
 
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
@@ -63,7 +63,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task InitializeAsync()
     {
-        /*ushort publicPort = privatePort;
+        ushort publicPort = privatePort;
 
         try
         {
@@ -93,7 +93,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
                 containerId = containerListResponse.ID;
             }
-        }*/
+        }
 
         var httpMessageHandler = new HttpClientHandler()
         {
