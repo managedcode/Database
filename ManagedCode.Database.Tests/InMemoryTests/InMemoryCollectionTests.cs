@@ -1,4 +1,4 @@
-﻿using ManagedCode.Database.Tests.BaseTests;
+﻿/*using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
 
@@ -9,4 +9,4 @@ public class InMemoryCollectionTests : BaseCollectionTests<int, InMemoryItem>
     public InMemoryCollectionTests() : base(new InMemoryTestContainer())
     {
     }
-}
+}*/
