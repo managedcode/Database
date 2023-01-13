@@ -17,7 +17,7 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
     {
     }
 
-    public override async Task DeleteItemById_WhenItemDoesntExists()
+/*    public override async Task DeleteItemById_WhenItemDoesntExists()
     {
         var baseMethod = () => base.DeleteItemById_WhenItemDoesntExists();
 
@@ -56,5 +56,5 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 
         // Assert
         isDeleted.Should().BeTrue();
-    }
+    }*/
 }
