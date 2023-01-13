@@ -42,7 +42,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithPortBinding(10252, 10252)
             .WithPortBinding(10253, 10253)
             .WithPortBinding(10254, 10254)
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "6")
+            .WithPortBinding(8081, 8081)
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .WithCleanUp(false)
@@ -104,7 +105,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
-                $"AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+                $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
             CollectionName = $"testContainer",
             AllowTableCreation = true,
