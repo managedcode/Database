@@ -10,12 +10,12 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-[Collection(nameof(CosmosTestContainer))]
+//[Collection(nameof(CosmosTestContainer))]
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
-{
-    public CosmosCollectionTests(ITestOutputHelper testOutputHelper, CosmosTestContainer container) : base(container)
-    {
-    }
+ {
+     public CosmosCollectionTests() : base(new CosmosTestContainer())
+     {
+     }
 
    /* public override async Task DeleteItemById_WhenItemDoesntExists()
     {
