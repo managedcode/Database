@@ -75,7 +75,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>
 
                     return new HttpClient(httpMessageHandler);
                 },
-                ConnectionMode = ConnectionMode.Gateway
+                ConnectionMode = ConnectionMode.Gateway,
+                RequestTimeout = TimeSpan.FromMinutes(3)
             },
         });
 
