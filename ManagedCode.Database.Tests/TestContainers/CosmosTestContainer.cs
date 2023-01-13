@@ -32,6 +32,12 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
             .WithExposedPort(8081)
+            .WithExposedPort(10250)
+            .WithExposedPort(10251)
+            .WithExposedPort(10252)
+            .WithExposedPort(10253)
+            .WithExposedPort(10254)
+            .WithExposedPort(10255)
             .WithPortBinding(8081, 8081)
             .WithPortBinding(10250, 10250)
             .WithPortBinding(10251, 10251)
@@ -39,12 +45,12 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithPortBinding(10253, 10253)
             .WithPortBinding(10254, 10254)
             .WithPortBinding(10255, 10255)
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "2")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "true")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(8081))
+                .UntilPortIsAvailable(privatePort))
             .Build();
 
         _dockerClient = new DockerClientConfiguration().CreateClient();
@@ -60,7 +66,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task InitializeAsync()
     {
-        ushort publicPort = 0;
+        ushort publicPort = privatePort;
 
         try
         {
@@ -92,12 +98,13 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             }
         }
 
+        var database = $"db{Guid.NewGuid().ToString("N")}";
 
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
                 $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-            DatabaseName = "database",
+            DatabaseName = database,
             CollectionName = $"testContainer",
             AllowTableCreation = true,
             CosmosClientOptions = new CosmosClientOptions()
