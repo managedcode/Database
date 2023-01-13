@@ -42,7 +42,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithPortBinding(10252, 10252)
             .WithPortBinding(10253, 10253)
             .WithPortBinding(10254, 10254)
-           // .WithPortBinding(8081, 8081)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
@@ -77,20 +76,25 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             containerExsist = true;
         }
 
-        var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
-
-        ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
-
-        if (containerListResponse != null)
+        if (!containerExsist)
         {
-            //publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
-            publicPort = containerListResponse.Ports.FirstOrDefault().PublicPort;
-
-            containerId = containerListResponse.ID;
+            publicPort = _cosmosTestContainer.GetMappedPublicPort(privatePort);
+            containerId = _cosmosTestContainer.Id;
         }
+        else
+        {
+            var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
+            ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
 
+            if (containerListResponse != null)
+            {
+                publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
+                containerId = containerListResponse.ID;
+            }
+        }
+        
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
