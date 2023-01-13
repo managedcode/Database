@@ -22,13 +22,13 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     private CosmosDatabase _database;
     private DockerClient _dockerClient;
     private const string containerName = "cosmosContainer";
-    private ushort privatePort = 8081;
+    private const ushort privatePort = 8081;
     private bool containerExsist = false;
     private string containerId;
 
     public CosmosTestContainer()
     {
-        _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
+        /*_cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
             .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
             .WithName(containerName)
             .WithExposedPort(8081)
@@ -50,7 +50,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
                 .UntilPortIsAvailable(privatePort))
             .Build();
 
-        _dockerClient = new DockerClientConfiguration().CreateClient();
+        _dockerClient = new DockerClientConfiguration().CreateClient();*/
     }
 
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
@@ -63,7 +63,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task InitializeAsync()
     {
-        ushort publicPort = privatePort;
+        /*ushort publicPort = privatePort;
 
         try
         {
@@ -76,25 +76,24 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             containerExsist = true;
         }
 
-        /*if (!containerExsist)
+        if (!containerExsist)
         {
             publicPort = _cosmosTestContainer.GetMappedPublicPort(privatePort);
             containerId = _cosmosTestContainer.Id;
         }
         else
-        {*/
+        {
             var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
             ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
 
             if (containerListResponse != null)
             {
-                privatePort = containerListResponse.Ports.LastOrDefault().PrivatePort;
                 publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
                 containerId = containerListResponse.ID;
             }
-       // }
+        }*/
 
         var httpMessageHandler = new HttpClientHandler()
         {
@@ -105,7 +104,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
-                $"AccountEndpoint=https://localhost:{publicPort}/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+                $"AccountEndpoint=https://localhost:8081;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             DatabaseName = "database",
             CollectionName = $"testContainer",
             AllowTableCreation = true,
