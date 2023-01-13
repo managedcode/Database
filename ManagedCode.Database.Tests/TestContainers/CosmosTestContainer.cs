@@ -77,25 +77,20 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             containerExsist = true;
         }
 
-        if (!containerExsist)
+        var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
+
+        ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
+
+        if (containerListResponse != null)
         {
-            publicPort = _cosmosTestContainer.GetMappedPublicPort(privatePort);
-            containerId = _cosmosTestContainer.Id;
+            //publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
+            publicPort = containerListResponse.Ports.FirstOrDefault().PublicPort;
+
+            containerId = containerListResponse.ID;
         }
-        else
-        {
-            var listContainers = await _dockerClient.Containers.ListContainersAsync(new ContainersListParameters());
 
-            ContainerListResponse containerListResponse = listContainers.FirstOrDefault(container => container.Names.Contains($"/{containerName}"));
 
-            if (containerListResponse != null)
-            {
-                publicPort = containerListResponse.Ports.Single(port => port.PrivatePort == privatePort).PublicPort;
 
-                containerId = containerListResponse.ID;
-            }
-        }
-        
         _database = new CosmosDatabase(new CosmosOptions
         {
             ConnectionString =
