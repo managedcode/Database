@@ -3,6 +3,7 @@ using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
 using ManagedCode.Database.Tests.TestContainers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -12,7 +13,7 @@ namespace ManagedCode.Database.Tests.CosmosTests;
 [Collection(nameof(CosmosTestContainer))]
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 {
-    public CosmosCollectionTests(ITestOutputHelper testOutputHelper, CosmosTestContainer container) : base(container)
+    public CosmosCollectionTests(CosmosTestContainer container) : base(container)
     {
     }
 
@@ -35,5 +36,25 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
         var baseMethod = () => base.DeleteListOfItems_WhenItemsDontExist();
 
         await baseMethod.Should().ThrowExactlyAsync<DatabaseException>();
+    }
+
+    [Fact]
+    public override async Task DeleteCollectionAsync()
+    {
+        // Arrange
+        int itemsCount = 5;
+        List<TestCosmosItem> list = new();
+
+        for (var i = 0; i < itemsCount; i++)
+        {
+            list.Add(CreateNewItem());
+        }
+
+        await Collection.InsertAsync(list);
+        // Act
+        var isDeleted = await Collection.DeleteCollectionAsync();
+
+        // Assert
+        isDeleted.Should().BeTrue();
     }
 }
