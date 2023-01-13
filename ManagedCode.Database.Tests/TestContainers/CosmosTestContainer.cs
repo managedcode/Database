@@ -41,7 +41,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithPortBinding(10255, 10255)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "2")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "true")
+            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .WithCleanUp(false)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilPortIsAvailable(8081))
@@ -121,7 +121,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task DisposeAsync()
     {
-        await _database.DeleteAsync();
+       // await _database.DeleteAsync();
         await _database.DisposeAsync();
         
         /*     _testOutputHelper.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
