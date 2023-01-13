@@ -42,7 +42,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithPortBinding(10252, 10252)
             .WithPortBinding(10253, 10253)
             .WithPortBinding(10254, 10254)
-            .WithPortBinding(8081, 8081)
+           // .WithPortBinding(8081, 8081)
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
