@@ -113,7 +113,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             {
                 HttpClientFactory = () => new HttpClient(httpMessageHandler),
                 ConnectionMode = ConnectionMode.Gateway,
-                RequestTimeout = TimeSpan.FromMinutes(3)
+                //RequestTimeout = TimeSpan.FromMinutes(3)
             },
         });
 
