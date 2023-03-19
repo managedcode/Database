@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-#if COSMOSDB || DEBUG
+#if COSMOS_DB || DEBUG
 [Collection(nameof(CosmosTestContainer))]
 public class CosmosQueryableTests : BaseQueryableTests<string, TestCosmosItem>
 {
