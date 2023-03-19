@@ -39,7 +39,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: build
-        run: dotnet build /p:DefineConstants="HELLO;WORLD"
+        run: dotnet build /p:DefineConstants="COSMOSDB"
       - name: Test
         run: dotnet test --no-build
        
