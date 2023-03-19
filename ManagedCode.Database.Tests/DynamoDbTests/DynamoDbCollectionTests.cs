@@ -1,4 +1,4 @@
-/*using FluentAssertions;
+using FluentAssertions;
 using ManagedCode.Database.Core.Exceptions;
 using ManagedCode.Database.Tests.BaseTests;
 using ManagedCode.Database.Tests.Common;
@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.DynamoDbTests;
 
+#if DYNAMO_DB || DEBUG
 [Collection(nameof(DynamoDBTestContainer))]
 public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbItem>
 {
@@ -102,4 +103,5 @@ public class DynamoDbCollectionTests : BaseCollectionTests<string, TestDynamoDbI
         // Assert
         updateItem.Should().BeNull();
     }
-}*/
+}
+#endif

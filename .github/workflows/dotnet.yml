@@ -27,11 +27,81 @@ jobs:
         run: dotnet restore
       - name: build
         run: dotnet build
-  
+
+  in-memory:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=IN_MEMORY
+      - name: Test
+        run: dotnet test --no-build
+
+  lite-db:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=LITE_DB
+      - name: Test
+        run: dotnet test --no-build
+        
+  sqlite:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=SQLITE
+      - name: Test
+        run: dotnet test --no-build
+    
+  zone-tree:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=ZONE_TREE
+      - name: Test
+        run: dotnet test --no-build   
+        
+        
   cosmos-db:
     needs: build
     runs-on: windows-latest
     steps:
+      - uses: actions/azurecosmosaction@latest
       - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -78,7 +148,23 @@ jobs:
         run: dotnet build -p:DefineConstants=MONGO_DB
       - name: Test
         run: dotnet test --no-build
+        
+  dynamo-db:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
 
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=DYNAMO_DB
+      - name: Test
+        run: dotnet test --no-build
 
 
 
