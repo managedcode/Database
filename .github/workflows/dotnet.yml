@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   
-variables:
-  DOT_NET: "7.0.x"
+env:
+  DOT_NET_VERSION: "7.0.x"
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: $DOT_NET
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
                
       - name: Restore dependencies
         run: dotnet restore
@@ -36,7 +36,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: $DOT_NET
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
                
       - name: Restore dependencies
         run: dotnet restore
@@ -53,7 +53,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: $DOT_NET
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
 
       - name: Restore dependencies
         run: dotnet restore
