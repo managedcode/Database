@@ -10,14 +10,15 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.CosmosTests;
 
-//[Collection(nameof(CosmosTestContainer))]
+#if COSMOSDB
+[Collection(nameof(CosmosTestContainer))]
 public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 {
-    public CosmosCollectionTests() : base(new CosmosTestContainer())
+    public CosmosCollectionTests(ITestOutputHelper testOutputHelper, CosmosTestContainer container) : base(container)
     {
     }
 
-    /*    public override async Task DeleteItemById_WhenItemDoesntExists()
+        public override async Task DeleteItemById_WhenItemDoesntExists()
         {
             var baseMethod = () => base.DeleteItemById_WhenItemDoesntExists();
 
@@ -56,5 +57,6 @@ public class CosmosCollectionTests : BaseCollectionTests<string, TestCosmosItem>
 
             // Assert
             isDeleted.Should().BeTrue();
-        }*/
+        }
 }
+#endif

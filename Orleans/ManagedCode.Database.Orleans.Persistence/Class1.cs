@@ -35,7 +35,8 @@ public class DatabaseGrainStorage<TId, TItem> : IGrainStorage, IRestExceptionDec
     
     public Task ReadStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)
     {
-        _collection.GetAsync()
+        //_collection.GetAsync()
+        return Task.CompletedTask;
     }
 
     public Task WriteStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)

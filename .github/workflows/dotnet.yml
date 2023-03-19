@@ -1,4 +1,4 @@
-name: .NET
+ name: .NET
 
 on:
   push:
@@ -10,9 +10,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-jobs:
   
-  build-and-test:
+jobs:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -20,14 +20,29 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.x
-        
-        # run build and test           
+               
       - name: Restore dependencies
         run: dotnet restore
-      - name: Build
-        run: dotnet build --no-restore
+      - name: build
+        run: dotnet build
+  
+  cosmosdb:
+    needs: setup
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+               
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build /p:DefineConstants="HELLO;WORLD"
       - name: Test
-        run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=ManagedCode.Repository.Tests/lcov.info
+        run: dotnet test --no-build
+       
 
       #- name: coverlet
       #  uses: b3b00/coverlet-action@1.1.9

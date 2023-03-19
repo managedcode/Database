@@ -18,7 +18,7 @@ namespace ManagedCode.Database.Tests.TestContainers;
 public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     ICollectionFixture<CosmosTestContainer>, IDisposable
 {
-    private readonly TestcontainersContainer _cosmosTestContainer;
+    private readonly IContainer _cosmosTestContainer;
     private CosmosDatabase _database;
     private DockerClient _dockerClient;
     private const string containerName = "cosmosContainer";
@@ -28,9 +28,9 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public CosmosTestContainer()
     {
-        _cosmosTestContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
-            .WithName(containerName)
+        _cosmosTestContainer = new ContainerBuilder()
+            .WithImage("mcr.microsoft.com/cosmosdb/windows/azure-cosmos-emulator")
+//            .WithName(containerName)
             .WithExposedPort(8081)
             .WithExposedPort(10251)
             .WithExposedPort(10252)
@@ -38,16 +38,12 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
             .WithExposedPort(10254)
             .WithExposedPort(10255)
             .WithPortBinding(8081, 8081)
-            .WithPortBinding(10251, 10251)
-            .WithPortBinding(10252, 10252)
-            .WithPortBinding(10253, 10253)
-            .WithPortBinding(10254, 10254)
+            .WithEnvironment("ACCEPT_EULA", "Y")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-            .WithCleanUp(false)
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(privatePort))
+            .WithWaitStrategy(Wait.ForWindowsContainer()
+                .UntilPortIsAvailable(8081))
             .Build();
 
         _dockerClient = new DockerClientConfiguration().CreateClient();
@@ -135,10 +131,10 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     public async void Dispose()
     {
 
-        await _dockerClient.Containers.RemoveContainerAsync(containerId,
-              new ContainerRemoveParameters
-              {
-                  Force = true
-              });
+        // await _dockerClient.Containers.RemoveContainerAsync(containerId,
+        //       new ContainerRemoveParameters
+        //       {
+        //           Force = true
+        //       });
     }
 }
