@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ManagedCode.Database.Tests.BaseTests;
@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace ManagedCode.Database.Tests.MongoDBTests;
 
+#if MONGO_DB || DEBUG
 [Collection(nameof(MongoDBTestContainer))]
 public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBItem>
 {
@@ -130,4 +131,5 @@ public class MongoDBQueryableTests : BaseQueryableTests<ObjectId, TestMongoDBIte
 
         await baseMethod.Should().ThrowExactlyAsync<MongoCommandException>();
     }
-}*/
+}
+#endif

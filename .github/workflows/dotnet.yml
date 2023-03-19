@@ -47,7 +47,7 @@ jobs:
        
   azure-tables:
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
@@ -62,7 +62,22 @@ jobs:
       - name: Test
         run: dotnet test --no-build
 
+mongo-db:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOT_NET_VERSION }}
 
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: build
+        run: dotnet build -p:DefineConstants=MONGO_DB
+      - name: Test
+        run: dotnet test --no-build
 
 
 
