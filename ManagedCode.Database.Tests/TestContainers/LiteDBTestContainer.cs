@@ -14,7 +14,7 @@ public class LiteDBTestContainer : ITestContainer<string, TestLiteDBItem>
 
     public LiteDBTestContainer()
     {
-        _databasePath = $"{Guid.NewGuid():N}.db";// Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        _databasePath = Path.Combine(Environment.CurrentDirectory, $"{Guid.NewGuid():N}.db");
 
         _database = new LiteDBDatabase(new LiteDBOptions
         {
