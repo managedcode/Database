@@ -62,7 +62,7 @@ jobs:
       - name: Test
         run: dotnet test --no-build
 
-mongo-db:
+  mongo-db:
     needs: build
     runs-on: ubuntu-latest
     steps:
