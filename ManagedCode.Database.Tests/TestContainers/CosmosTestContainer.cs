@@ -28,25 +28,25 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public CosmosTestContainer()
     {
-        _cosmosTestContainer = new ContainerBuilder()
-            .WithImage("mcr.microsoft.com/cosmosdb/windows/azure-cosmos-emulator")
-//            .WithName(containerName)
-            .WithExposedPort(8081)
-            .WithExposedPort(10251)
-            .WithExposedPort(10252)
-            .WithExposedPort(10253)
-            .WithExposedPort(10254)
-            .WithExposedPort(10255)
-            .WithPortBinding(8081, 8081)
-            .WithEnvironment("ACCEPT_EULA", "Y")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
-            .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-            .WithWaitStrategy(Wait.ForWindowsContainer()
-                .UntilPortIsAvailable(8081))
-            .Build();
-
-        _dockerClient = new DockerClientConfiguration().CreateClient();
+//         _cosmosTestContainer = new ContainerBuilder()
+//             .WithImage("mcr.microsoft.com/cosmosdb/windows/azure-cosmos-emulator")
+// //            .WithName(containerName)
+//             .WithExposedPort(8081)
+//             .WithExposedPort(10251)
+//             .WithExposedPort(10252)
+//             .WithExposedPort(10253)
+//             .WithExposedPort(10254)
+//             .WithExposedPort(10255)
+//             .WithPortBinding(8081, 8081)
+//             .WithEnvironment("ACCEPT_EULA", "Y")
+//             .WithEnvironment("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "1")
+//             .WithEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1")
+//             .WithEnvironment("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+//             .WithWaitStrategy(Wait.ForWindowsContainer()
+//                 .UntilPortIsAvailable(8081))
+//             .Build();
+//
+//         _dockerClient = new DockerClientConfiguration().CreateClient();
     }
 
     public IDatabaseCollection<string, TestCosmosItem> Collection =>
@@ -61,16 +61,16 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     {
         ushort publicPort = privatePort;
 
-        try
-        {
-            await _cosmosTestContainer.StartAsync();
-
-            containerExsist = false;
-        }
-        catch (Exception ex) //TODO catch name already using exception
-        {
-            containerExsist = true;
-        }
+        // try
+        // {
+        //     await _cosmosTestContainer.StartAsync();
+        //
+        //     containerExsist = false;
+        // }
+        // catch (Exception ex) //TODO catch name already using exception
+        // {
+        //     containerExsist = true;
+        // }
 
         // if (!containerExsist)
         // {
@@ -111,7 +111,6 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
                     return new HttpClient(httpMessageHandler);
                 },
                 ConnectionMode = ConnectionMode.Gateway,
-                RequestTimeout = TimeSpan.FromMinutes(3)
             },
         });
 
@@ -121,8 +120,8 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
 
     public async Task DisposeAsync()
     {
-        // await _database.DeleteAsync();
-        await _database.DisposeAsync();
+         await _database.DeleteAsync();
+        //await _database.DisposeAsync();
 
         /*     _testOutputHelper.WriteLine($"Cosmos container State:{_cosmosContainer.State}");
              _testOutputHelper.WriteLine("=STOP=");*/
@@ -131,6 +130,7 @@ public class CosmosTestContainer : ITestContainer<string, TestCosmosItem>,
     public async void Dispose()
     {
 
+        await _database.DeleteAsync();
         // await _dockerClient.Containers.RemoveContainerAsync(containerId,
         //       new ContainerRemoveParameters
         //       {
