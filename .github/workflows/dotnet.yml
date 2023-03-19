@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: $env.DOT_NET
+          dotnet-version: ${{ env.DOT_NET }}
                
       - name: Restore dependencies
         run: dotnet restore
@@ -53,7 +53,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: $DOT_NET
+          dotnet-version: ${{ env.DOT_NET }}
 
       - name: Restore dependencies
         run: dotnet restore
