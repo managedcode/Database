@@ -21,7 +21,7 @@ public class CosmosItem : IItem<string>
 
     [JsonProperty("type")] public string Type { get; set; }
 
-    public virtual PartitionKey PartitionKey => new(Id);
+    public PartitionKey PartitionKey { get; protected set; }
 
     [JsonProperty("id")] public string Id { get; set; }
 }
