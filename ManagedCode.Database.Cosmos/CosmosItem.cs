@@ -11,17 +11,19 @@ public class CosmosItem : IItem<string>
     {
         Id = $"{Guid.NewGuid():N}";
         Type = GetType().Name;
+        PartitionKey = new PartitionKey(Id);
     }
 
     public CosmosItem(string id)
     {
         Id = id;
         Type = GetType().Name;
+        PartitionKey = new PartitionKey(Id);
     }
 
     [JsonProperty("type")] public string Type { get; set; }
 
-    public virtual PartitionKey PartitionKey => new(Id);
+    public PartitionKey PartitionKey { get; protected set; }
 
     [JsonProperty("id")] public string Id { get; set; }
 }
