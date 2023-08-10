@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ManagedCode.Database.Tests.TestContainers;
+using Microsoft.Azure.Cosmos;
 using Xunit;
 
 namespace ManagedCode.Database.Tests.BaseTests;
@@ -368,6 +369,22 @@ public abstract class BaseCollectionTests<TId, TItem> : BaseTests<TId, TItem> wh
 
     #region Get
 
+    [Fact]
+    public virtual async Task GetAll_ReturnOk()
+    {
+        // Arrange
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+        await Collection.InsertAsync(CreateNewItem());
+
+        // Act
+        var getItemResult = await Collection.GetCollection();
+
+        // Assert
+        getItemResult.Count.Should().Be(3);
+    }
+    
+    
     [Fact]
     public virtual async Task GetById_ReturnOk()
     {

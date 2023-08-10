@@ -148,9 +148,16 @@ namespace ManagedCode.Database.Core.InMemory
             return Task.FromResult(_storage.Count == 0);
         }
 
+        
+
         #endregion
 
         #region Get
+        
+        protected override Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_storage.Values.ToList());
+        }
 
         protected override Task<TItem> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
         {
