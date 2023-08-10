@@ -34,6 +34,11 @@ public class AzureTablesDatabaseCollection<TItem> : BaseDatabaseCollection<Table
 
     #region Get
 
+    protected override async Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        return await _tableClient.QueryAsync<TItem>().ToListAsync(cancellationToken);
+    }
+
     protected override async Task<TItem?> GetInternalAsync(TableId id, CancellationToken cancellationToken = default)
     {
         try

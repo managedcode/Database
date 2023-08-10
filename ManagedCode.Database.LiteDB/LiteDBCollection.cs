@@ -31,6 +31,11 @@ public class LiteDBCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
 
     #region Get
 
+    protected override Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_collection.FindAll().ToList());
+    }
+
     protected override async Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();

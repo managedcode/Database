@@ -8,7 +8,8 @@ namespace ManagedCode.Database.Core;
 public interface IDatabaseCollection<in TId, TItem> : IDisposable, IAsyncDisposable where TItem : IItem<TId>
 {
     ICollectionQueryable<TItem> Query { get; }
-
+    
+    Task<List<TItem>> GetCollection(CancellationToken cancellationToken = default);
     Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default);
     Task<int> InsertAsync(IEnumerable<TItem> items, CancellationToken cancellationToken = default);
 
