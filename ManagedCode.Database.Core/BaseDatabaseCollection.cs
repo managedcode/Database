@@ -15,6 +15,11 @@ public abstract class BaseDatabaseCollection<TId, TItem> : IDatabaseCollection<T
 
     public abstract ValueTask DisposeAsync();
 
+    public Task<List<TItem>> GetCollection(CancellationToken cancellationToken = default)
+    {
+        return ExecuteAsync(GetCollectionInternalAsync(cancellationToken));
+    }
+
     public Task<TItem> InsertAsync(TItem item, CancellationToken cancellationToken = default)
     {
         return ExecuteAsync(InsertInternalAsync(item, cancellationToken));
@@ -107,6 +112,8 @@ public abstract class BaseDatabaseCollection<TId, TItem> : IDatabaseCollection<T
         CancellationToken cancellationToken = default);
 
     protected abstract Task<bool> DeleteCollectionInternalAsync(CancellationToken cancellationToken = default);
+    
+    protected abstract Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default);
 
     protected abstract Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default);
 

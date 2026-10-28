@@ -92,6 +92,12 @@ public class ZoneTreeCollection<TId, TItem> : BaseDatabaseCollection<TId, TItem>
         return Task.FromResult(true);
     }
 
+    protected override Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        var collection = _zoneTree.Enumerate().ToList();
+        return Task.FromResult(collection.Count == 0 ? null : collection)!;
+    }
+
     protected override async Task<TItem> InsertOrUpdateInternalAsync(TItem item,
         CancellationToken cancellationToken = default)
     {

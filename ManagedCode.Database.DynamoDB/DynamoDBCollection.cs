@@ -88,6 +88,11 @@ public class DynamoDBCollection<TItem> : BaseDatabaseCollection<string, TItem>
 
     #region Get
 
+    protected override async Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dynamoDBContext.ScanAsync<TItem>(null, _config).GetRemainingAsync(cancellationToken);
+    }
+
     protected override async Task<TItem?> GetInternalAsync(string hashKey, CancellationToken cancellationToken = default)
     {
         var data = await _dynamoDBContext.ScanAsync<TItem>(GetScanConditions(hashKey), _config).GetRemainingAsync(cancellationToken);

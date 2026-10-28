@@ -33,6 +33,15 @@ public class MongoDBCollection<TItem> : BaseDatabaseCollection<ObjectId, TItem>
 
     #region Get
 
+    protected override async Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        var collectionName = _collection.CollectionNamespace.CollectionName;
+
+        var collection = await _collection.Database.GetCollection<TItem>(collectionName).Find<TItem>(_ => true).ToListAsync();
+
+        return collection;
+    }
+
     protected override async Task<TItem?> GetInternalAsync(ObjectId id, CancellationToken cancellationToken = default)
     {
         var cursor = await _collection.FindAsync(w => w.Id == id, cancellationToken: cancellationToken);

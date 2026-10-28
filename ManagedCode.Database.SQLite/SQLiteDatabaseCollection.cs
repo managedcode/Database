@@ -31,6 +31,11 @@ public class SQLiteDatabaseCollection<TId, TItem> : BaseDatabaseCollection<TId, 
 
     #region Get
 
+    protected override Task<List<TItem>> GetCollectionInternalAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_database.Query<TItem>(null));
+    }
+
     protected override async Task<TItem?> GetInternalAsync(TId id, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
